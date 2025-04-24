@@ -117,7 +117,7 @@ class CorpsArmeController extends Controller
     public function submitDefineAccess(Request $request)
     {
         // Validation des données
-        $validated = $request->validate([
+        $request->validate([
             'code' => 'required|exists:reset_code_password_corps_armes,code',
             'password' => 'required|same:confirme_password',
             'confirme_password' => 'required|same:password',
@@ -159,9 +159,9 @@ class CorpsArmeController extends Controller
                     }
                 }
     
-                return redirect()->route('corps.login')->with('success', 'Compte mis à jour avec succès');
+                return redirect()->route('corps.login')->with('success', 'Accès definir avec succès');
             } else {
-                return redirect()->route('corps.login')->with('error', 'Email inconnu');
+                return redirect()->back()->with('error', 'Email inconnu');
             }
         } catch (\Exception $e) {
             Log::error('Error updating admin profile: ' . $e->getMessage());

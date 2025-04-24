@@ -1,57 +1,95 @@
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2  bg-white my-2" id="sidenav-main">
-    <div class="sidenav-header">
-      <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand px-4 py-3 m-0" href=" https://demos.creative-tim.com/material-dashboard/pages/dashboard " target="_blank">
-        <img src="{{ asset('assets/assets/img/logo-ct-dark.png') }}" class="navbar-brand-img" width="26" height="26" alt="main_logo">
-        <span class="ms-1 text-sm text-dark">Armée Hydro</span>
-      </a>
-    </div>
-    <hr class="horizontal dark mt-0 mb-2">
-    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active bg-gradient-dark text-white" href="{{ route('admin.dashboard') }}">
-            <i class="material-symbols-rounded opacity-5">dashboard</i>
-            <span class="nav-link-text ms-1">Tableau de bord</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="{{ route('admin.create.army') }}">
-            <i class="material-symbols-rounded opacity-5" style="color: red">table_view</i>
-            <span class="nav-link-text ms-1">Ajout d'un corps d'armé</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="{{route('admin.army')}}">
-            <i class="material-symbols-rounded opacity-5">receipt_long</i>
-            <span class="nav-link-text ms-1">Liste des corps d'armé</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/virtual-reality.html">
-            <i class="material-symbols-rounded opacity-5">view_in_ar</i>
-            <span class="nav-link-text ms-1">Virtual Reality</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/rtl.html">
-            <i class="material-symbols-rounded opacity-5">format_textdirection_r_to_l</i>
-            <span class="nav-link-text ms-1">RTL</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/notifications.html">
-            <i class="material-symbols-rounded opacity-5">notifications</i>
-            <span class="nav-link-text ms-1">Notifications</span>
-          </a>
-        </li>
-        <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-dark" href="../pages/profile.html">
-            <i class="material-symbols-rounded opacity-5">person</i>
-            <span class="nav-link-text ms-1">Profile</span>
-          </a>
-        </li>
-  </aside>
+<div id="sidebar" class="active">
+  <div class="sidebar-wrapper active">
+      <div class="sidebar-header">
+          <div class="d-flex justify-content-between">
+              <div class="logo">
+                  <a href="{{ route('admin.dashboard') }}"><img src="assets/images/logo/logo.png" alt="Logo" srcset=""></a>
+              </div>
+              <div class="toggler">
+                  <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+              </div>
+          </div>
+      </div>
+      <div class="sidebar-menu">
+          <ul class="menu">
+              <li class="sidebar-title">Menu</li>
+
+              <li class="sidebar-item active ">
+                  <a href="{{ route('admin.dashboard') }}" class='sidebar-link'>
+                      <i class="bi bi-grid-fill"></i>
+                      <span>Tableau de bord</span>
+                  </a>
+              </li>
+
+              <li class="sidebar-item  has-sub">
+                  <a href="#" class='sidebar-link'>
+                      <i class="bi bi-stack"></i>
+                      <span>Corps d'armée</span>
+                  </a>
+                  <ul class="submenu ">
+                      <li class="submenu-item ">
+                          <a href="{{ route('admin.create.army') }}">Ajout d'un corps</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="{{ route('admin.army') }}">Listes des corps</a>
+                      </li>
+                  </ul>
+              </li>
+
+              <li class="sidebar-item  has-sub">
+                  <a href="#" class='sidebar-link'>
+                      <i class="bi bi-collection-fill"></i>
+                      <span>Extra Components</span>
+                  </a>
+                  <ul class="submenu ">
+                      <li class="submenu-item ">
+                          <a href="extra-component-avatar.html">Avatar</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="extra-component-sweetalert.html">Sweet Alert</a>
+                      </li>
+                  </ul>
+              </li>
+
+              
+
+              <li class="sidebar-title">Forms &amp; Tables</li>
+
+              <li class="sidebar-item  has-sub">
+                  <a href="#" class='sidebar-link'>
+                      <i class="bi bi-hexagon-fill"></i>
+                      <span>Form Elements</span>
+                  </a>
+                  <ul class="submenu ">
+                      <li class="submenu-item ">
+                          <a href="form-element-input.html">Input</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="form-element-input-group.html">Input Group</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="form-element-select.html">Select</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="form-element-radio.html">Radio</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="form-element-checkbox.html">Checkbox</a>
+                      </li>
+                      <li class="submenu-item ">
+                          <a href="form-element-textarea.html">Textarea</a>
+                      </li>
+                  </ul>
+              </li>
+
+              <li class="sidebar-item  ">
+                  <a href="form-layout.html" class='sidebar-link'>
+                      <i class="bi bi-file-earmark-medical-fill"></i>
+                      <span>Form Layout</span>
+                  </a>
+              </li>
+          </ul>
+      </div>
+      <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
+  </div>
+</div>
