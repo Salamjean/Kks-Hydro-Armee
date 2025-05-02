@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mazer Admin Dashboard</title>
+    <title>Définir votre accès - {{ config('app.name', 'Laravel') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
@@ -15,53 +14,102 @@
 
 <body>
     <div id="auth">
-
         <div class="row h-100">
             <div class="col-lg-5 col-12">
                 <div id="auth-left">
-                    <div class="auth-logo">
-                        <a href="index.html"><img src="assets/images/logo/logo.png" alt="Logo"></a>
-                    </div>
-                    <h1 class="auth-title">Log in.</h1>
-                    <p class="auth-subtitle mb-5">Log in with your data that you entered during registration.</p>
+                    {{-- <div class="auth-logo">
+                        <a href="#"><img src="{{ asset('assets/images/logo/logo.png') }}" alt="Logo"></a>
+                    </div> --}}
+                    <h1 class="auth-title">Finaliser votre inscription</h1>
+                    <p class="auth-subtitle mb-4">Veuillez entrer le code reçu par email et définir votre mot de passe.</p>
 
-                    <form action="index.html">
-                        <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="text" class="form-control form-control-xl" placeholder="Username">
-                            <div class="form-control-icon">
-                                <i class="bi bi-person"></i>
-                            </div>
+                    {{-- Affichage des erreurs de validation --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
+                    @endif
+                     {{-- Affichage des messages d'erreur généraux --}}
+                     @if(Session::has('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ Session::get('error') }}
+                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    {{-- Formulaire de définition d'accès --}}
+                    <form method="POST" action="{{ route('corps.submit.define.access') }}">
+                        @csrf
+                        {{-- Champ caché pour l'email --}}
+                        <input type="hidden" name="email" value="{{ $email ?? old('email') }}">
+
+                        {{-- Champ Code --}}
                         <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="password" class="form-control form-control-xl" placeholder="Password">
+                            <input type="text" class="form-control form-control-xl @error('code') is-invalid @enderror"
+                                   placeholder="Code reçu par email" name="code" value="{{ old('code') }}" required>
+                            <div class="form-control-icon">
+                                <i class="bi bi-patch-check"></i>
+                            </div>
+                            @error('code')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        {{-- Champ Nouveau Mot de Passe --}}
+                        <div class="form-group position-relative has-icon-left mb-4">
+                            <input type="password" class="form-control form-control-xl @error('password') is-invalid @enderror"
+                                   placeholder="Nouveau mot de passe" name="password" required>
                             <div class="form-control-icon">
                                 <i class="bi bi-shield-lock"></i>
                             </div>
+                            @error('password')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
-                        <div class="form-check form-check-lg d-flex align-items-end">
-                            <input class="form-check-input me-2" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label text-gray-600" for="flexCheckDefault">
-                                Keep me logged in
-                            </label>
+
+                        {{-- Champ Confirmer Mot de Passe --}}
+                        <div class="form-group position-relative has-icon-left mb-4">
+                            <input type="password" class="form-control form-control-xl @error('confirme_password') is-invalid @enderror"
+                                   placeholder="Confirmer le mot de passe" name="confirme_password" required>
+                            <div class="form-control-icon">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                             @error('confirme_password')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
-                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Log in</button>
+
+                         {{-- Optionnel: Champ Photo de profil --}}
+                         {{-- <div class="form-group mb-4">
+                             <label for="profile_picture" class="form-label">Photo de profil (Optionnel)</label>
+                             <input class="form-control" type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                         </div> --}}
+
+
+                        <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Valider et définir le mot de passe</button>
                     </form>
-                    <div class="text-center mt-5 text-lg fs-4">
-                        <p class="text-gray-600">Don't have an account? <a href="auth-register.html"
-                                class="font-bold">Sign
-                                up</a>.</p>
-                        <p><a class="font-bold" href="auth-forgot-password.html">Forgot password?</a>.</p>
-                    </div>
+
                 </div>
             </div>
             <div class="col-lg-7 d-none d-lg-block">
-                <div id="auth-right">
-
-                </div>
+                <div id="auth-right" style="display: flex; justify-content: center; align-items: center; background: #f2f7ff;">
+                     {{-- Vous pouvez mettre une image pertinente ici --}}
+                     <img src="{{ asset('path/to/your/image.jpg') }}" alt="Illustration" style="max-width: 80%; max-height: 80%; object-fit: contain;">
+                 </div>
             </div>
         </div>
-
     </div>
+    <script src="{{ asset('assetsSEA/js/bootstrap.bundle.min.js') }}"></script> {{-- Ajout pour les alertes dismissible --}}
 </body>
-
 </html>

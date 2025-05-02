@@ -53,7 +53,7 @@ return [
 
         'corps' => [
             'driver' => 'session',
-            'provider' => 'corps',
+            'provider' => 'corps_armes',
         ],
     ],
 
@@ -90,9 +90,9 @@ return [
             'model' => env('AUTH_MODEL', App\Models\Admin::class),
         ],
 
-        'corps' => [
+        'corps_armes' => [ // **Le provider pour les Corps d'Armée**
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\CorpsArme::class),
+            'model' => App\Models\CorpsArme::class, // Pointe vers votre modèle CorpsArme
         ],
 
         // 'users' => [
