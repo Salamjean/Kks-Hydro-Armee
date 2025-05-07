@@ -2,58 +2,55 @@
 
 namespace App\Models;
 
-// use Illuminate\Database\Eloquent\Model; // Supprimer ou commenter cette ligne
-use Illuminate\Foundation\Auth\User as Authenticatable; // Utiliser Authenticatable
-use Illuminate\Notifications\Notifiable; // Si vous utilisez les notifications Laravel
-use Laravel\Sanctum\HasApiTokens; // Si vous prévoyez d'utiliser Sanctum pour les API
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany; // Importer HasMany
 
-// Remplacer 'extends Model' par 'extends Authenticatable'
 class CorpsArme extends Authenticatable
 {
-    // Ajouter le trait Notifiable si vous envoyez des notifications au modèle CorpsArme
     use Notifiable;
-    // Ajouter HasApiTokens si nécessaire
-    // use HasApiTokens, Notifiable;
 
-    /**
-     * Le nom de la table associée au modèle.
-     * Laravel essaie de deviner 'corps_armes', mais c'est bien de le spécifier.
-     * @var string
-     */
-    protected $table = 'corps_armes'; // Assurez-vous que c'est le bon nom de table
+    protected $table = 'corps_armes';
 
-    /**
-     * Les attributs qui peuvent être assignés en masse.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
+        'name', // 'name' au lieu de 'nom' ? A vérifier
         'email',
         'localisation',
         'password',
-        // 'profile_picture', // Ajoutez si vous avez ce champ
+        //'profile_picture',
     ];
 
-    /**
-     * Les attributs qui doivent être cachés pour les sérialisations.
-     * Important pour la sécurité, notamment le mot de passe.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
-        'remember_token', // Laravel utilise ce champ
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     /**
-     * Les attributs qui doivent être castés.
-     *
-     * @var array<string, string>
+     * Relation: Un CorpsArme peut avoir plusieurs Services.
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime', // Si vous ajoutez la vérification d'email Laravel
-        'password' => 'hashed', // Indique à Laravel que ce champ est hashé (depuis L10+)
-                                 // Si version < L10, le hashing est géré manuellement comme vous le faites déjà
-    ];
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+     /**
+      * Relation: Un CorpsArme peut avoir plusieurs Personnels.
+      */
+    public function personnels(): HasMany
+    {
+        return $this->hasMany(Personnel::class);
+    }
+
+     /**
+      * Relation: Un CorpsArme peut avoir plusieurs transactions Carburant associées.
+      */
+    public function carburants(): HasMany
+    {
+        return $this->hasMany(Carburant::class);
+    }
 }

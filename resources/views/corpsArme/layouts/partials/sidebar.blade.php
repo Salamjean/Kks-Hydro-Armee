@@ -43,66 +43,81 @@
                 <li class="sidebar-title">Menu Principal</li>
 
                 <li class="sidebar-item {{ request()->routeIs('corps.dashboard') || request()->routeIs('corps.gendarmerie.dashboard') ? 'active' : '' }} ">
-                    {{-- Ajustez le nom de la route si nécessaire --}}
-                    <a href="{{ route('corps.gendarmerie.dashboard') }}" class='sidebar-link'>
+                    <a href="{{ route('corps.gendarmerie.dashboard') }}" class='sidebar-link'> {{-- Ajuster la route si dynamique --}}
                         <i class="bi bi-grid-fill"></i>
                         <span>Tableau de Bord</span>
                     </a>
                 </li>
 
-                <li class="sidebar-title">Gestion</li>
-
-                 {{-- Exemple Gestion Pompistes (lié à votre demande) --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('corps.pompistes.*') ? 'active' : '' }}">
+                {{-- Nouvelle Section Gestion Carburant --}}
+                <li class="sidebar-title">Gestion Carburant</li>
+                 <li class="sidebar-item has-sub {{ request()->routeIs('corps.carburant.*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-fuel-pump-fill"></i>
-                        <span>Gestion Carburant</span>
+                        <span>Carburant</span>
                     </a>
-                    <ul class="submenu {{ request()->routeIs('corps.pompistes.*') ? 'active' : '' }}">
-                         {{-- TODO: Créer ces routes plus tard --}}
-                        <li class="submenu-item {{ request()->routeIs('corps.pompistes.create') ? 'active' : '' }}">
-                            <a href="#">Créer Pompiste</a> {{-- Remplacez # par route('corps.pompistes.create') --}}
+                    <ul class="submenu {{ request()->routeIs('corps.carburant.*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->routeIs('corps.carburant.create') ? 'active' : '' }}">
+                            <a href="#">Nouvelle Transaction</a> {{-- -> route('corps.carburant.create') --}}
                         </li>
-                        <li class="submenu-item {{ request()->routeIs('corps.pompistes.index') ? 'active' : '' }}">
-                            <a href="#">Liste des Pompistes</a> {{-- Remplacez # par route('corps.pompistes.index') --}}
+                        <li class="submenu-item {{ request()->routeIs('corps.carburant.index') ? 'active' : '' }}">
+                            <a href="#">Historique Transactions</a> {{-- -> route('corps.carburant.index') --}}
                         </li>
                          <li class="submenu-item ">
-                            <a href="#">Suivi Consommation</a>
+                            <a href="#">Suivi Inventaire</a> {{-- -> route('corps.carburant.inventaire') --}}
                         </li>
                     </ul>
                 </li>
 
-                 {{-- Exemple Gestion Personnel --}}
-                 <li class="sidebar-item has-sub">
+
+                {{-- Nouvelle Section Gestion Personnel --}}
+                <li class="sidebar-title">Gestion Ressources</li>
+                 <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-people-fill"></i>
-                        <span>Gestion Personnel</span>
+                        <span>Personnel</span>
                     </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">Liste du Personnel</a>
+                    <ul class="submenu {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+                        <li class="submenu-item {{ request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
+                            <a href="#">Ajouter Employé</a> {{-- -> route('corps.personnel.create') --}}
                         </li>
-                        <li class="submenu-item ">
-                            <a href="#">Ajouter Agent</a>
+                        <li class="submenu-item {{ request()->routeIs('corps.personnel.index') ? 'active' : '' }}">
+                            <a href="#">Liste Employés</a> {{-- -> route('corps.personnel.index') --}}
                         </li>
                     </ul>
                 </li>
 
-                 {{-- Exemple Gestion Matériel --}}
-                 <li class="sidebar-item has-sub">
+                 {{-- Nouvelle Section Gestion Services --}}
+                 <li class="sidebar-item has-sub {{ request()->routeIs('corps.services.*') ? 'active' : '' }}">
                     <a href="#" class='sidebar-link'>
-                        <i class="bi bi-truck"></i>
-                        <span>Gestion Matériel</span>
+                        <i class="bi bi-building"></i>
+                        <span>Services</span>
                     </a>
-                    <ul class="submenu ">
-                        <li class="submenu-item ">
-                            <a href="#">Véhicules</a>
+                    <ul class="submenu {{ request()->routeIs('corps.services.*') ? 'active' : '' }}">
+                         <li class="submenu-item {{ request()->routeIs('corps.services.create') ? 'active' : '' }}">
+                            <a href="#">Ajouter Service</a> {{-- -> route('corps.services.create') --}}
+                        </li>
+                        <li class="submenu-item {{ request()->routeIs('corps.services.index') ? 'active' : '' }}">
+     <a href="{{ route('corps.services.index') }}">Liste des Services</a> {{-- Vérifie cette ligne --}}
+ </li>
+                    </ul>
+                </li>
+
+                {{-- Nouvelle Section Gestion Distributeurs --}}
+                <li class="sidebar-item has-sub {{ request()->routeIs('corps.distributeurs.*') ? 'active' : '' }}">
+                    <a href="#" class='sidebar-link'>
+                        <i class="bi bi-truck"></i> {{-- Ou une icône de pompe --}}
+                        <span>Distributeurs</span>
+                    </a>
+                    <ul class="submenu {{ request()->routeIs('corps.distributeurs.*') ? 'active' : '' }}">
+                         <li class="submenu-item {{ request()->routeIs('corps.distributeurs.create') ? 'active' : '' }}">
+                            <a href="#">Ajouter Distributeur</a> {{-- -> route('corps.distributeurs.create') --}}
+                        </li>
+                        <li class="submenu-item {{ request()->routeIs('corps.distributeurs.index') ? 'active' : '' }}">
+                            <a href="#">Liste Distributeurs</a> {{-- -> route('corps.distributeurs.index') --}}
                         </li>
                         <li class="submenu-item ">
-                            <a href="#">Armement</a>
-                        </li>
-                         <li class="submenu-item ">
-                            <a href="#">Autres Équipements</a>
+                            <a href="#">Maintenance</a> {{-- -> route('corps.distributeurs.maintenance') --}}
                         </li>
                     </ul>
                 </li>
@@ -113,7 +128,6 @@
                         <span>Rapports</span>
                     </a>
                 </li>
-
 
                 <li class="sidebar-title">Compte</li>
 
