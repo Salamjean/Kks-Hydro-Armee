@@ -42,8 +42,36 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        // Logique à ajouter
+        // Règles de validation
+        $validatedData = $request->validate([
+            'nom' => 'required|string|max:255|unique:services,nom,NULL,id,corps_arme_id,' . Auth::guard('corps')->id(),
+            'localisation' => 'required|string|max:255',
+            'form_type' => 'sometimes|string', // Valider le champ caché
+        ], [
+            'nom.required' => 'Le nom du service est obligatoire.',
+            'nom.unique' => 'Un service avec ce nom existe déjà pour ce corps d\'armée.',
+            'localisation.required' => 'La localisation est obligatoire.',
+        ]);
+
+        try {
+            $service = new Service();
+            $service->nom = $validatedData['nom'];
+            $service->localisation = $validatedData['localisation'];
+            // Assigner l'ID du Corps d'Armée de l'utilisateur connecté
+            $service->corps_arme_id = Auth::guard('corps')->id();
+            $service->save();
+
+            return redirect()->route('corps.services.index')
+                             ->with('success', 'Service "' . $service->nom . '" ajouté avec succès !');
+
+        } catch (\Exception $e) {
+            // Log::error("Erreur lors de la création du service: " . $e->getMessage()); // Optionnel: Logger l'erreur
+            return redirect()->route('corps.services.index')
+                             ->withErrors(['error' => 'Une erreur est survenue lors de la création du service.'])
+                             ->withInput(); // Redirige avec les anciennes entrées pour pré-remplir
+        }
     }
+
 
     /**
      * Display the specified resource.

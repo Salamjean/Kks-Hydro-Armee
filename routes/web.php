@@ -4,6 +4,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CorpsArmeController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Corps\ServiceController; 
+use App\Http\Controllers\Corps\PersonnelController;
+use App\Http\Controllers\Corps\DistributeurController;
+use App\Http\Controllers\Corps\CarburantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -97,24 +100,31 @@ Route::prefix('corps')->name('corps.')->group(function () { // Groupe principal 
         // --- Gestion des Services ---
         // **CETTE LIGNE EST MAINTENANT AU BON ENDROIT**
         Route::resource('services', ServiceController::class);
-        // Elle va générer :
-        // - URI: /corps/services, Nom: corps.services.index
-        // - URI: /corps/services/create, Nom: corps.services.create
-        // - etc.
-        // Et toutes ces routes auront le middleware auth:corps
+        Route::resource('services', ServiceController::class)->except([
+            'create', // On n'utilise plus la page /services/create
+            // 'show' // Tu peux aussi exclure show si tu ne l'utilises pas
+        ]);
+         // --- Gestion des Distributeurs ---
+        // **CETTE LIGNE DOIT ÊTRE ICI**
+        Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
 
-        // --- Routes pour les autres sections (à ajouter ICI plus tard) ---
-        // Route::resource('personnel', PersonnelController::class);
-        // Route::resource('distributeurs', DistributeurController::class);
-        // Route::resource('carburant', CarburantController::class);
+        // --- Gestion du Personnel ---
+ Route::resource('personnel', PersonnelController::class)->except(['show']);
+
+  // --- Gestion des Transactions Carburant ---
+  Route::resource('carburants', CarburantController::class)->except(['show']); // 'create' géré par modale
+  
+}); // Fin du groupe prefix('corps')->name('corps.')
+
 
 
         // Route de déconnexion
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout'); // URI: /corps/logout, Nom: corps.logout (POST est mieux)
 
     }); // Fin du groupe middleware('auth:corps')
+ 
 
-}); // Fin du groupe prefix('corps')->name('corps.')
+ 
 
 
 // Supprime ce bloc redondant si dashboard et logout sont déjà dans le groupe principal protégé

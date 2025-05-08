@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template') {{-- Utilise ton layout principal --}}
+@extends('corpsArme.layouts.template')
 
 @section('title', 'Liste des Services')
 
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    {{-- Affichage des messages de succès --}}
+    {{-- Message de succès --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
@@ -32,10 +32,12 @@
     <section class="section">
         <div class="card">
             <div class="card-header">
-                <a href="{{ route('corps.services.create') }}" class="btn btn-primary">
+                {{-- Bouton pour ouvrir la modale --}}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createServiceModal">
                     <i class="bi bi-plus-lg"></i> Ajouter un Service
-                </a>
+                </button>
             </div>
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover" id="table1">
@@ -48,24 +50,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- Boucle sur les services passés par le contrôleur --}}
                             @forelse ($services as $service)
                                 <tr>
                                     <td>{{ $service->nom }}</td>
                                     <td>{{ $service->localisation }}</td>
                                     <td>{{ $service->created_at->format('d/m/Y H:i') }}</td>
                                     <td class="text-center">
-                                        {{-- Bouton Modifier --}}
+                                        {{-- Modifier --}}
                                         <a href="{{ route('corps.services.edit', $service->id) }}" class="btn btn-sm btn-info" title="Modifier">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 
-                                        {{-- Bouton Supprimer (avec confirmation) --}}
+                                        {{-- Supprimer --}}
                                         <button type="button" class="btn btn-sm btn-danger" title="Supprimer"
                                                 onclick="confirmDelete({{ $service->id }})">
                                             <i class="bi bi-trash-fill"></i>
                                         </button>
-                                        {{-- Formulaire caché pour la suppression --}}
+
+                                        {{-- Formulaire suppression --}}
                                         <form id="delete-form-{{ $service->id }}" action="{{ route('corps.services.destroy', $service->id) }}" method="POST" style="display: none;">
                                             @csrf
                                             @method('DELETE')
@@ -73,7 +75,6 @@
                                     </td>
                                 </tr>
                             @empty
-                                {{-- Message si aucun service n'est trouvé --}}
                                 <tr>
                                     <td colspan="4" class="text-center">Aucun service trouvé pour ce corps d'armée.</td>
                                 </tr>
@@ -81,17 +82,58 @@
                         </tbody>
                     </table>
                 </div>
-                {{-- Liens de pagination --}}
+
+                {{-- Pagination --}}
                 <div class="mt-3">
                     {{ $services->links() }}
                 </div>
             </div>
         </div>
     </section>
+
+    {{-- Modale d'ajout --}}
+    <div class="modal fade" id="createServiceModal" tabindex="-1" aria-labelledby="createServiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createServiceModalLabel">Ajouter un Nouveau Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form action="{{ route('corps.services.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="form_type" value="create_service">
+                    <div class="modal-body">
+                        {{-- Nom du service --}}
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom du Service <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nom') is-invalid @enderror" id="nom" name="nom" value="{{ old('nom') }}" required>
+                            @error('nom')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Localisation --}}
+                        <div class="mb-3">
+                            <label for="localisation" class="form-label">Localisation <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="localisation" name="localisation" value="{{ old('localisation') }}" required>
+                            @error('localisation')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer le Service</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
-{{-- Ajout de script pour la confirmation de suppression --}}
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -107,10 +149,15 @@
                 cancelButtonText: 'Annuler'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Soumettre le formulaire de suppression correspondant
                     document.getElementById('delete-form-' + serviceId).submit();
                 }
-            })
+            });
         }
+
+        // Afficher la modale automatiquement en cas d'erreurs de validation
+        @if($errors->any())
+            var createModal = new bootstrap.Modal(document.getElementById('createServiceModal'));
+            createModal.show();
+        @endif
     </script>
 @endsection
