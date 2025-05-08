@@ -114,5 +114,40 @@
 
     {{-- Scripts spécifiques à la page --}}
     @yield('scripts')
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des menus dérounants de la sidebar
+    const dropdownTriggers = document.querySelectorAll('.sidebar-item.has-sub > a');
+    
+    dropdownTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parent = this.parentElement;
+            const submenu = parent.querySelector('.submenu');
+            
+            // Ferme les autres sous-menus
+            document.querySelectorAll('.sidebar-item.has-sub').forEach(item => {
+                if (item !== parent) {
+                    item.classList.remove('active');
+                    item.querySelector('.submenu').style.display = 'none';
+                }
+            });
+
+            // Ouvre/ferme le sous-menu actuel
+            parent.classList.toggle('active');
+            submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Gestion du burger menu pour mobile
+    const burgerBtn = document.querySelector('.burger-btn');
+    const sidebar = document.getElementById('sidebar');
+    
+    burgerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        sidebar.classList.toggle('active');
+    });
+});
+</script>
 </body>
 </html>
