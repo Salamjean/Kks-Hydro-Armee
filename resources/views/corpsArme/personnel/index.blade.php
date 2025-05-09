@@ -51,42 +51,35 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tablePersonnel">
-                    <thead>
-                        <tr>
-                            <th>Matricule</th>
-                            <th>Nom Complet</th>
-                            <th>Email</th>
-                            <th>Service</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($personnels as $personnel)
-                            <tr>
-                                <td>{{ $personnel->matricule }}</td>
-                                <td>{{ $personnel->nom_complet }}</td> {{-- Utilise l'accesseur --}}
-                                <td>{{ $personnel->email ?? 'N/A' }}</td>
-                                <td>{{ $personnel->service->nom ?? 'Aucun service' }}</td> {{-- Affiche le nom du service lié --}}
-                                <td class="text-center">
-                                    <a href="{{-- route('corps.personnel.edit', $personnel->id) --}}#" class="btn btn-sm btn-info" title="Modifier">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" title="Supprimer"
-                                            onclick="confirmDeletePersonnel({{ $personnel->id }}, '{{ $personnel->nom_complet }}')">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                    <form id="delete-personnel-form-{{ $personnel->id }}" action="{{-- route('corps.personnel.destroy', $personnel->id) --}}#" method="POST" style="display: none;">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center">Aucun personnel trouvé pour ce corps d'armée.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                <thead>
+    <tr>
+        <th>Matricule</th>
+        <th>Nom Complet</th>
+        <th>Email</th>
+        <!-- <th>Service</th> -->
+        <th>Soute</th> {{-- <<--- NOUVELLE COLONNE --}}
+        <th class="text-center">Actions</th>
+    </tr>
+</thead>
+<tbody>
+    @forelse ($personnels as $personnel)
+        <tr>
+            <td>{{ $personnel->matricule }}</td>
+            <td>{{ $personnel->nom_complet }}</td>
+            <td>{{ $personnel->email ?? 'N/A' }}</td>
+            <!-- <td>{{ $personnel->service->nom ?? 'N/A' }}</td> {{-- Si tu gardes service --}} -->
+            <td>{{ $personnel->soute->nom ?? 'Aucune soute' }}</td> {{-- <<--- AFFICHER SOUTE --}}
+            <td class="text-center">
+                {{-- ... actions ... --}}
+            </td>
+        </tr>
+    @empty
+        <tr>
+            {{-- Ajuster colspan si tu as gardé service --}}
+            <td colspan="6" class="text-center">Aucun personnel trouvé.</td>
+        </tr>
+    @endforelse
+</tbody>
                 </table>
             </div>
             <div class="mt-3">
@@ -142,7 +135,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="service_id" class="form-label">Service de rattachement</label>
                         <select class="form-select @error('service_id') is-invalid @enderror" id="service_id" name="service_id">
                             <option value="">-- Sélectionner un service (Optionnel) --</option>
@@ -153,7 +146,22 @@
                             @endforeach
                         </select>
                         @error('service_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                    </div> -->
+                    {{-- Champ Soute --}}
+<div class="mb-3">
+    <label for="soute_id" class="form-label">Soute de rattachement</label>
+    <select class="form-select @error('soute_id') is-invalid @enderror" id="soute_id" name="soute_id">
+        <option value="">-- Sélectionner une soute (Optionnel) --</option>
+        @if(isset($soutes)) {{-- Vérifie que la variable existe --}}
+            @foreach ($soutes as $soute)
+                <option value="{{ $soute->id }}" {{ old('soute_id') == $soute->id ? 'selected' : '' }}>
+                    {{ $soute->nom }} ({{ $soute->localisation ?? '' }})
+                </option>
+            @endforeach
+        @endif
+    </select>
+    @error('soute_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

@@ -86,86 +86,72 @@
              {{-- ======================================================================= --}}
 
 
-                {{-- Section Gestion Carburant --}}
-                <li class="sidebar-title">Gestion Carburant</li>
-                {{-- Dans sidebar.blade.php, Section Gestion Carburant --}}
-<li class="sidebar-item has-sub {{ request()->routeIs('corps.carburants.*') ? 'active' : '' }}">
+             {{-- NOUVELLE ORGANISATION --}}
+<li class="sidebar-title">Gestion Infrastructure</li>
+
+{{-- Section Gestion Soutes --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
     <a href="#" class='sidebar-link'>
-        <i class="bi bi-fuel-pump-fill"></i>
-        <span>Carburant</span>
+        <i class="bi bi-hdd-stack-fill"></i>
+        <span>Soutes</span>
     </a>
-    <ul class="submenu {{ request()->routeIs('corps.carburants.*') ? 'active' : '' }}">
-        <li class="submenu-item {{ request()->routeIs('corps.carburants.index') ? 'active' : '' }}">
-            {{-- Pour "Nouvelle Transaction", on va sur la page index qui contient la modale --}}
-            <a href="{{ route('corps.carburants.index') }}">Nouvelle Transaction</a>
+    <ul class="submenu {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
+        <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
+            <a href="{{ route('corps.soutes.index') }}">Ajouter/Liste Soutes</a>
         </li>
-        <li class="submenu-item {{ request()->routeIs('corps.carburants.index') ? 'active' : '' }}">
-            <a href="{{ route('corps.carburants.index') }}">Historique Transactions</a>
-        </li>
-        <li class="submenu-item ">
-            <a href="#">Suivi Inventaire</a> {{-- Pour plus tard --}}
-        </li>
+        {{-- J'ai fusionné "Ajouter" et "Liste" car la modale sera sur la page index --}}
     </ul>
 </li>
 
-
-                {{-- Section Gestion Ressources --}}
-                <li class="sidebar-title">Gestion Ressources</li>
-              
+{{-- Section Gestion Personnel (reste similaire, mais le contexte change un peu) --}}
 <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
     <a href="#" class='sidebar-link'>
         <i class="bi bi-people-fill"></i>
-        <span>Personnel</span>
+        <span>Pompiste</span>
     </a>
     <ul class="submenu {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
         <li class="submenu-item {{ request()->routeIs('corps.personnel.index') ? 'active' : '' }}">
-            {{-- Pour "Ajouter Employé", on va sur la page index qui contient la modale --}}
-            <a href="{{ route('corps.personnel.index') }}">Ajouter Employé</a>
+            <a href="{{ route('corps.personnel.index') }}">Ajouter Pompiste</a>
         </li>
         <li class="submenu-item {{ request()->routeIs('corps.personnel.index') ? 'active' : '' }}">
-            <a href="{{ route('corps.personnel.index') }}">Liste Employés</a>
+            <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
         </li>
     </ul>
 </li>
 
-                 {{-- Section Gestion Services --}}
-                 <li class="sidebar-item has-sub {{ request()->routeIs('corps.services.*') ? 'active' : '' }}">
-                    <a href="#" class='sidebar-link'>
-                        <i class="bi bi-building"></i>
-                        <span>Services</span>
-                    </a>
-                    <ul class="submenu {{ request()->routeIs('corps.services.*') ? 'active' : '' }}">
-                         <li class="submenu-item {{ request()->routeIs('corps.services.create') ? 'active' : '' }}">
-                           {{-- Lien pour MODALE : Doit être un bouton, ou un lien géré par JS, ou pointer vers la page index --}}
-                           {{-- Pour l'instant, on le laisse pointer vers la page index qui CONTIENT la modale --}}
-                            <a href="{{ route('corps.services.index') }}">Ajouter Service</a>
-                        </li>
-                        <li class="submenu-item {{ request()->routeIs('corps.services.index') ? 'active' : '' }}">
-                           <a href="{{ route('corps.services.index') }}">Liste des Services</a>
-                       </li>
-                    </ul>
-                </li>
+ <!-- <li class="sidebar-title">Opérations Carburant</li>
 
-                {{-- Section Gestion Distributeurs --}}
-                <li class="sidebar-item has-sub {{ request()->routeIs('corps.distributeurs.*') ? 'active' : '' }}">
+{{-- Section Gestion Distributeurs (Pompes) - Maintenant lié aux Soutes --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('corps.distributeurs.*') ? 'active' : '' }}">
     <a href="#" class='sidebar-link'>
-        <i class="bi bi-truck"></i>
-        <span>Distributeurs</span>
+        <i class="bi bi-truck"></i> 
+        <span>Distributeurs (Pompes)</span>
     </a>
     <ul class="submenu {{ request()->routeIs('corps.distributeurs.*') ? 'active' : '' }}">
          <li class="submenu-item {{ request()->routeIs('corps.distributeurs.index') ? 'active' : '' }}">
-            {{-- On va sur la page index qui contient la modale --}}
             <a href="{{ route('corps.distributeurs.index') }}">Ajouter Distributeur</a>
         </li>
         <li class="submenu-item {{ request()->routeIs('corps.distributeurs.index') ? 'active' : '' }}">
             <a href="{{ route('corps.distributeurs.index') }}">Liste Distributeurs</a>
         </li>
-        <li class="submenu-item ">
-            <a href="#">Maintenance</a>
+    </ul>
+</li> -->
+
+<!-- {{-- Section Gestion Carburant (Transactions) --}}
+<li class="sidebar-item has-sub {{ request()->routeIs('corps.carburants.*') ? 'active' : '' }}">
+    <a href="#" class='sidebar-link'>
+        <i class="bi bi-fuel-pump-fill"></i>
+        <span>Transactions Carburant</span>
+    </a>
+    <ul class="submenu {{ request()->routeIs('corps.carburants.*') ? 'active' : '' }}">
+        <li class="submenu-item {{ request()->routeIs('corps.carburants.index') ? 'active' : '' }}">
+            <a href="{{ route('corps.carburants.index') }}">Nouvelle Transaction</a>
+        </li>
+        <li class="submenu-item {{ request()->routeIs('corps.carburants.index') ? 'active' : '' }}">
+            <a href="{{ route('corps.carburants.index') }}">Historique Transactions</a>
         </li>
     </ul>
-</li>
-
+</li>  // -->
                  <li class="sidebar-item">
                     <a href="#" class='sidebar-link'>
                         <i class="bi bi-file-earmark-text-fill"></i>

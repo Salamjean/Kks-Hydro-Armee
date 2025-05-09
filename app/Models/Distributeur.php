@@ -15,32 +15,20 @@ class Distributeur extends Model
         'identifiant',
         'type',
         'capacite',
-        'niveau_actuel', // Si ajouté
-        'service_id',
-        // 'personnel_assigne_id', // Si ajouté
+        'niveau_actuel',
+        'soute_id', // <<--- MODIFIÉ (anciennement service_id)
     ];
 
     /**
-     * Relation: Un distributeur appartient à un Service.
+     * Relation: Un distributeur appartient à une Soute.
      */
-    public function service(): BelongsTo
+    public function soute(): BelongsTo // <<--- MODIFIÉ
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Soute::class);
     }
 
-    /**
-     * Relation: Un distributeur peut être utilisé dans plusieurs transactions Carburant.
-     */
     public function carburants(): HasMany
     {
         return $this->hasMany(Carburant::class);
     }
-
-    // /**
-    //  * Relation: Un distributeur peut avoir un Personnel principal assigné.
-    //  */
-    // public function personnelAssigne(): BelongsTo
-    // {
-    //     return $this->belongsTo(Personnel::class, 'personnel_assigne_id');
-    // }
 }

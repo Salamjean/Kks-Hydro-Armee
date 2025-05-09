@@ -7,6 +7,9 @@ use App\Http\Controllers\Corps\ServiceController;
 use App\Http\Controllers\Corps\PersonnelController;
 use App\Http\Controllers\Corps\DistributeurController;
 use App\Http\Controllers\Corps\CarburantController;
+use App\Http\Controllers\Corps\SouteController; 
+use App\Http\Controllers\Soute\SoutePersonnelLoginController; // <<--- AJOUTE CET IMPORT
+use App\Http\Controllers\Soute\SouteDashboardController; // <<--- AJOUTE CET IMPORT (pour plus tard)
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect; // Ajouté
 
@@ -113,13 +116,39 @@ Route::prefix('corps')->name('corps.')->group(function () {
         Route::resource('personnel', PersonnelController::class)->except(['create','show']);
         Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
         Route::resource('carburants', CarburantController::class)->except(['create', 'show']);
-
+// --- Gestion des Soutes ---
+Route::resource('soutes', SouteController::class)->except(['show']); // 'create' géré par modale
         // Déconnexion (doit être DANS ce groupe)
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout');
 
     }); // Fin du groupe middleware('auth:corps')
 
 }); // Fin du groupe prefix('corps')->name('corps.')
+
+Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
+   // Appliquer le middleware guest:personnel_soute ici
+   Route::middleware('guest:personnel_soute')->group(function() {
+    Route::get('/login', [SoutePersonnelLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [SoutePersonnelLoginController::class, 'login'])->name('handleLogin');
+});
+
+    // Page de définition du mot de passe (pour la première connexion)
+    Route::get('/set-password', [SoutePersonnelLoginController::class, 'showSetPasswordForm'])->name('set.password')->middleware('auth:personnel_soute'); // Doit être connecté avec mdp null
+    Route::post('/set-password', [SoutePersonnelLoginController::class, 'setPassword'])->name('handleSet.password')->middleware('auth:personnel_soute');
+
+    // Routes protégées du dashboard soute
+    Route::middleware('auth:personnel_soute', 'hasSoutePasswordSet')->group(function() { // 'hasSoutePasswordSet' est un middleware custom
+        Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
+        Route::post('/logout', [SoutePersonnelLoginController::class, 'logout'])->name('logout');
+        // ... autres routes du dashboard soute ...
+    });
+      // --- Routes Protégées du Dashboard Soute (nécessitent mot de passe défini) ---
+      Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
+        // La route du dashboard principal pour la soute
+        Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
+        // ... ajoute ici d'autres routes spécifiques au dashboard de la soute ...
+    });
+});
 
 // Le bloc suivant est redondant si les routes dashboard et logout sont bien dans le groupe protégé ci-dessus
  Route::middleware('auth:corps')->group(function(){

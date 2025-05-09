@@ -11,8 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+    
+            'hasSoutePasswordSet' => \App\Http\Middleware\HasSoutePasswordSet::class, // <<--- AJOUTE CETTE LIGNE
+        ]);
     })
+        //
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

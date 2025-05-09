@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // <--- CETTE LIGNE EST IMPORTANTE ET DOIT ÊTRE PRÉSENTE
 use Illuminate\Validation\Rule;     // Tu l'auras besoin pour la méthode store
 use App\Models\Personnel;
+use App\Models\Soute;
 use App\Models\Service;
 
 class PersonnelController extends Controller
@@ -15,25 +16,27 @@ class PersonnelController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        // Maintenant, Auth::guard() devrait fonctionner correctement
-        $userCorpsArmeId = Auth::guard('corps')->id();
+{
+    $userCorpsArmeId = Auth::guard('corps')->id();
 
-        // Récupère le personnel appartenant à ce corps d'armée
-        // avec la relation 'service' pour afficher le nom du service
-        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
-                            ->with('service') // Eager load la relation service
-                            ->orderBy('nom', 'asc')
-                            ->orderBy('prenom', 'asc')
-                            ->paginate(10);
+    $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                        ->with(['service', 'soute']) // <<--- AJOUTER 'soute'
+                        ->orderBy('nom', 'asc')
+                        ->orderBy('prenom', 'asc')
+                        ->paginate(10);
 
-        // Récupère les services du corps d'armée pour le formulaire de la modale
-        $services = Service::where('corps_arme_id', $userCorpsArmeId)
-                           ->orderBy('nom', 'asc')
-                           ->get();
+    // Services (si tu les utilises toujours pour le personnel)
+    $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                       ->orderBy('nom', 'asc')
+                       ->get();
 
-        return view('corpsArme.personnel.index', compact('personnels', 'services'));
-    }
+    // Soutes pour le select dans la modale de création de personnel
+    $soutes = Soute::where('corps_arme_id', $userCorpsArmeId) // <<--- NOUVEAU
+                     ->orderBy('nom', 'asc')
+                     ->get();
+
+    return view('corpsArme.personnel.index', compact('personnels', 'services', 'soutes'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -79,6 +82,13 @@ class PersonnelController extends Controller
                     return $query->where('corps_arme_id', $userCorpsArmeId);
                 }),
             ],
+            'soute_id' => [ // <<--- NOUVELLE VALIDATION
+                'nullable',
+                'integer',
+                Rule::exists('soutes', 'id')->where(function ($query) use ($userCorpsArmeId) {
+                    return $query->where('corps_arme_id', $userCorpsArmeId); // La soute doit appartenir au corps
+                }),
+            ],
             'form_type' => 'sometimes|string',
         ],[
             'nom.required' => 'Le nom est obligatoire.',
@@ -87,6 +97,7 @@ class PersonnelController extends Controller
             'matricule.unique' => 'Ce matricule est déjà utilisé dans votre corps d\'armée.',
             'email.unique' => 'Cet email est déjà utilisé.',
             'service_id.exists' => 'Le service sélectionné est invalide.',
+            'soute_id.exists' => 'La soute sélectionnée est invalide pour votre corps d\'armée.',
         ]);
 
         try {
@@ -96,7 +107,9 @@ class PersonnelController extends Controller
             $personnel->matricule = $validatedData['matricule'];
             $personnel->email = $validatedData['email'] ?? null; // Mettre à null si vide
             $personnel->service_id = $validatedData['service_id'] ?? null; // Mettre à null si non sélectionné
+            $personnel->soute_id = $validatedData['soute_id'] ?? null;
             $personnel->corps_arme_id = $userCorpsArmeId; // Assigner le corps de l'utilisateur connecté
+            $personnel->password = null;
             $personnel->save();
 
             return redirect()->route('corps.personnel.index')
