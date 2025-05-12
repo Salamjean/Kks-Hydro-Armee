@@ -10,6 +10,10 @@ use App\Http\Controllers\Corps\CarburantController;
 use App\Http\Controllers\Corps\SouteController; 
 use App\Http\Controllers\Soute\SoutePersonnelLoginController; // <<--- AJOUTE CET IMPORT
 use App\Http\Controllers\Soute\SouteDashboardController; // <<--- AJOUTE CET IMPORT (pour plus tard)
+use App\Http\Controllers\CorpsDashboards\GendarmerieDashboardController;
+use App\Http\Controllers\CorpsDashboards\MarineDashboardController;
+use App\Http\Controllers\CorpsDashboards\ArmeeAirDashboardController;
+use App\Http\Controllers\CorpsDashboards\ArmeeTerreDashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect; // Ajouté
 
@@ -78,37 +82,18 @@ Route::prefix('corps')->name('corps.')->group(function () {
     // --- Routes Protégées (nécessitent que l'utilisateur 'corps' soit connecté) ---
     Route::middleware('auth:corps')->group(function () {
 
-        // == CORRECTION DES DASHBOARDS SPÉCIFIQUES ==
-        Route::get('/gendarmerie/dashboard', function () {
-            // Vérifie que le nom correspond EXACTEMENT à la BDD
-            if (Auth::guard('corps')->user()->name !== 'Gendarmerie') {
-                abort(403, 'Accès non autorisé.');
-            }
-            // Assure-toi que la vue existe
-            return view('corpsArme.gendarmerie.dashboard');
-        })->name('gendarmerie.dashboard');
+        // === MODIFICATION : DASHBOARDS SPÉCIFIQUES AVEC CONTRÔLEURS DÉDIÉS ===
+        Route::get('/gendarmerie/dashboard', [GendarmerieDashboardController::class, 'index'])
+            ->name('gendarmerie.dashboard');
 
-        Route::get('/marine/dashboard', function () {
-             // Vérifie que le nom correspond EXACTEMENT à la BDD
-            if (Auth::guard('corps')->user()->name !== 'Marine') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.marine.dashboard');
-        })->name('marine.dashboard');
+        Route::get('/marine/dashboard', [MarineDashboardController::class, 'index'])
+            ->name('marine.dashboard');
 
-        Route::get('/armee-air/dashboard', function () {
-             // Vérifie que le nom correspond EXACTEMENT à la BDD ('Armée-Air' ou 'Armee-Air' ?)
-            if (Auth::guard('corps')->user()->name !== 'Armée-Air') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.armee-air.dashboard');
-        })->name('armee-air.dashboard');
+        Route::get('/armee-air/dashboard', [ArmeeAirDashboardController::class, 'index'])
+            ->name('armee-air.dashboard');
 
-        Route::get('/armee-terre/dashboard', function () {
-            // Vérifie que le nom correspond EXACTEMENT à la BDD ('Armée-Terre' ou 'Armee-Terre' ?)
-            if (Auth::guard('corps')->user()->name !== 'Armée-Terre') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.armee-terre.dashboard');
-        })->name('armee-terre.dashboard');
-        // ==========================================
+        Route::get('/armee-terre/dashboard', [ArmeeTerreDashboardController::class, 'index'])
+            ->name('armee-terre.dashboard');
 
         // Gestion des ressources
         // Correction : Définir chaque resource UNE SEULE FOIS
