@@ -87,8 +87,8 @@
 </div>
 
 <script>
-     // Fonction de confirmation de suppression
-     function confirmDelete(adminId) {
+
+function confirmDelete(adminId) {
             event.preventDefault();
             
             Swal.fire({
@@ -107,6 +107,5 @@
                 }
             });
         }
-    </script>
 </script>
 @endsection 

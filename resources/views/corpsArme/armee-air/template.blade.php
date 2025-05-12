@@ -60,38 +60,38 @@
 </html>
 <style>
 
-.page-body-wrapper {
-    display: flex;
-    min-height: calc(100vh - HauteurDeVotreHeader); 
-    padding-top: HauteurDeVotreHeader;
-    width: 100%;
-}
+        .page-body-wrapper {
+            display: flex;
+            min-height: calc(100vh - HauteurDeVotreHeader); 
+            padding-top: HauteurDeVotreHeader;
+            width: 100%;
+        }
 
-.main-panel {
-    flex-grow: 1;
-    margin-left: 260px; 
-    width: calc(100% - 260px); 
-    min-height: 100%; 
-    padding-top: 0;
-    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
-}
+        .main-panel {
+            flex-grow: 1;
+            margin-left: 260px; 
+            width: calc(100% - 260px); 
+            min-height: 100%; 
+            padding-top: 0;
+            transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out;
+        }
 
-.content-wrapper {
-    padding: 20px;
-    background-color: #f4f4f4;
-    width: 100%;
-    flex-grow: 1;
-}
+        .content-wrapper {
+            padding: 20px;
+            background-color: #f4f4f4;
+            width: 100%;
+            flex-grow: 1;
+        }
 
-body.sidebar-mini .main-panel {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-}
+        body.sidebar-mini .main-panel {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
 
-@media (max-width: 991.98px) {
-    .main-panel {
-        margin-left: 0;
-        width: 100%;
-    }
-}
+        @media (max-width: 991.98px) {
+            .main-panel {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
 </style>

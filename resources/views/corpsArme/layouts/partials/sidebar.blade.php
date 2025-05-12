@@ -25,7 +25,7 @@
                             break;
                         case 'Marine':
                             $dashboardRouteName = 'corps.marine.dashboard';
-                            $logoImagePath = asset('images/logo_marine.png');
+                            $logoImagePath = asset('images/logo_marine.jpeg');
                             $logoAltText = 'Logo Marine';
                             break;
                         case 'Armée-Air':
@@ -37,7 +37,7 @@
                         case 'Armée-Terre':
                         case 'Armée Terre':
                             $dashboardRouteName = 'corps.armee-terre.dashboard';
-                            $logoImagePath = asset('images/logo_armee_terre.png');
+                            $logoImagePath = asset('images/logo_armee_terre.jpeg');
                             $logoAltText = 'Logo Armée de Terre';
                             break;
                     }
@@ -66,28 +66,31 @@
             <li class="sidebar-title">Gestion Infrastructure</li>
 
             <li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
-                <a href="#" class="sidebar-link">
+                <a href="#" class='sidebar-link'>
                     <i class="bi bi-hdd-stack-fill"></i>
                     <span>Soutes</span>
                 </a>
                 <ul class="submenu {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
                     <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
-                        <a href="{{ route('corps.soutes.index') }}">Ajouter / Liste Soutes</a>
+                        <a href="{{ route('corps.soutes.index') }}">Ajouter/Liste Soutes</a>
                     </li>
                 </ul>
             </li>
 
-            <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Pompiste</span>
-                </a>
-                <ul class="submenu {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
-                    <li class="submenu-item {{ request()->routeIs('corps.personnel.index') ? 'active' : '' }}">
-                        <a href="{{ route('corps.personnel.index') }}">Ajouter / Liste Pompiste</a>
-                    </li>
-                </ul>
-            </li>
+           <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+            <a href="#" class='sidebar-link'>
+                <i class="bi bi-people-fill"></i>
+                <span>Pompiste</span>
+            </a>
+            <ul class="submenu">
+                <li class="submenu-item {{ request()->routeIs('corps.personnel.index') || request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
+                    <a href="{{ route('corps.personnel.index') }}">Ajouter Pompiste</a>
+                </li>
+                <li class="submenu-item {{ request()->routeIs('corps.personnel.index', 'corps.personnel.list') ? 'active' : '' }}">
+                    <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
+                </li>
+            </ul>
+        </li>
 
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
@@ -123,4 +126,33 @@
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('active');
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuItems = document.querySelectorAll('.sidebar-item.has-sub > a');
+
+        menuItems.forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const parent = this.parentElement;
+                parent.classList.toggle('active'); // active ouvre/ferme
+
+                // Fermer les autres sous-menus
+                document.querySelectorAll('.sidebar-item.has-sub').forEach(function (other) {
+                    if (other !== parent) {
+                        other.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+
 </script>
+
+<style>
+li {
+    border: none !important;
+    background: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+</style>

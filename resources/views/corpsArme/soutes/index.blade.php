@@ -3,7 +3,6 @@
 @section('title', 'Gestion des Soutes')
 
 @section('content')
-{{-- ... (page-heading, messages de succès/erreur restent pareils) ... --}}
 
 <section class="section">
     <div class="card">
@@ -18,7 +17,7 @@
                     <thead>
                         <tr>
                             <th>Nom</th>
-                            <th>Matricule Soute</th> {{-- <<--- NOUVELLE COLONNE --}}
+                            <th>Matricule Soute</th>
                             <th>Localisation</th>
                             <th>Type Carburant Principal</th>
                             <th>Capacité (L)</th>
@@ -29,17 +28,20 @@
                         @forelse ($soutes as $soute)
                             <tr>
                                 <td>{{ $soute->nom }}</td>
-                                <td>{{ $soute->matricule_soute }}</td> {{-- <<--- AFFICHER MATRICULE --}}
+                                <td>{{ $soute->matricule_soute }}</td>
                                 <td>{{ $soute->localisation ?? 'N/A' }}</td>
                                 <td>{{ $soute->type_carburant_principal ?? 'N/A' }}</td>
                                 <td>{{ $soute->capacite_totale ? number_format($soute->capacite_totale, 2, ',', ' ') : 'N/A' }}</td>
                                 <td class="text-center">
-                                    {{-- ... boutons actions ... --}}
+                                
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Aucune soute trouvée.</td> {{-- colspan augmenté --}}
+                                <td colspan="6" class="text-center">Aucune soute trouvée.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -52,13 +54,12 @@
     </div>
 </section>
 
-{{-- Modale de Création de Soute --}}
 <div class="modal fade" id="createSouteModal" tabindex="-1" aria-labelledby="createSouteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="createSouteModalLabel">Ajouter une Nouvelle Soute</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"> x</button>
             </div>
             <form action="{{ route('corps.soutes.store') }}" method="POST">
                 @csrf
@@ -69,17 +70,17 @@
                         <input type="text" class="form-control @error('nom') is-invalid @enderror" id="soute_nom" name="nom" value="{{ old('nom') }}" required>
                         @error('nom') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    {{-- Le champ Matricule Soute n'est pas dans le formulaire de création car auto-généré --}}
+
                     <div class="mb-3">
                         <label for="soute_localisation" class="form-label">Localisation</label>
                         <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="soute_localisation" name="localisation" value="{{ old('localisation') }}">
                         @error('localisation') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3">
                             <label for="soute_type_carburant" class="form-label">Type Carburant Principal <span class="text-danger">*</span></label>
-                            {{-- MODIFICATION : Champ Select --}}
-                            <select class="form-select @error('type_carburant_principal') is-invalid @enderror" id="soute_type_carburant" name="type_carburant_principal" required>
+                            <select class="form-select custom-select-style @error('type_carburant_principal') is-invalid @enderror" id="soute_type_carburant" name="type_carburant_principal" required>
                                 <option value="">-- Sélectionner un type --</option>
                                 <option value="Diesel" {{ old('type_carburant_principal') == 'Diesel' ? 'selected' : '' }}>Diesel</option>
                                 <option value="Kerozen" {{ old('type_carburant_principal') == 'Kerozen' ? 'selected' : '' }}>Kérosène</option>
@@ -87,20 +88,22 @@
                             </select>
                             @error('type_carburant_principal') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="soute_capacite" class="form-label">Capacité Totale (Litres)</label>
-                                <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}">
-                                @error('capacite_totale') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="soute_capacite" class="form-label">Capacité Totale (Litres)</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}">
+                            @error('capacite_totale') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label for="soute_description" class="form-label">Description</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" id="soute_description" name="description" rows="3">{{ old('description') }}</textarea>
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
+
+                {{-- Ce modal-footer est correctement placé --}}
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Enregistrer Soute</button>
@@ -109,11 +112,20 @@
         </div>
     </div>
 </div>
+
 @endsection
 
-@section('scripts')
+@push('custom-scripts')
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @if($errors->hasBag('default') && old('form_type') === 'create_soute')
+            var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
+            createModal.show();
+        @endif
+    });
+
     function confirmDeleteSoute(souteId, souteName) {
         Swal.fire({
             title: 'Êtes-vous sûr ?',
@@ -126,17 +138,44 @@
             cancelButtonText: 'Annuler'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Décommentez et ajustez la route lorsque la suppression sera implémentée
-                // document.getElementById('delete-soute-form-' + souteId).submit();
+                console.log("Suppression confirmée pour la soute ID: " + souteId);
             }
         })
     }
-
-    @if($errors->any() && old('form_type') === 'create_soute')
-        document.addEventListener('DOMContentLoaded', function() {
-            var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
-            createModal.show();
-        });
-    @endif
 </script>
-@endsection
+@endpush
+
+<style>
+    #createSouteModal .modal-dialog {
+    max-width: 800px;
+}
+
+.custom-select-style {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    color: #212529;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-select-style:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+
+.custom-select-style.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.custom-select-style option:disabled {
+    color: #6c757d;
+}
+
+.custom-select-style option:hover {
+    background-color: #e9ecef;
+}
+</style>
