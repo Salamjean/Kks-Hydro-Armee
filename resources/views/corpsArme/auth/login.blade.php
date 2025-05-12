@@ -1,120 +1,299 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Corps d'Armée - {{ config('app.name', 'Laravel') }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/pages/auth.css') }}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+ 
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
+
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/iconly/bold.css') }}">
+  {{-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> --}}
+
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
+  {{-- <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg" type="image/x-icon') }}"> --}}
+  <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg') }}" type="image/x-icon">
+
+  <style>
+    body.login-page {
+      /* background-color: #f8f9fa; */
+    }
+
+    .auth-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .auth-card {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 20px 0 rgba(0,0,0,0.1), 0 7px 10px -5px rgba(0,0,0,0.05);
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 450px;
+      margin: auto;
+    }
+
+    .auth-card .auth-logo {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-card .auth-logo img {
+      max-width: 100px;
+      height: auto;
+    }
+
+    .auth-card .auth-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #344767;
+      text-align: center;
+    }
+
+    .auth-card .auth-subtitle {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* Styles pour les champs de formulaire - Material Dashboard gère bien input-group-outline */
+    .auth-card .input-group.input-group-outline {
+      margin-bottom: 1rem; /* Espacement standard */
+    }
+    /* Ajustement pour l'espace quand il y a une erreur en dessous */
+    .auth-card .input-group.input-group-outline + .field-error {
+        margin-top: -0.75rem; /* Rapprocher l'erreur du champ */
+        margin-bottom: 1rem; /* Garder un espace avant le champ suivant */
+    }
+    /* S'assurer que le label est correctement positionné par Material Dashboard */
+    .auth-card .input-group.input-group-outline .form-label {
+        /* Material Dashboard gère cela, mais on peut forcer si besoin */
+        /* Exemple : top: 0.7rem; si l'animation ne se fait pas bien */
+    }
+
+    /* Styles pour les labels des champs (non-flottants si jamais utilisés) */
+    .auth-card .form-label-static { /* Si vous voulez un label fixe au-dessus */
+        font-size: .875rem;
+        font-weight: 500;
+        color: #344767;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+
+    .auth-card .text-danger.field-error {
+      font-size: 0.8rem;
+      display: block;
+      /* margin-top: -1rem; -- Géré par la règle plus haut */
+      /* margin-bottom: 1rem; -- Géré par la règle plus haut */
+      text-align: left;
+    }
+
+    .auth-card .alert-danger {
+      border-radius: 0.5rem;
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem; /* Espace sous l'alerte */
+    }
+    .auth-card .alert-danger ul {
+      margin-bottom: 0;
+      padding-left: 1.2rem;
+    }
+
+    .auth-card .btn-primary.submit-btn {
+      background-image: linear-gradient(195deg, #0083ee 0%, #0083ee 100%);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 100%;
+      margin-top: 1.5rem; /* Espace au-dessus du bouton */
+      margin-bottom: 1rem;
+      box-shadow: 0 3px 3px 0 rgba(233, 30, 99, 0.15), 0 3px 1px -2px rgba(233, 30, 99, 0.2), 0 1px 5px 0 rgba(233, 30, 99, 0.15);
+    }
+    .auth-card .btn-primary.submit-btn:hover {
+      background-image: linear-gradient(195deg, #085002 0%, #03520d 100%);
+      box-shadow: 0 4px 7px -1px rgba(0,0,0,.11),0 2px 4px -1px rgba(0,0,0,.07);
+    }
+
+    .auth-card .form-group.extra-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem; /* Espace sous les options */
+      margin-top: 0.5rem; /* Espace au-dessus des options, après les erreurs potentielles */
+    }
+    .auth-card .form-check-label,
+    .auth-card .forgot-password-link {
+      color: #6c757d;
+    }
+    .auth-card .form-check .form-check-input {
+      margin-top: 0.1em; /* Petit ajustement vertical pour le switch */
+    }
+    .auth-card .forgot-password-link:hover {
+      color: #D81B60;
+      text-decoration: underline;
+    }
+
+    .auth-card .signup-link-wrapper {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      color: #6c757d;
+    }
+    .auth-card .signup-link-wrapper .signup-link {
+      color: #034d0f;
+      font-weight: 500;
+    }
+    .auth-card .signup-link-wrapper .signup-link:hover {
+      text-decoration: underline;
+    }
+    .auth-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background-image: url('{{ url('assets/images/auth/login_4.png') }}');
+      background-size: cover; 
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed; 
+    }
+
+    .auth-wrapper .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.3);
+      z-index: 1;
+    }
+
+    .auth-card {
+      position: relative;
+      z-index: 2;
+    }
+
+  </style>
 </head>
 
-<body>
-    <div id="auth">
+<body class="login-page">
 
-        <div class="row h-100">
-            <div class="col-lg-5 col-12">
-                <div id="auth-left">
-                    {{-- <div class="auth-logo">
-                        <a href="#"><img src="{{ asset('assets/images/logo/logo.png') }}" alt="Logo"></a>
-                    </div> --}}
-                    <h1 class="auth-title">Connexion Corps d'Armée</h1>
-                    <p class="auth-subtitle mb-5">Connectez-vous avec votre email et votre mot de passe.</p>
-
-                    {{-- Affichage des messages de succès (ex: après définition du mdp) --}}
-                    @if (Session::has('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ Session::get('success') }}
-                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
-
-                     {{-- Affichage des messages d'erreur généraux (ex: identifiants incorrects) --}}
-                     {{-- L'erreur 'email' est souvent utilisée pour les identifiants incorrects --}}
-                     @if ($errors->has('email') && !$errors->has('password'))
-                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                             {{ $errors->first('email') }} {{-- Affiche le message d'erreur lié à l'email/identifiants --}}
-                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                         </div>
-                     @endif
-                     {{-- Affichage d'autres erreurs spécifiques si nécessaire --}}
-                     @if (Session::has('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ Session::get('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
+  <main class="main-content mt-0">
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        {{-- <div class="auth-logo">
+          <img src="{{ asset('assets/assets/img/favicon.png') }}" alt="Logo SEA">
+        </div> --}}
+        <h4 class="auth-title">Connexion Corps d'Armée</h4>
+        <p class="auth-subtitle mb-5">Connectez-vous avec votre email et votre mot de passe.</p>
 
 
-                    {{-- Formulaire de connexion --}}
-                    <form method="POST" action="{{ route('corps.handle.login') }}">
-                        @csrf
+        <form method="POST" action="{{ route('corps.handle.login') }}">
+            @csrf
 
-                        {{-- Champ Email --}}
-                        <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="email" class="form-control form-control-xl @error('email') is-invalid @enderror"
-                                   placeholder="Adresse Email" name="email" value="{{ old('email') }}" required autofocus>
-                            <div class="form-control-icon">
-                                <i class="bi bi-envelope"></i>
-                            </div>
-                             {{-- Affiche l'erreur spécifique à l'email (format, obligatoire) SEULEMENT s'il n'y a pas d'erreur sur le mot de passe aussi --}}
-                            @error('email')
-                                @if (!$errors->has('password'))
-                                <span class="invalid-feedback d-block" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @endif
-                            @enderror
-                        </div>
-
-                        {{-- Champ Mot de Passe --}}
-                        <div class="form-group position-relative has-icon-left mb-4">
-                            <input type="password" class="form-control form-control-xl @error('password') is-invalid @enderror"
-                                   placeholder="Mot de passe" name="password" required>
-                            <div class="form-control-icon">
-                                <i class="bi bi-shield-lock"></i>
-                            </div>
-                             @error('password')
-                                <span class="invalid-feedback d-block" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        {{-- Checkbox "Se souvenir de moi" --}}
-                        <div class="form-check form-check-lg d-flex align-items-end">
-                            <input class="form-check-input me-2" type="checkbox" name="remember" id="flexCheckDefault" {{ old('remember') ? 'checked' : '' }}>
-                            <label class="form-check-label text-gray-600" for="flexCheckDefault">
-                                Se souvenir de moi
-                            </label>
-                        </div>
-
-                        {{-- Bouton de soumission --}}
-                        <button type="submit" class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Se connecter</button>
-                    </form>
-
-                    {{-- Liens optionnels --}}
-                    <div class="text-center mt-5 text-lg fs-4">
-                        {{-- Si vous implémentez la réinitialisation de mot de passe pour les corps plus tard : --}}
-                        {{-- <p><a class="font-bold" href="{{ route('corps.password.request') }}">Mot de passe oublié ?</a></p> --}}
-                         {{-- Le lien d'inscription n'est pas pertinent ici car créé par l'admin --}}
-                        {{-- <p class="text-gray-600">Pas encore de compte? <a href="#" class="font-bold">S'inscrire</a>.</p> --}}
-                    </div>
+            {{-- Champ Email --}}
+            <div class="form-group position-relative has-icon-left mb-4">
+                <input type="email" class="form-control form-control-xl @error('email') is-invalid @enderror"
+                       placeholder="Adresse Email" name="email" value="{{ old('email') }}" required autofocus>
+                <div class="form-control-icon">
+                    <i class="bi bi-envelope"></i>
                 </div>
+                 {{-- Affiche l'erreur spécifique à l'email (format, obligatoire) SEULEMENT s'il n'y a pas d'erreur sur le mot de passe aussi --}}
+                @error('email')
+                    @if (!$errors->has('password'))
+                    <span class="invalid-feedback d-block" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                    @endif
+                @enderror
             </div>
-            <div class="col-lg-7 d-none d-lg-block">
-                <div id="auth-right" style="display: flex; justify-content: center; align-items: center; background: #f2f7ff;">
-                     {{-- Vous pouvez mettre une image pertinente ici --}}
-                     <img src="{{ asset('assetsSEA/images/samples/login-vector.jpg') }}" alt="Illustration Connexion" style="max-width: 80%; max-height: 80%; object-fit: contain;">
-                 </div>
-            </div>
-        </div>
 
+            {{-- Champ Mot de Passe --}}
+            <div class="form-group position-relative has-icon-left mb-4">
+                <input type="password" class="form-control form-control-xl @error('password') is-invalid @enderror"
+                       placeholder="Mot de passe" name="password" required>
+                <div class="form-control-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                 @error('password')
+                    <span class="invalid-feedback d-block" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            {{-- Checkbox "Se souvenir de moi" --}}
+            <div class="form-check form-check-lg d-flex align-items-end">
+                <input class="form-check-input me-2" type="checkbox" name="remember" id="flexCheckDefault" {{ old('remember') ? 'checked' : '' }}>
+                <label class="form-check-label text-gray-600" for="flexCheckDefault">
+                    Se souvenir de moi
+                </label>
+            </div>
+
+            {{-- Bouton de soumission --}}
+            <button type="submit" class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Se connecter</button>
+        </form>
+        
+
+      </div>
     </div>
-    <script src="{{ asset('assetsSEA/js/bootstrap.bundle.min.js') }}"></script> {{-- Ajout pour les alertes dismissible --}}
-</body>
+  </main>
+  <script src="{{ asset('js/app.js') }}"></script>
+  @stack('plugin-scripts')
+  <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
+  <script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
+  <script src="{{ asset('assets/js/misc.js') }}"></script>
+  <script src="{{ asset('assets/js/settings.js') }}"></script>
+  <script src="{{ asset('assets/js/todolist.js') }}"></script>
+  <script src="{{ asset('js/custom-sidebar.js') }}"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = { damping: '0.5' }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
 
+    // Script pour gérer l'état 'is-filled' des inputs Material Dashboard au chargement de la page
+    // si des valeurs sont déjà présentes (ex: old input)
+    document.addEventListener('DOMContentLoaded', function () {
+        var inputs = document.querySelectorAll('.input-group.input-group-outline .form-control');
+        inputs.forEach(function(input) {
+            if (input.value && input.value.trim() !== '') {
+                input.parentNode.classList.add('is-filled');
+            }
+            input.addEventListener('focus', function() {
+                input.parentNode.classList.add('is-focused');
+            });
+            input.addEventListener('blur', function() {
+                input.parentNode.classList.remove('is-focused');
+                if (input.value && input.value.trim() !== '') {
+                    input.parentNode.classList.add('is-filled');
+                } else {
+                    input.parentNode.classList.remove('is-filled');
+                }
+            });
+        });
+    });
+
+  </script>
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <script src="{{ asset('assets/assets/js/material-dashboard.min.js?v=3.2.0') }}"></script>
+</body>
 </html>

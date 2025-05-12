@@ -6,7 +6,6 @@
 <div class="page-heading">
   <h4>Bienvenue, {{ Auth::guard('corps')->user()->name }}</h4>
 </div>
-{{-- @include('corpsArme.layouts.sidebar') --}}
 <div class="page-content">
     <section class="row">
         <div class="row">
