@@ -108,22 +108,19 @@ Route::prefix('corps')->name('corps.')->group(function () {
              // Assure-toi que la vue existe
             return view('corpsArme.armee-terre.dashboard');
         })->name('armee-terre.dashboard');
-        // ==========================================
-
-        // Gestion des ressources
-        // Correction : Définir chaque resource UNE SEULE FOIS
+       
         Route::resource('services', ServiceController::class)->except(['create', 'show']);
         Route::resource('personnel', PersonnelController::class)->except(['create','show']);
         Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
         Route::resource('carburants', CarburantController::class)->except(['create', 'show']);
 // --- Gestion des Soutes ---
-Route::resource('soutes', SouteController::class)->except(['show']); // 'create' géré par modale
+Route::resource('soutes', SouteController::class)->except(['show']);
         // Déconnexion (doit être DANS ce groupe)
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout');
 
     }); // Fin du groupe middleware('auth:corps')
 
-}); // Fin du groupe prefix('corps')->name('corps.')
+});
 
 Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
    // Appliquer le middleware guest:personnel_soute ici

@@ -1,0 +1,20 @@
+.footer-custom {
+    background-color: #000000 !important;
+    color: #fff; /* texte blanc */
+    border-top: 1px solid #555;
+}
+
+.footer-link {
+    color: #f8f9fa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+    color: #e2e6ea;
+}
+
+.footer-custom i {
+    vertical-align: middle;
+}
