@@ -1,5 +1,4 @@
-@extends('corpsArme.gendarmerie.template')
-
+@extends('gendarmerie.layouts.app')
 @section('title', 'Tableau de Bord - Armée de Terre')
 
 @section('content')

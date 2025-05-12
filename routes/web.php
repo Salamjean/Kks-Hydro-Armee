@@ -10,6 +10,10 @@ use App\Http\Controllers\Corps\CarburantController;
 use App\Http\Controllers\Corps\SouteController; 
 use App\Http\Controllers\Soute\SoutePersonnelLoginController; // <<--- AJOUTE CET IMPORT
 use App\Http\Controllers\Soute\SouteDashboardController; // <<--- AJOUTE CET IMPORT (pour plus tard)
+use App\Http\Controllers\CorpsDashboards\GendarmerieDashboardController;
+use App\Http\Controllers\CorpsDashboards\MarineDashboardController;
+use App\Http\Controllers\CorpsDashboards\ArmeeAirDashboardController;
+use App\Http\Controllers\CorpsDashboards\ArmeeTerreDashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect; // Ajouté
 
@@ -52,12 +56,10 @@ Route::prefix('admin')->name('admin.')->group(function() {
     Route::get('/login',[AdminController::class,'login'])->name('login');
     Route::post('/login',[AdminController::class,'handleLogin'])->name('handleLogin');
 
-    // Routes protégées Admin
     Route::middleware('auth:admin')->group(function(){
         Route::get('/dashboard',[AdminController::class,'dashboard'])->name('dashboard');
         Route::post('/logout',[AdminController::class,'logout'])->name('logout'); // POST pour logout
 
-        // Gestion des Corps d'Armée par l'Admin
         Route::get('/army/create',[CorpsArmeController::class,'createArmy'])->name('create.army'); // URI plus simple
         Route::post('/army',[CorpsArmeController::class,'storeArmy'])->name('store.army');
         Route::get('/army',[CorpsArmeController::class,'index'])->name('army');
@@ -68,54 +70,25 @@ Route::prefix('admin')->name('admin.')->group(function() {
 });
 
 
-// --- CORPS D'ARMÉE ---
 Route::prefix('corps')->name('corps.')->group(function () {
-    // Routes publiques Corps d'Armée (login, define access)
     Route::get('/login', [CorpsArmeController::class, 'login'])->name('login');
     Route::post('/login', [CorpsArmeController::class, 'handleLogin'])->name('handle.login');
-    // Note : Tes routes validate-corps-account sont définies plus haut, c'est OK.
 
-    // --- Routes Protégées (nécessitent que l'utilisateur 'corps' soit connecté) ---
     Route::middleware('auth:corps')->group(function () {
+        Route::get('/gendarmerie/dashboard', [GendarmerieDashboardController::class, 'index'])->name('gendarmerie.dashboard');
 
-        // == CORRECTION DES DASHBOARDS SPÉCIFIQUES ==
-        Route::get('/gendarmerie/dashboard', function () {
-            // Vérifie que le nom correspond EXACTEMENT à la BDD
-            if (Auth::guard('corps')->user()->name !== 'Gendarmerie') {
-                abort(403, 'Accès non autorisé.');
-            }
-            // Assure-toi que la vue existe
-            return view('corpsArme.gendarmerie.dashboard');
-        })->name('gendarmerie.dashboard');
+        Route::get('/marine/dashboard', [MarineDashboardController::class, 'index'])->name('marine.dashboard');
 
-        Route::get('/marine/dashboard', function () {
-             // Vérifie que le nom correspond EXACTEMENT à la BDD
-            if (Auth::guard('corps')->user()->name !== 'Marine') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.marine.dashboard');
-        })->name('marine.dashboard');
+        Route::get('/armee-air/dashboard', [ArmeeAirDashboardController::class, 'index'])->name('armee-air.dashboard');
 
-        Route::get('/armee-air/dashboard', function () {
-             // Vérifie que le nom correspond EXACTEMENT à la BDD ('Armée-Air' ou 'Armee-Air' ?)
-            if (Auth::guard('corps')->user()->name !== 'Armée-Air') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.armee-air.dashboard');
-        })->name('armee-air.dashboard');
+        Route::get('/armee-terre/dashboard', [ArmeeTerreDashboardController::class, 'index'])->name('armee-terre.dashboard');
 
-        Route::get('/armee-terre/dashboard', function () {
-            // Vérifie que le nom correspond EXACTEMENT à la BDD ('Armée-Terre' ou 'Armee-Terre' ?)
-            if (Auth::guard('corps')->user()->name !== 'Armée-Terre') { abort(403); }
-             // Assure-toi que la vue existe
-            return view('corpsArme.armee-terre.dashboard');
-        })->name('armee-terre.dashboard');
-       
         Route::resource('services', ServiceController::class)->except(['create', 'show']);
         Route::resource('personnel', PersonnelController::class)->except(['create','show']);
         Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
         Route::resource('carburants', CarburantController::class)->except(['create', 'show']);
-// --- Gestion des Soutes ---
+
 Route::resource('soutes', SouteController::class)->except(['show']);
-        // Déconnexion (doit être DANS ce groupe)
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout');
 
     }); // Fin du groupe middleware('auth:corps')

@@ -1,0 +1,96 @@
+/* Sidebar Container */
+#sidebar {
+    background-color: #0d47a1; /* Bleu foncé */
+    color: #ffffff;
+    width: 250px;
+    min-height: 100vh;
+    position: fixed;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+/* Wrapper */
+.sidebar-wrapper {
+    padding: 1rem;
+}
+
+/* Logo */
+.sidebar-header .logo img {
+    max-width: 150px;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+/* Sidebar Title */
+.sidebar-title {
+    color: #bbdefb;
+    font-size: 14px;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-weight: bold;
+}
+
+/* Sidebar Links */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.sidebar-link i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.sidebar-link:hover {
+    background-color: #1565c0;
+}
+
+/* Active Item */
+.sidebar-item.active > .sidebar-link {
+    background-color: #1976d2;
+    font-weight: bold;
+}
+
+/* Submenu */
+.sidebar-item.has-sub .submenu {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.submenu-item a {
+    display: block;
+    color: #e3f2fd;
+    padding: 8px 20px;
+    font-size: 14px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.submenu-item a:hover {
+    background-color: #1e88e5;
+}
+
+/* Toggler Button */
+.sidebar-toggler.btn.x {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive hide */
+.sidebar-hide {
+    color: #ffffff;
+    font-size: 20px;
+}

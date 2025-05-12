@@ -1,4 +1,4 @@
-@extends('corpsArme.armee-air.template')
+@extends('armee-air.template')
 
 @section('title', 'Tableau de Bord - Armée de Terre')
 

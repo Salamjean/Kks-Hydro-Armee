@@ -15,16 +15,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     @stack('plugin-styles')
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/template.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/template.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
     @stack('styles')
 </head>
 <body data-base-url="{{url('/')}}" class="sidebar-lg-only">
     <div class="container-scroller" id="app">
         @include('gendarmerie.layouts.partials.header')
         <div class="container-fluid page-body-wrapper">
+
             @include('gendarmerie.layouts.partials.sidebar')
+
             <div class="main-panel">
                 <div class="content-wrapper">
                     @yield('content')

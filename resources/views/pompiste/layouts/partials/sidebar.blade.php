@@ -1,102 +1,144 @@
-<div id="sidebar" class="active soute-sidebar"> {{-- Ajout d'une classe 'soute-sidebar' pour personnalisation CSS si besoin --}}
-    <div class="sidebar-wrapper active">
-        <div class="sidebar-header position-relative">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="logo">
-                    @auth('personnel_soute')
-                        <a href="{{ route('soute.dashboard.index') }}">
-                            {{-- Tu peux mettre une icône ou le nom de la soute --}}
-                            <i class="bi bi-hdd-stack-fill fs-4 me-2"></i>
-                            <span>Soute: {{ Str::limit(Auth::guard('personnel_soute')->user()->soute->nom ?? 'Dashboard', 15) }}</span>
-                        </a>
-                    @endauth
-                </div>
-                {{-- Thème clair/sombre --}}
-                <div class="theme-toggle d-flex gap-2  align-items-center mt-2">
-                    {{-- ... (code des icônes de thème identique à l'autre sidebar) ... --}}
-                </div>
-                <div class="sidebar-toggler x">
-                    <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
-                </div>
-            </div>
+<nav class="sidebar sidebar-offcanvas dynamic-active-class-disabled" id="sidebar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        ☰
+    </button>
+
+    <div class="sidebar-menu">
+        <div class="logo">
+            @php
+                $dashboardRouteName = 'corps.gendarmerie.dashboard';
+                $logoImagePath = asset('images/default_logo.png');
+                $logoAltText = 'Logo par défaut';
+                $logoLink = '#';
+
+                $authUser = Auth::guard('corps')->user();
+
+                if ($authUser) {
+                    $userCorpsName = $authUser->name;
+
+                    switch ($userCorpsName) {
+                        case 'Gendarmerie':
+                            $dashboardRouteName = 'corps.gendarmerie.dashboard';
+                            $logoImagePath = asset('images/logo_gendarmerie.png');
+                            $logoAltText = 'Logo Gendarmerie';
+                            break;
+                        case 'Marine':
+                            $dashboardRouteName = 'corps.marine.dashboard';
+                            $logoImagePath = asset('images/logo_marine.jpeg');
+                            $logoAltText = 'Logo Marine';
+                            break;
+                        case 'Armée-Air':
+                        case 'Armée Air':
+                            $dashboardRouteName = 'corps.armee-air.dashboard';
+                            $logoImagePath = asset('images/logo_armee_air.png');
+                            $logoAltText = 'Logo Armée de l\'Air';
+                            break;
+                        case 'Armée-Terre':
+                        case 'Armée Terre':
+                            $dashboardRouteName = 'corps.armee-terre.dashboard';
+                            $logoImagePath = asset('images/logo_armee_terre.jpeg');
+                            $logoAltText = 'Logo Armée de Terre';
+                            break;
+                    }
+
+                    if (Route::has($dashboardRouteName)) {
+                        $logoLink = route($dashboardRouteName);
+                    }
+                }
+            @endphp
+
+            <a href="{{ $logoLink }}">
+                <img src="{{ $logoImagePath }}" alt="{{ $logoAltText }}">
+            </a>
         </div>
-        <div class="sidebar-menu">
-            <ul class="menu">
-                <li class="sidebar-title">Menu Soute</li>
 
-                <li class="sidebar-item {{ request()->routeIs('soute.dashboard.index') ? 'active' : '' }} ">
-                    <a href="{{ route('soute.dashboard.index') }}" class='sidebar-link'>
-                        <i class="bi bi-grid-fill"></i>
-                        <span>Vue d'Ensemble Soute</span>
-                    </a>
+        <ul class="menu">
+            <li class="sidebar-title">Menu Principal</li>
+
+            <li class="sidebar-item {{ request()->routeIs($dashboardRouteName) ? 'active' : '' }}">
+                <a href="{{ route($dashboardRouteName) }}" class="sidebar-link">
+                    <i class="bi bi-grid-fill"></i>
+                    <span>Tableau de Bord</span>
+                </a>
+            </li>
+
+            <li class="sidebar-title">Gestion Infrastructure</li>
+
+            <li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
+                <a href="#" class='sidebar-link'>
+                    <i class="bi bi-hdd-stack-fill"></i>
+                    <span>Soutes</span>
+                </a>
+                <ul class="submenu {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
+                    <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
+                        <a href="{{ route('corps.soutes.index') }}">Ajouter/Liste Soutes</a>
+                    </li>
+                </ul>
+            </li>
+
+           <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+            <a href="#" class='sidebar-link'>
+                <i class="bi bi-people-fill"></i>
+                <span>Pompiste</span>
+            </a>
+            <ul class="submenu">
+                <li class="submenu-item {{ request()->routeIs('corps.personnel.index') || request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
+                    <a href="{{ route('corps.personnel.index') }}">Ajouter Pompiste</a>
                 </li>
-
-                <li class="sidebar-title">Opérations</li>
-
-                {{-- Lien vers la page des transactions (qui contient la modale) --}}
-                <li class="sidebar-item {{ request()->routeIs('corps.carburants.index') ? 'active' : '' }}">
-                    <a href="{{ route('corps.carburants.index') }}" class='sidebar-link'>
-                        <i class="bi bi-fuel-pump"></i>
-                        <span>Enregistrer Sortie</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="#" class='sidebar-link'> {{-- TODO: Route pour enregistrer une entrée de carburant --}}
-                        <i class="bi bi-truck"></i>
-                        <span>Enregistrer Entrée</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item has-sub {{-- request()->routeIs('soute.distributeurs.*') --}}">
-                    <a href="#" class='sidebar-link'>
-                        <i class="bi bi-diagram-3-fill"></i>
-                        <span>Distributeurs (Pompes)</span>
-                    </a>
-                    <ul class="submenu">
-                        <li class="submenu-item ">
-                             {{-- Normalement, la gestion (ajout/modif) des pompes se fait par le corps d'armée, pas le personnel de soute --}}
-                            <a href="{{ route('corps.distributeurs.index') }}">Voir les Pompes</a>
-                        </li>
-                        <li class="submenu-item ">
-                            <a href="#">Niveaux Pompes</a> {{-- TODO: Vue spécifique --}}
-                        </li>
-                    </ul>
-                </li>
-
-
-                <li class="sidebar-title">Consultation</li>
-                <li class="sidebar-item ">
-                    <a href="{{ route('corps.carburants.index') }}" class='sidebar-link'>
-                        <i class="bi bi-list-task"></i>
-                        <span>Historique Transactions</span>
-                    </a>
-                </li>
-                <li class="sidebar-item ">
-                    <a href="#" class='sidebar-link'> {{-- TODO: Route pour le stock --}}
-                        <i class="bi bi-archive-fill"></i>
-                        <span>État du Stock</span>
-                    </a>
-                </li>
-
-
-                <li class="sidebar-title">Compte</li>
-                <li class="sidebar-item">
-                    <a href="#" class='sidebar-link'>
-                        <i class="bi bi-person-fill"></i>
-                        <span>Mon Profil</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <form method="POST" action="{{ route('soute.dashboard.logout') }}" id="soute-logout-form-sidebar" style="display: none;">
-                        @csrf
-                    </form>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('soute-logout-form-sidebar').submit();" class='sidebar-link'>
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Déconnexion</span>
-                    </a>
+                <li class="submenu-item {{ request()->routeIs('corps.personnel.index', 'corps.personnel.list') ? 'active' : '' }}">
+                    <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
                 </li>
             </ul>
-        </div>
+        </li>
+
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                    <span>Rapports</span>
+                </a>
+            </li>
+
+            <li class="sidebar-title">Compte</li>
+
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-person-fill"></i>
+                    <span>Mon Profil</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <form method="POST" action="{{ route('corps.logout') }}" id="logout-form" style="display: none;">
+                    @csrf
+                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="sidebar-link">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
     </div>
-</div>
+</nav>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuItems = document.querySelectorAll('.sidebar-item.has-sub > a');
+        menuItems.forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const parent = this.parentElement;
+                parent.classList.toggle('active');
+                document.querySelectorAll('.sidebar-item.has-sub').forEach(function (other) {
+                    if (other !== parent) {
+                        other.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+
+</script>

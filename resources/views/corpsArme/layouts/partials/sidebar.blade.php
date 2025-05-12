@@ -89,7 +89,7 @@
                     <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
                 </li>
             </ul>
-        </li>
+           </li>
 
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">

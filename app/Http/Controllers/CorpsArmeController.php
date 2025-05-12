@@ -229,9 +229,7 @@ class CorpsArmeController extends Controller
                 default:
                     // Redirection générique si le nom ne correspond à aucun cas spécifique
                     Log::warning("Corps d'armée non reconnu pour la redirection : " . $user->name);
-                    // Peut-être créer une route 'corps.dashboard.generic' ?
-                    // Pour l'instant, on redirige vers une route de base 'corps.dashboard'
-                    // que vous devrez définir.
+                 
                      return redirect()->intended(route('corps.dashboard')); // Assurez-vous que cette route existe
             }
 

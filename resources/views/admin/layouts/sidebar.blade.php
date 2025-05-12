@@ -36,58 +36,24 @@
                   </ul>
               </li>
 
-              <li class="sidebar-item  has-sub">
-                  <a href="#" class='sidebar-link'>
-                      <i class="bi bi-collection-fill"></i>
-                      <span>Extra Components</span>
-                  </a>
-                  <ul class="submenu ">
-                      <li class="submenu-item ">
-                          <a href="extra-component-avatar.html">Avatar</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="extra-component-sweetalert.html">Sweet Alert</a>
-                      </li>
-                  </ul>
-              </li>
+              <li class="sidebar-title">Compte</li>
 
-              
+    <li class="sidebar-item {{ request()->routeIs('superadmin.profile') ? 'active' : '' }}">
+        <a href="" class="sidebar-link">
+            <i class="bi bi-person-fill"></i>
+            <span>Mon Profil</span>
+        </a>
+    </li>
 
-              <li class="sidebar-title">Forms &amp; Tables</li>
-
-              <li class="sidebar-item  has-sub">
-                  <a href="#" class='sidebar-link'>
-                      <i class="bi bi-hexagon-fill"></i>
-                      <span>Form Elements</span>
-                  </a>
-                  <ul class="submenu ">
-                      <li class="submenu-item ">
-                          <a href="form-element-input.html">Input</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="form-element-input-group.html">Input Group</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="form-element-select.html">Select</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="form-element-radio.html">Radio</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="form-element-checkbox.html">Checkbox</a>
-                      </li>
-                      <li class="submenu-item ">
-                          <a href="form-element-textarea.html">Textarea</a>
-                      </li>
-                  </ul>
-              </li>
-
-              <li class="sidebar-item  ">
-                  <a href="form-layout.html" class='sidebar-link'>
-                      <i class="bi bi-file-earmark-medical-fill"></i>
-                      <span>Form Layout</span>
-                  </a>
-              </li>
+    <li class="sidebar-item">
+        <form method="POST" action="{{ route('superadmin.logout') }}" id="logout-form" style="display: none;">
+            @csrf
+        </form>
+        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="sidebar-link">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Déconnexion</span>
+        </a>
+    </li>
           </ul>
       </div>
       <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>

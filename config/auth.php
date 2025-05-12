@@ -64,15 +64,15 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
-            'throttle' => 60,
+            'expire' => 300,
+            'throttle' => 300,
         ], // <<--- L'accolade de 'users' (pour passwords) se ferme ici
 
         'personnels_soute' => [ // <<--- MAINTENANT À SON PROPRE NIVEAU
             'provider' => 'personnels_soute',
             'table' => 'password_reset_tokens',
-            'expire' => 60,
-            'throttle' => 60,
+            'expire' => 300,
+            'throttle' => 300,
         ],
     ],
 

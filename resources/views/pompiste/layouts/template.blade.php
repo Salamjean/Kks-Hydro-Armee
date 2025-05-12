@@ -7,8 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', "Gestion")</title>
     <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}">
-    <link rel="stylesheet" href="{{ asset('css/sidebar_superadmin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/navbar_superadmin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/@mdi/font/css/materialdesignicons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
@@ -22,19 +22,18 @@
 </head>
 <body data-base-url="{{url('/')}}" class="sidebar-lg-only">
     <div class="container-scroller" id="app">
-        @include('superadmin.layouts.partials.header')
+        @include('gendarmerie.layouts.partials.header')
         <div class="container-fluid page-body-wrapper">
-            @include('superadmin.layouts.partials.sidebar')
+            @include('gendarmerie.layouts.partials.sidebar')
             <div class="main-panel">
                 <div class="content-wrapper">
                     @yield('content')
                 </div>
-                @include('superadmin.layouts.partials.footer')
+                @include('gendarmerie.layouts.partials.footer')
             </div>
         </div>
     </div>
 </body>
-
 </html>
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('plugin-scripts')
