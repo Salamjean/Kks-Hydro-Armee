@@ -47,6 +47,6 @@ class ArmeeAirDashboardController extends Controller
 
         // IMPORTANT: Renvoie vers une vue spécifique à la Armée-air
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('corpsArme.Armee-Air.dashboard', $viewData);
+        return view('Armee-Air.dashboard', $viewData);
     }
 }

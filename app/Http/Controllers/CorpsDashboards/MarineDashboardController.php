@@ -48,6 +48,6 @@ class MarineDashboardController extends Controller
 
         // IMPORTANT: Renvoie vers une vue spécifique à la Marine
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('corpsArme.Marine.dashboard', $viewData);
+        return view('Marine.dashboard', $viewData);
     }
 }

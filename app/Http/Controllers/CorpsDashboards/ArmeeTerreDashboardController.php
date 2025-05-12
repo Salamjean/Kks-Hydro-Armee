@@ -48,6 +48,6 @@ class ArmeeTerreDashboardController extends Controller
 
         // IMPORTANT: Renvoie vers une vue spécifique à la Armée-Terre
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('corpsArme.Armee-Terre.dashboard', $viewData);
+        return view('Armee-Terre.dashboard', $viewData);
     }
 }

@@ -48,6 +48,6 @@ class GendarmerieDashboardController extends Controller
 
         // IMPORTANT: Renvoie vers une vue spécifique à la gendarmerie
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('corpsArme.gendarmerie.dashboard', $viewData);
+        return view('gendarmerie.dashboard', $viewData);
     }
 }

@@ -219,13 +219,13 @@ class CorpsArmeController extends Controller
             switch ($corpsName) {
                 case 'gendarmerie':
                     // Assurez-vous que cette route existe dans web.php
-                    return redirect()->intended(route('corps.gendarmerie.dashboard'));
+                    return redirect()->intended(route('gendarmerie.dashboard'));
                 case 'marine':
-                    return redirect()->intended(route('corps.marine.dashboard'));
+                    return redirect()->intended(route('marine.dashboard'));
                 case 'armée-air': // Attention au nom exact utilisé dans la base
-                    return redirect()->intended(route('corps.armee-air.dashboard'));
+                    return redirect()->intended(route('armee-air.dashboard'));
                 case 'armée-terre': // Attention au nom exact
-                    return redirect()->intended(route('corps.armee-terre.dashboard'));
+                    return redirect()->intended(route('armee-terre.dashboard'));
                 default:
                     // Redirection générique si le nom ne correspond à aucun cas spécifique
                     Log::warning("Corps d'armée non reconnu pour la redirection : " . $user->name);
