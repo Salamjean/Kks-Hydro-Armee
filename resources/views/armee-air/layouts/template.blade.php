@@ -24,17 +24,17 @@
 
     <div class="container-scroller" id="app">
 
-        @include('corpsArme.layouts.partials.header')
+        @include('armee-air.layouts.partials.header')
 
         <div class="container-fluid page-body-wrapper">
 
-            @include('corpsArme.layouts.partials.sidebar')
+            @include('armee-air.layouts.partials.sidebar')
 
             <div class="main-panel">
                 <div class="content-wrapper">
                     @yield('content')
                 </div>
-                @include('corpsArme.layouts.partials.footer')
+                @include('armee-air.layouts.partials.footer')
             </div>
         </div>
     </div>
