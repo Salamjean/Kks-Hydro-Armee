@@ -5,7 +5,7 @@
       <li class="nav-item dropdown d-none d-lg-inline-block"> 
         <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
           <img class="img-xs rounded-circle" src="{{ Auth::guard('corps')->user()->profile_photo_url ?? url('assets/images/faces/face8.jpg') }}" alt="Profile image">
-          <span class="profile-text">{{ Auth::guard('corps')->user()->name ?? 'Utilisateur' }}</span>
+          {{-- <span class="profile-text">{{ Auth::guard('corps')->user()->name ?? 'Utilisateur' }}</span> --}}
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
@@ -17,12 +17,11 @@
             <i class="mdi mdi-account-outline text-primary"></i> Mon Profil
           </a>
           <a class="dropdown-item" href="#">
-            <i class="mdi mdi-settings text-primary"></i> Paramètres
           </a>
           <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
             <i class="mdi mdi-logout text-primary"></i> Déconnexion
           </a>
-           <form id="logout-form-header" action="{{ route('corps.logout') }}" method="POST" style="display: none;">
+           <form id="logout-form-header" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
         </div>

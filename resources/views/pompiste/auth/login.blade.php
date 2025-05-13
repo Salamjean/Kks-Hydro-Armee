@@ -14,7 +14,8 @@
 <body>
 
     <main class="main-content mt-0">
-        <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/login_4.png') }}');">
+        <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/soute.png') }}');
+                                    background-size: contain; background-repeat: no-repeat; background-position: 60% center;">
             <div class="auth-card">
                 <h1 class="auth-title">Connexion Espace Soute</h1>
                 <p class="auth-subtitle mb-5">Connectez-vous.</p>

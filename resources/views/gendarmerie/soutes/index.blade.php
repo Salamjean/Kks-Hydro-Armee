@@ -79,27 +79,34 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="soute_type_carburant" class="form-label">Type Carburant Principal <span class="text-danger">*</span></label>
-                            <select class="form-select custom-select-style @error('type_carburant_principal') is-invalid @enderror" id="soute_type_carburant" name="type_carburant_principal" required>
-                                <option value="">-- Sélectionner un type --</option>
-                                <option value="Diesel" {{ old('type_carburant_principal') == 'Diesel' ? 'selected' : '' }}>Diesel</option>
-                                <option value="Kerozen" {{ old('type_carburant_principal') == 'Kerozen' ? 'selected' : '' }}>Kérosène</option>
-                                <option value="Essence" {{ old('type_carburant_principal') == 'Essence' ? 'selected' : '' }}>Essence</option>
-                            </select>
-                            @error('type_carburant_principal') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                            <label class="form-label">Types de Carburant Principaux <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3">
+                                @php
+                                    $oldCarburants = old('type_carburants', []);
+                                @endphp
+                        
+                                @foreach(['Diesel', 'Kerozen', 'Essence'] as $type)
+                                    <div class="form-check">
+                                        <input class="form-check-input @error('type_carburants') is-invalid @enderror"
+                                               type="checkbox"
+                                               name="type_carburants[]"
+                                               id="carburant_{{ $type }}"
+                                               value="{{ $type }}"
+                                               {{ in_array($type, $oldCarburants) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="carburant_{{ $type }}">
+                                            {{ $type }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('type_carburants') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div> 
 
                         <div class="col-md-6 mb-3">
                             <label for="soute_capacite" class="form-label">Capacité Totale (Litres)</label>
                             <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}">
                             @error('capacite_totale') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="soute_description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" id="soute_description" name="description" rows="3">{{ old('description') }}</textarea>
-                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
 

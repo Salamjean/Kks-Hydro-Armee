@@ -79,15 +79,28 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="soute_type_carburant" class="form-label">Type Carburant Principal <span class="text-danger">*</span></label>
-                            <select class="form-select custom-select-style @error('type_carburant_principal') is-invalid @enderror" id="soute_type_carburant" name="type_carburant_principal" required>
-                                <option value="">-- Sélectionner un type --</option>
-                                <option value="Diesel" {{ old('type_carburant_principal') == 'Diesel' ? 'selected' : '' }}>Diesel</option>
-                                <option value="Kerozen" {{ old('type_carburant_principal') == 'Kerozen' ? 'selected' : '' }}>Kérosène</option>
-                                <option value="Essence" {{ old('type_carburant_principal') == 'Essence' ? 'selected' : '' }}>Essence</option>
-                            </select>
-                            @error('type_carburant_principal') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                            <label class="form-label">Types de Carburant Principaux <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3">
+                                @php
+                                    $oldCarburants = old('type_carburants', []);
+                                @endphp
+                        
+                                @foreach(['Diesel', 'Kerozen', 'Essence'] as $type)
+                                    <div class="form-check">
+                                        <input class="form-check-input @error('type_carburants') is-invalid @enderror"
+                                               type="checkbox"
+                                               name="type_carburants[]"
+                                               id="carburant_{{ $type }}"
+                                               value="{{ $type }}"
+                                               {{ in_array($type, $oldCarburants) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="carburant_{{ $type }}">
+                                            {{ $type }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('type_carburants') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div> 
 
                         <div class="col-md-6 mb-3">
                             <label for="soute_capacite" class="form-label">Capacité Totale (Litres)</label>
@@ -95,13 +108,6 @@
                             @error('capacite_totale') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="soute_description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" id="soute_description" name="description" rows="3">{{ old('description') }}</textarea>
-                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                </div>
 
                 {{-- Ce modal-footer est correctement placé --}}
                 <div class="modal-footer">
@@ -146,36 +152,36 @@
 @endpush
 
 <style>
-    #createSouteModal .modal-dialog {
-    max-width: 800px;
-}
+            #createSouteModal .modal-dialog {
+            max-width: 800px;
+        }
 
-.custom-select-style {
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
-    border-radius: 0.5rem;
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-    color: #212529;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
+        .custom-select-style {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1rem;
+            font-size: 1rem;
+            color: #212529;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-.custom-select-style:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-    outline: none;
-}
+        .custom-select-style:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            outline: none;
+        }
 
-.custom-select-style.is-invalid {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
+        .custom-select-style.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
 
-.custom-select-style option:disabled {
-    color: #6c757d;
-}
+        .custom-select-style option:disabled {
+            color: #6c757d;
+        }
 
-.custom-select-style option:hover {
-    background-color: #e9ecef;
-}
+        .custom-select-style option:hover {
+            background-color: #e9ecef;
+        }
 </style>

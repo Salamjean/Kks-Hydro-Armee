@@ -1,41 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
- 
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
-
   <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/iconly/bold.css') }}">
   {{-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> --}}
-
   <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.css') }}">
   <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
   <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
   {{-- <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg" type="image/x-icon') }}"> --}}
-
   <link rel="stylesheet" href="{{ asset('css/login.css') }}">
-
 </head>
-
 <body class="login-page">
-
   <main class="main-content mt-0">
-    <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/login_4.png') }}');">
+    <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/login_5.png') }}');
+                                      background-size: contain; background-repeat: no-repeat; background-position: 20% center;">
       <div class="auth-card">
         {{-- <div class="auth-logo">
           <img src="{{ asset('assets/assets/img/favicon.png') }}" alt="Logo SEA">
         </div> --}}
         <h4 class="auth-title">Connexion Corps d'Armée</h4>
         <p class="auth-subtitle mb-5">Connectez-vous avec votre email et votre mot de passe.</p>
-
-
         <form method="POST" action="{{ route('corps.handle.login') }}">
             @csrf
-
             {{-- Champ Email --}}
             <div class="form-group position-relative has-icon-left mb-4">
                 <input type="email" class="form-control form-control-xl @error('email') is-invalid @enderror"

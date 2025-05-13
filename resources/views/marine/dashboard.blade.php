@@ -1,4 +1,4 @@
-@extends('marine.template')
+@extends('marine.layouts.template')
 
 @section('title', 'Tableau de Bord - Armée de Terre')
 

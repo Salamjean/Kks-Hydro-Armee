@@ -1,10 +1,10 @@
-@extends('armee-air.template')
+@extends('armee-air.layouts.template')
 
 @section('title', 'Tableau de Bord - Armée de Terre')
 
 @section('content')
 <div class="page-heading">
-    <h4>Bienvenue, {{ Auth::guard('corps')->user()->name }}</h4>
+  <h4>Bienvenue, {{ Auth::guard('corps')->user()->name }}</h4>
 </div>
 <div class="page-content">
     <section class="row">
