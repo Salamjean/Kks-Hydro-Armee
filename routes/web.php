@@ -91,7 +91,7 @@ Route::prefix('corps')->name('corps.')->group(function () {
 Route::resource('soutes', SouteController::class)->except(['show']);
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout');
 
-    }); // Fin du groupe middleware('auth:corps')
+    });
 
 });
 

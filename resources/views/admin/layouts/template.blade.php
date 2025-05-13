@@ -1,50 +1,52 @@
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEA - Dashboard</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ config('app.name', 'Laravel') }} - @yield('title', "Gestion")</title>
+    <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar_admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar_admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/plugins/@mdi/font/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/iconly/bold.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/sidebar-blue.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
-    <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg" type="image/x-icon') }}">
+    @stack('plugin-styles')
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/template.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/footer_admin.css') }}">
+    @stack('styles')
 </head>
+<body data-base-url="{{url('/')}}" class="sidebar-lg-only">
 
-<body>
-    <div id="app">
-        @include('admin.layouts.sidebar')
-        <div id="main">
-            <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
-            </header>
+    <div class="container-scroller" id="app">
 
-            <div class="page-heading">
-                <h3>Tableau de bord</h3>
+        @include('admin.layouts.partials.header')
+
+        <div class="container-fluid page-body-wrapper">
+
+            @include('admin.layouts.partials.sidebar')
+
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    @yield('content')
+                </div>
+               
             </div>
-            @yield('content')
-
-            
+            @include('admin.layouts.partials.footer')
         </div>
     </div>
-    <script src="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
-    <script src="{{ asset('assetsSEA/js/bootstrap.bundle.min.js ') }}"></script>
-
-    <script src="{{ asset('assetsSEA/vendors/apexcharts/apexcharts.js ') }}"></script>
-    <script src="{{ asset('assetsSEA/js/pages/dashboard.js ') }}"></script>
-
-    <script src="{{ asset('assetsSEA/js/main.js ') }}"></script>
 </body>
-
 </html>
+<script src="{{ asset('js/app.js') }}"></script>
+@stack('plugin-scripts')
+<script src="{{ asset('assets/js/off-canvas.js') }}"></script>
+<script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
+<script src="{{ asset('assets/js/misc.js') }}"></script>
+<script src="{{ asset('assets/js/settings.js') }}"></script>
+<script src="{{ asset('assets/js/todolist.js') }}"></script>
+<script src="{{ asset('js/custom-sidebar.js') }}"></script>
+@stack('custom-scripts')

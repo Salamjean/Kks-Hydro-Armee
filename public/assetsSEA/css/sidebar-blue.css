@@ -1,96 +1,211 @@
-/* Sidebar Container */
+/* public/css/admin-custom.css */
+
+/* Variables de couleur pour une maintenance facile */
+:root {
+    --sidebar-bg: #a11e0d; /* Bleu très foncé (presque marine) */
+    --sidebar-link-color: #ffffff;
+    --sidebar-link-hover-bg: #1565c0; /* Bleu un peu plus clair */
+    --sidebar-link-active-bg: #1976d2; /* Bleu standard */
+    --sidebar-title-color: #bbdefb; /* Bleu très clair/pastel */
+    --sidebar-submenu-link-color: #e3f2fd; /* Encore plus clair pour submenu */
+    --sidebar-submenu-link-hover-bg: #1e88e5; /* Bleu vif pour hover submenu */
+    --sidebar-border-color: rgba(255, 255, 255, 0.1);
+
+    --header-bg: #ffffff; /* Header blanc par défaut */
+    --header-border-color: #e9ecef;
+    --header-text-color: #6c757d;
+}
+
+/* --- Style de la Sidebar --- */
+
 #sidebar {
-    background-color: #0d47a1; /* Bleu foncé */
-    color: #ffffff;
-    width: 250px;
-    min-height: 100vh;
-    position: fixed;
-    transition: all 0.3s ease;
-    z-index: 1000;
+    background-color: var(
+        --sidebar-bg
+    ) !important; /* Couleur de fond de la sidebar */
+    /* Assure-toi que la largeur est bien définie par app.css ou ici si besoin */
+    /* width: 260px; */
 }
 
-/* Wrapper */
-.sidebar-wrapper {
-    padding: 1rem;
+/* En-tête de la Sidebar */
+.sidebar-wrapper .sidebar-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem; /* Ajuste le padding */
+    border-bottom: 1px solid var(--sidebar-border-color);
+    margin-bottom: 1rem; /* Espace après l'en-tête */
 }
 
-/* Logo */
-.sidebar-header .logo img {
-    max-width: 150px;
+.sidebar-wrapper .sidebar-header .logo span {
+    color: var(--sidebar-link-color); /* Couleur du texte du logo */
 }
 
-.sidebar-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 1rem;
+/* Couleur du bouton X pour masquer sur mobile */
+.sidebar-wrapper .toggler .sidebar-hide {
+    color: var(--sidebar-link-color);
+    opacity: 0.8;
+}
+.sidebar-wrapper .toggler .sidebar-hide:hover {
+    opacity: 1;
 }
 
-/* Sidebar Title */
-.sidebar-title {
-    color: #bbdefb;
-    font-size: 14px;
+/* Titres de Section dans la Sidebar */
+.sidebar-wrapper .sidebar-menu .sidebar-title {
+    color: var(--sidebar-title-color);
+    font-size: 0.75rem; /* Plus petit */
+    font-weight: 600;
+    letter-spacing: 0.5px; /* Un peu d'espacement */
+    padding: 0.75rem 1.5rem; /* Padding ajusté */
     text-transform: uppercase;
-    padding: 10px 15px;
-    font-weight: bold;
 }
 
-/* Sidebar Links */
-.sidebar-link {
+/* Liens Principaux */
+.sidebar-wrapper .sidebar-menu .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    color: #ffffff;
+    padding: 0.8rem 1.5rem; /* Padding ajusté */
+    color: var(--sidebar-link-color);
     text-decoration: none;
-    border-radius: 5px;
-    transition: background 0.2s;
+    font-size: 0.95rem; /* Taille de police standard */
+    font-weight: 500; /* Un peu moins gras que l'actif */
+    border-radius: 6px; /* Coins arrondis */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin: 0.1rem 0.5rem; /* Légère marge pour l'effet hover */
 }
 
-.sidebar-link i {
-    margin-right: 10px;
-    font-size: 18px;
+.sidebar-wrapper .sidebar-menu .sidebar-link i {
+    margin-right: 0.8rem; /* Espace icône-texte */
+    font-size: 1.1rem; /* Taille d'icône */
+    opacity: 0.9;
+    width: 20px; /* Largeur fixe pour alignement */
+    text-align: center;
 }
 
-.sidebar-link:hover {
-    background-color: #1565c0;
+/* Effet Hover sur les Liens */
+.sidebar-wrapper
+    .sidebar-menu
+    .sidebar-item:not(.active)
+    > .sidebar-link:hover {
+    background-color: var(--sidebar-link-hover-bg);
 }
 
-/* Active Item */
-.sidebar-item.active > .sidebar-link {
-    background-color: #1976d2;
-    font-weight: bold;
+/* Style du Lien Actif */
+.sidebar-wrapper .sidebar-menu .sidebar-item.active > .sidebar-link {
+    background-color: var(--sidebar-link-active-bg);
+    color: var(--sidebar-link-color); /* S'assurer que le texte reste blanc */
+    font-weight: 600; /* Plus gras */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Légère ombre */
+}
+.sidebar-wrapper .sidebar-menu .sidebar-item.active > .sidebar-link i {
+    opacity: 1;
 }
 
-/* Submenu */
-.sidebar-item.has-sub .submenu {
-    padding-left: 20px;
-    margin-top: 5px;
+/* Style des Sous-menus */
+.sidebar-wrapper .sidebar-menu .sidebar-item.has-sub .submenu {
+    /* Le JS du template gère normalement l'affichage (display/height) */
+    padding-left: calc(
+        1.5rem + 20px + 0.8rem
+    ); /* Alignement avec le texte parent */
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    list-style: none; /* Enlève les puces si présentes */
 }
 
-.submenu-item a {
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item a {
     display: block;
-    color: #e3f2fd;
-    padding: 8px 20px;
-    font-size: 14px;
+    padding: 0.5rem 0rem; /* Padding vertical, pas d'horizontal car géré par le parent */
+    font-size: 0.85rem; /* Plus petit */
+    color: var(--sidebar-submenu-link-color);
     text-decoration: none;
     border-radius: 4px;
-    transition: background 0.2s;
+    transition: color 0.2s ease;
+    position: relative; /* Pour le pseudo-élément */
+    margin-left: -10px; /* Ajustement si besoin */
 }
 
-.submenu-item a:hover {
-    background-color: #1e88e5;
+/* Petit cercle avant le lien submenu */
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item a::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background-color: var(--sidebar-submenu-link-color);
+    border-radius: 50%;
+    margin-right: 10px;
+    opacity: 0.6;
+    transition: all 0.2s ease;
 }
 
-/* Toggler Button */
-.sidebar-toggler.btn.x {
-    background: none;
-    border: none;
-    color: #ffffff;
-    font-size: 20px;
-    padding: 10px;
-    margin-top: 20px;
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item a:hover {
+    color: var(--sidebar-link-color); /* Texte devient blanc au survol */
+}
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item a:hover::before {
+    background-color: var(--sidebar-link-color);
+    opacity: 1;
 }
 
-/* Responsive hide */
-.sidebar-hide {
-    color: #ffffff;
-    font-size: 20px;
+/* Style du lien actif dans le submenu */
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item.active > a {
+    font-weight: 600;
+    color: var(--sidebar-link-color); /* Texte blanc et gras */
+}
+.sidebar-wrapper .sidebar-menu .submenu .submenu-item.active > a::before {
+    background-color: var(--sidebar-link-color); /* Cercle blanc */
+    opacity: 1;
+    transform: scale(1.1); /* Légèrement plus grand */
+}
+
+/* Scrollbar (si PerfectScrollbar est utilisé) */
+.sidebar-wrapper .perfect-scrollbar-container .ps__rail-y {
+    background-color: transparent !important;
+}
+.sidebar-wrapper .perfect-scrollbar-container .ps__thumb-y {
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.3
+    ) !important; /* Scrollbar semi-transparente */
+}
+
+/* --- Style du Header (Navbar) --- */
+
+#main header {
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--header-border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* Ajuste la hauteur si nécessaire */
+    /* height: 60px; */
+    z-index: 50; /* Inférieur à la sidebar si elle se superpose */
+}
+
+/* Couleur du bouton Burger */
+#main header .burger-btn i {
+    color: #333; /* Couleur sombre pour le burger */
+}
+
+/* Style du dropdown utilisateur */
+#main header .navbar .user-menu .user-name h6 {
+    color: #343a40; /* Couleur du nom */
+}
+#main header .navbar .user-menu .user-name p {
+    color: var(--header-text-color); /* Couleur du rôle/statut */
+}
+
+/* S'assurer que les liens de la navbar sont visibles */
+#main header .navbar .nav-link {
+    color: var(--header-text-color);
+}
+#main header .navbar .nav-link:hover {
+    color: #000;
+}
+
+/* Ajustement du padding du contenu principal si header fixe */
+/* body:not(.sidebar-horizontal) #main.layout-navbar #main-content {
+    padding-top: 5rem;
+} */
+
+/* Ajustement du footer */
+footer {
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--header-border-color);
+    background-color: var(--header-bg);
+    margin-top: 1rem; /* Espace avant le footer */
 }

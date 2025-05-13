@@ -1,0 +1,30 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-custom {
+    background-color: #5c5555 !important;
+    color: #fff;
+    border-top: 1px solid #555;
+    width: 100%;
+    position: relative;
+    left: 0;
+    bottom: 0;
+    padding: 20px 0;
+}
+.footer-link {
+    color: #f8f9fa;
+    text-decoration: none;
+    font-weight: 300;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+    color: #e2e6ea;
+}
+
+.footer-custom i {
+    vertical-align: middle;
+}
