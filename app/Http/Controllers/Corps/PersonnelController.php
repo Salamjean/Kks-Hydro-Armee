@@ -4,121 +4,104 @@ namespace App\Http\Controllers\Corps;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <--- CETTE LIGNE EST IMPORTANTE ET DOIT ÊTRE PRÉSENTE
-use Illuminate\Validation\Rule;     // Tu l'auras besoin pour la méthode store
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use App\Models\Personnel;
 use App\Models\Soute;
-use App\Models\Service;
+use App\Models\Service; // Gardé si service_id est toujours utilisé
 
 class PersonnelController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-{
-    $userCorpsArmeId = Auth::guard('corps')->id();
-
-    $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
-                        ->with(['service', 'soute']) // <<--- AJOUTER 'soute'
-                        ->orderBy('nom', 'asc')
-                        ->orderBy('prenom', 'asc')
-                        ->paginate(10);
-
-    // Services (si tu les utilises toujours pour le personnel)
-    $services = Service::where('corps_arme_id', $userCorpsArmeId)
-                       ->orderBy('nom', 'asc')
-                       ->get();
-
-    // Soutes pour le select dans la modale de création de personnel
-    $soutes = Soute::where('corps_arme_id', $userCorpsArmeId) // <<--- NOUVEAU
-                     ->orderBy('nom', 'asc')
-                     ->get();
-
-    return view('corpsArme.personnel.index', compact('personnels', 'services', 'soutes'));
-}
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    protected function getViewPath(string $viewName): string
     {
-        //
+        $user = Auth::guard('corps')->user();
+        // Normalisation du nom pour correspondre aux noms de dossiers (ex: armée-air -> armee-air)
+        $corpsNameNormalized = strtolower(str_replace(['é', 'ê', ' '], ['e', 'e', '-'], $user->name));
+
+        $specificView = $corpsNameNormalized . '.personnel.' . $viewName;
+        $defaultView = 'corpsArme.personnel.' . $viewName; // Ta vue de fallback/partagée
+
+        if (view()->exists($specificView)) {
+            return $specificView;
+        }
+        return $defaultView;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index()
     {
         $userCorpsArmeId = Auth::guard('corps')->id();
 
-        $validatedData = $request->validate([
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'matricule' => [
-                'required',
-                'string',
-                'max:255',
-                // Matricule doit être unique pour ce corps d'armée
-                Rule::unique('personnels')->where(function ($query) use ($userCorpsArmeId) {
-                    return $query->where('corps_arme_id', $userCorpsArmeId);
-                }),
-            ],
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                'max:255',
-                // Email doit être unique (globalement ou par corps, à décider)
-                // Pour l'instant, unique globalement s'il est fourni
-                Rule::unique('personnels')->ignore($request->id), // Ignorer l'id courant en cas d'update
-            ],
-            'service_id' => [
-                'nullable',
-                'integer',
-                // Le service_id doit exister et appartenir au corps d'armée de l'utilisateur
-                Rule::exists('services', 'id')->where(function ($query) use ($userCorpsArmeId) {
-                    return $query->where('corps_arme_id', $userCorpsArmeId);
-                }),
-            ],
-            'soute_id' => [ // <<--- NOUVELLE VALIDATION
-                'nullable',
-                'integer',
-                Rule::exists('soutes', 'id')->where(function ($query) use ($userCorpsArmeId) {
-                    return $query->where('corps_arme_id', $userCorpsArmeId); // La soute doit appartenir au corps
-                }),
-            ],
-            'form_type' => 'sometimes|string',
-        ],[
-            'nom.required' => 'Le nom est obligatoire.',
-            'prenom.required' => 'Le prénom est obligatoire.',
-            'matricule.required' => 'Le matricule est obligatoire.',
-            'matricule.unique' => 'Ce matricule est déjà utilisé dans votre corps d\'armée.',
-            'email.unique' => 'Cet email est déjà utilisé.',
-            'service_id.exists' => 'Le service sélectionné est invalide.',
-            'soute_id.exists' => 'La soute sélectionnée est invalide pour votre corps d\'armée.',
-        ]);
+        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                            ->with(['service', 'soutes']) // Charger la relation 'soutes' (pluriel)
+                            ->orderBy('nom', 'asc')
+                            ->orderBy('prenom', 'asc')
+                            ->paginate(10);
+
+        // Services pour le select (si tu le gardes dans le formulaire)
+        $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                           ->orderBy('nom', 'asc')
+                           ->get();
+
+        // Soutes pour le select multiple dans la modale de création
+        $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
+                         ->orderBy('nom', 'asc')
+                         ->get();
+
+        return view($this->getViewPath('index'), compact('personnels', 'services', 'soutes'));
+    }
+
+    public function store(Request $request)
+{
+    $userCorpsArmeId = Auth::guard('corps')->id();
+
+    $validatedData = $request->validate([
+        'nom' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'matricule' => 'required|string|max:255', // Supprimer Rule::unique
+        'email' => 'nullable|string|email|max:255', // Supprimer Rule::unique
+        'service_id' => [
+            'nullable','integer',
+            Rule::exists('services', 'id')->where('corps_arme_id', $userCorpsArmeId),
+        ],
+        'soutes_ids' => 'nullable|array',
+        'soutes_ids.*' => [
+            'integer',
+            Rule::exists('soutes', 'id')->where('corps_arme_id', $userCorpsArmeId),
+        ],
+    ], [
+        'nom.required' => 'Le nom est obligatoire.',
+        'prenom.required' => 'Le prénom est obligatoire.',
+        'matricule.required' => 'Le matricule est obligatoire.',
+        // SUPPRIMER LES LIGNES D'ERREUR POUR L'UNICITÉ
+        'soutes_ids.*.exists' => 'Sélection de soute invalide.',
+    ]);
 
         try {
-            $personnel = new Personnel();
-            $personnel->nom = $validatedData['nom'];
-            $personnel->prenom = $validatedData['prenom'];
-            $personnel->matricule = $validatedData['matricule'];
-            $personnel->email = $validatedData['email'] ?? null; // Mettre à null si vide
-            $personnel->service_id = $validatedData['service_id'] ?? null; // Mettre à null si non sélectionné
-            $personnel->soute_id = $validatedData['soute_id'] ?? null;
-            $personnel->corps_arme_id = $userCorpsArmeId; // Assigner le corps de l'utilisateur connecté
-            $personnel->password = null;
-            $personnel->save();
+            // Préparer les données pour la création du personnel (sans soutes_ids pour l'instant)
+            $personnelData = $request->only(['nom', 'prenom', 'matricule', 'email', 'service_id']);
+            $personnelData['corps_arme_id'] = $userCorpsArmeId;
+            $personnelData['password'] = null; // Le mot de passe sera défini par le personnel
+
+            $personnel = Personnel::create($personnelData);
+
+            // Attacher les soutes sélectionnées
+            if ($request->filled('soutes_ids') && is_array($request->soutes_ids)) {
+                // Double-vérification que les soutes appartiennent bien au corps (déjà fait par la validation mais plus sûr)
+                $soutesValidesPourAttachement = Soute::where('corps_arme_id', $userCorpsArmeId)
+                                                     ->whereIn('id', $request->soutes_ids)
+                                                     ->pluck('id'); // On ne récupère que les IDs valides
+                if ($soutesValidesPourAttachement->isNotEmpty()) {
+                    $personnel->soutes()->attach($soutesValidesPourAttachement->all());
+                }
+            }
 
             return redirect()->route('corps.personnel.index')
                              ->with('success', 'Employé "' . $personnel->nom_complet . '" ajouté avec succès !');
 
         } catch (\Exception $e) {
-            // \Log::error("Erreur création personnel: " . $e->getMessage());
+            \Log::error("Erreur création personnel: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return redirect()->route('corps.personnel.index')
-                             ->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout de l\'employé.'])
+                             ->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout de l\'employé. Veuillez vérifier les informations et réessayer.'])
                              ->withInput();
         }
     }
@@ -128,30 +111,84 @@ class PersonnelController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // À implémenter si besoin
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id) // Ou Personnel $personnel avec Route Model Binding
     {
-        //
+        // À implémenter
+        // $personnel = Personnel::with('soutes')->findOrFail($id);
+        // $userCorpsArmeId = Auth::guard('corps')->id();
+        // $soutesDisponibles = Soute::where('corps_arme_id', $userCorpsArmeId)->orderBy('nom')->get();
+        // $servicesDisponibles = Service::where('corps_arme_id', $userCorpsArmeId)->orderBy('nom')->get();
+        // return view($this->getViewPath('edit'), compact('personnel', 'soutesDisponibles', 'servicesDisponibles'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
+   // Méthode update
+public function update(Request $request, $id)
+{
+    $userCorpsArmeId = Auth::guard('corps')->id();
+    $personnel = Personnel::findOrFail($id);
+
+    // Vérification d'appartenance au corps
+    if ($personnel->corps_arme_id !== $userCorpsArmeId) {
+        return redirect()->back()->withErrors(['error' => 'Action non autorisée.']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    $validatedData = $request->validate([
+        'nom' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'matricule' => 'required|string|max:255',
+        'email' => 'nullable|string|email|max:255',
+        'soutes_ids' => 'nullable|array',
+        'soutes_ids.*' => 'integer|exists:soutes,id'
+    ]);
+
+    try {
+        // Mise à jour des données
+        $personnel->update($validatedData);
+        
+        // Synchronisation des soutes
+        if ($request->has('soutes_ids')) {
+            $personnel->soutes()->sync($request->soutes_ids);
+        } else {
+            $personnel->soutes()->detach();
+        }
+
+        return redirect()->route('corps.personnel.index')
+                         ->with('success', 'Employé mis à jour !');
+
+    } catch (\Exception $e) {
+        \Log::error("Erreur modification personnel: " . $e->getMessage());
+        return back()->withInput()->withErrors(['error' => 'Échec de la mise à jour.']);
     }
+}
+
+// Méthode destroy
+public function destroy($id)
+{
+    $personnel = Personnel::findOrFail($id);
+    
+    // Vérification d'appartenance
+    if ($personnel->corps_arme_id !== Auth::guard('corps')->id()) {
+        return redirect()->back()->withErrors(['error' => 'Action non autorisée.']);
+    }
+
+    try {
+        $personnel->soutes()->detach();
+        $personnel->delete();
+        return redirect()->route('corps.personnel.index')
+                         ->with('success', 'Employé supprimé !');
+
+    } catch (\Exception $e) {
+        \Log::error("Erreur suppression personnel: " . $e->getMessage());
+        return back()->withErrors(['error' => 'Échec de la suppression.']);
+    }
+}
 }

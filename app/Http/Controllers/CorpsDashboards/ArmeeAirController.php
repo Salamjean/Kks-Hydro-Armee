@@ -12,23 +12,23 @@ use App\Models\Soute;
 use App\Models\Distributeur;
 use App\Models\Carburant;
 
-class MarineDashboardController extends Controller
+class ArmeeAirController extends Controller
 {
     public function index()
     {
         $user = Auth::guard('corps')->user(); // L'utilisateur CorpsArme connecté
         $corpsArmeId = $user->id;
 
-        // Vérifie que l'utilisateur est bien du corps 'marine'
+        // Vérifie que l'utilisateur est bien du corps 'Armée-Air'
         // Cette vérification est importante si la route est générique,
         // mais si la route est spécifique, elle est moins critique ici,
-        // car seul un utilisateur 'Marine' devrait atteindre cette route via le handleLogin.
+        // car seul un utilisateur 'Armée-Air' devrait atteindre cette route via le handleLogin.
         // Cependant, c'est une bonne sécurité.
-        if ($user->name !== 'Marine') {
+        if ($user->name !== 'Armée-Air') {
             abort(403, 'Accès non autorisé à ce tableau de bord.');
         }
 
-        // Récupérer les données spécifiques pour le dashboard Marine
+        // Récupérer les données spécifiques pour le dashboard Armée-Air
         $souteCount = Soute::where('corps_arme_id', $corpsArmeId)->count();
         $personnelCount = Personnel::where('corps_arme_id', $corpsArmeId)->count();
         // ... autres statistiques ...
@@ -46,8 +46,8 @@ class MarineDashboardController extends Controller
             // ...
         ];
 
-        // IMPORTANT: Renvoie vers une vue spécifique à la Marine
+        // IMPORTANT: Renvoie vers une vue spécifique à la Armée-air
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('Marine.dashboard', $viewData);
+        return view('armee-air.dashboard', $viewData);
     }
 }

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 @extends('gendarmerie.layouts.app')
+=======
+@extends('gendarmerie.template')
+>>>>>>> origin/main
 @section('title', 'Tableau de Bord - Armée de Terre')
 
 @section('content')

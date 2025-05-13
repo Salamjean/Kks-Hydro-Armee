@@ -10,23 +10,45 @@ use Illuminate\Validation\Rule;
 
 class SouteController extends Controller
 {
+    protected function getViewPath(string $viewName): string
+    {
+        $user = Auth::guard('corps')->user();
+        $corpsNameLower = strtolower(str_replace(['é', ' '], ['e', '-'], $user->name)); // ex: armee-air, gendarmerie
+
+        // Vérifie si une vue spécifique au corps existe, sinon utilise une vue par défaut
+        // sous 'corpsArme' ou une autre structure que tu définis.
+        $specificView = $corpsNameLower . '.soutes.' . $viewName;
+        $defaultView = 'corpsArme.soutes.' . $viewName; // Vue par défaut que tu avais
+
+        if (view()->exists($specificView)) {
+            return $specificView;
+        }
+        return $defaultView; // Fallback si la vue spécifique n'existe pas
+    }
+
     public function index()
     {
         $userCorpsArmeId = Auth::guard('corps')->id();
         $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
                         ->orderBy('nom', 'asc')
                         ->paginate(10);
-        return view('corpsArme.soutes.index', compact('soutes'));
+
+        return view($this->getViewPath('index'), compact('soutes'));
     }
 
     public function store(Request $request)
     {
         $userCorpsArmeId = Auth::guard('corps')->id();
-    
+
         $validatedData = $request->validate([
-            'nom' => [ /* ... */ ],
+            'nom' => [
+                'required','string','max:255',
+                Rule::unique('soutes')->where(function ($query) use ($userCorpsArmeId) {
+                    return $query->where('corps_arme_id', $userCorpsArmeId);
+                }),
+            ],
             'localisation' => 'nullable|string|max:255',
-            'type_carburant_principal' => 'required|string|in:Diesel,Kerozen,Essence', // <<--- VALIDATION POUR LE SELECT
+            'type_carburant_principal' => 'required|string|in:Diesel,Kerozen,Essence',
             'capacite_totale' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'form_type' => 'sometimes|string',
@@ -37,23 +59,20 @@ class SouteController extends Controller
             'type_carburant_principal.required' => 'Le type de carburant principal est obligatoire.',
             'type_carburant_principal.in' => 'Le type de carburant sélectionné est invalide.',
         ]);
-    
+
         try {
             $soute = new Soute();
             $soute->fill($validatedData);
-            $soute->corps_arme_id = $userCorpsArmeId; // Assigner AVANT save() pour que le boot() y ait accès
-            // matricule_soute sera généré par l'événement 'creating' dans le modèle Soute
+            $soute->corps_arme_id = $userCorpsArmeId;
             $soute->save();
-    
-            return redirect()->route('corps.soutes.index')
+
+            return redirect()->route('corps.soutes.index') // La route reste la même
                              ->with('success', 'Soute "' . $soute->nom . '" (Matricule: ' . $soute->matricule_soute . ') ajoutée avec succès !');
         } catch (\Exception $e) {
-            // Pour le débogage, tu peux logger l'erreur complète
-            // \Log::error("Erreur création soute: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return redirect()->route('corps.soutes.index')
                              ->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout de la soute.'])
                              ->withInput();
         }
     }
-    // Les méthodes edit, update, destroy seront à implémenter plus tard
+    // ... autres méthodes edit, update, destroy à adapter de manière similaire pour le return view()
 }

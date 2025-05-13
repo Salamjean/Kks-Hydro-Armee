@@ -34,11 +34,12 @@
                 <div class="content-wrapper">
                     @yield('content')
                 </div>
-               
             </div>
             @include('admin.layouts.partials.footer')
+
         </div>
     </div>
+   
 </body>
 </html>
 <script src="{{ asset('js/app.js') }}"></script>

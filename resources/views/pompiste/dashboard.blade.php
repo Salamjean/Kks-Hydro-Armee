@@ -1,23 +1,17 @@
-{{-- resources/views/soute/dashboard.blade.php --}}
+@extends('pompiste.layouts.template')
 
-@extends('soute.layouts.app') {{-- <<--- MODIFIÉ pour utiliser le nouveau layout soute --}}
-
-@section('title', 'Tableau de Bord - Soute ' . ($soute->nom ?? ''))
+@section('title', 'Tableau de Bord Soute - Armée de Terre')
 
 @section('content')
-    {{-- ... (le contenu que tu avais déjà mis pour le dashboard soute) ... --}}
-    {{-- Par exemple : --}}
-    <div class="page-heading">
-        <h3>Tableau de Bord Soute : {{ $soute->nom ?? 'Inconnue' }}</h3>
-        <p class="text-subtitle text-muted">Géré par : {{ $personnel->nom_complet ?? 'Employé inconnu' }} (Matricule: {{ $personnel->matricule ?? '' }})</p>
-    </div>
-
-    <div class="page-content">
         <section class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h4>Informations de la Soute</h4>
+                        <div class="page-heading mt-2">
+                            <h3>Tableau de Bord Soute : {{ $soute->nom ?? 'Inconnue' }}</h3>
+                            <p class="text-subtitle text-muted">Géré par : {{ $personnel->nom_complet ?? 'Employé inconnu' }} (Matricule: {{ $personnel->matricule ?? '' }})</p>
+                        </div>
                     </div>
                     <div class="card-body">
                         <p>Matricule : <strong>{{ $soute->matricule_soute ?? 'N/A' }}</strong></p>
@@ -31,12 +25,17 @@
                             <a href="{{ route('corps.carburants.index') }}" class="btn btn-primary">
                                 <i class="bi bi-fuel-pump"></i> Enregistrer une Sortie de Carburant
                             </a>
-                            {{-- <a href="#" class="btn btn-success">Enregistrer une Entrée de Carburant</a> --}}
                         </div>
                     </div>
                 </div>
             </div>
-             {{-- Tu pourrais ajouter ici des cartes pour le niveau des pompes (Distributeurs) de cette soute --}}
         </section>
-    </div>
 @endsection
+
+@push('plugin-scripts')
+  <script src="{{ asset('assets/plugins/chartjs/chart.min.js') }}"></script>
+@endpush
+
+@push('custom-scripts')
+  <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+@endpush

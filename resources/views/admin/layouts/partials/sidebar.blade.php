@@ -9,7 +9,6 @@
                 <img src="" alt="logo admin" class="logo-icon">
             </a>
         </div>
-
         <ul class="menu">
             <li class="sidebar-title">Menu Principal</li>
 
@@ -36,10 +35,7 @@
                     </li>
                 </ul>
             </li>
-           
-
             <li class="sidebar-title">Compte</li>
-
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
                     <i class="bi bi-person-fill"></i>

@@ -9,7 +9,7 @@ body.login-page {
     justify-content: center;
     min-height: 100vh;
     padding: 20px;
-    background-image: url("{{ url('assets/images/auth/login_4.png') }}");
+    /* background-image: url("{{ url('assets/images/auth/login_4.png') }}"); */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

@@ -7,7 +7,7 @@ use App\Models\ResetCodePasswordCorpsArme;
 use App\Notifications\SendEmailToCorpsArmeAfterRegistrationNotification;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // Important pour l'authentification
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
