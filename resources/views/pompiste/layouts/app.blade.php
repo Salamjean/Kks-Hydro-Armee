@@ -25,7 +25,7 @@
     <div id="app">
 
         {{-- Inclusion de la Sidebar spécifique à la Soute --}}
-        @include('soute.layouts.partials.sidebar') {{-- Chemin vers la nouvelle sidebar --}}
+        @include('pompiste.layouts.partials.sidebar') {{-- Chemin vers la nouvelle sidebar --}}
 
         <div id="main" class='layout-navbar'>
             <header class='mb-3'>

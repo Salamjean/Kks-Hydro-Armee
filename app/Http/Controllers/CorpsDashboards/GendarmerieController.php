@@ -12,23 +12,23 @@ use App\Models\Soute;
 use App\Models\Distributeur;
 use App\Models\Carburant;
 
-class ArmeeTerreDashboardController extends Controller
+class GendarmerieController extends Controller
 {
     public function index()
     {
         $user = Auth::guard('corps')->user(); // L'utilisateur CorpsArme connecté
         $corpsArmeId = $user->id;
 
-        // Vérifie que l'utilisateur est bien du corps 'Armée-Terre'
+        // Vérifie que l'utilisateur est bien du corps 'Gendarmerie'
         // Cette vérification est importante si la route est générique,
         // mais si la route est spécifique, elle est moins critique ici,
-        // car seul un utilisateur 'Armée-Terre' devrait atteindre cette route via le handleLogin.
+        // car seul un utilisateur 'Gendarmerie' devrait atteindre cette route via le handleLogin.
         // Cependant, c'est une bonne sécurité.
-        if ($user->name !== 'Armée-Terre') {
+        if ($user->name !== 'Gendarmerie') {
             abort(403, 'Accès non autorisé à ce tableau de bord.');
         }
 
-        // Récupérer les données spécifiques pour le dashboard Armée-Terre
+        // Récupérer les données spécifiques pour le dashboard Gendarmerie
         $souteCount = Soute::where('corps_arme_id', $corpsArmeId)->count();
         $personnelCount = Personnel::where('corps_arme_id', $corpsArmeId)->count();
         // ... autres statistiques ...
@@ -46,8 +46,8 @@ class ArmeeTerreDashboardController extends Controller
             // ...
         ];
 
-        // IMPORTANT: Renvoie vers une vue spécifique à la Armée-Terre
+        // IMPORTANT: Renvoie vers une vue spécifique à la gendarmerie
         // qui utilisera son propre layout/sidebar si nécessaire.
-        return view('Armee-Terre.dashboard', $viewData);
+        return view('gendarmerie.dashboard', $viewData);
     }
 }

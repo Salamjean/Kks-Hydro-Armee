@@ -33,9 +33,10 @@ class Soute extends Model
         return $this->belongsTo(CorpsArme::class);
     }
 
-    public function personnels(): HasMany // Une soute peut avoir plusieurs personnels
+    public function personnels(): BelongsToMany
     {
-        return $this->hasMany(Personnel::class);
+        return $this->belongsToMany(Personnel::class, 'personnel_soute')
+                    ->withTimestamps();
     }
 
     public function distributeurs(): HasMany // Une soute peut avoir plusieurs pompes/distributeurs
@@ -63,4 +64,6 @@ class Soute extends Model
             }
         });
     }
+    // RELATION MANY-TO-MANY AVEC PERSONNEL
+  
 }

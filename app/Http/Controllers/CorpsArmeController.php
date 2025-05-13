@@ -218,21 +218,24 @@ class CorpsArmeController extends Controller
             // Redirection dynamique basée sur le nom du corps
             switch ($corpsName) {
                 case 'gendarmerie':
-                    // Assurez-vous que cette route existe dans web.php
-                    return redirect()->intended(route('gendarmerie.dashboard'));
+                    // La route dans web.php est nommée 'gendarmerie.dashboard'
+                    // Le préfixe 'corps.' est ajouté par le groupe de routes.
+                    // Donc, l'appel correct est route('corps.gendarmerie.dashboard')
+                    return redirect()->intended(route('corps.gendarmerie.dashboard'));
                 case 'marine':
-                    return redirect()->intended(route('marine.dashboard'));
-                case 'armée-air': // Attention au nom exact utilisé dans la base
-                    return redirect()->intended(route('armee-air.dashboard'));
-                case 'armée-terre': // Attention au nom exact
-                    return redirect()->intended(route('armee-terre.dashboard'));
+                    return redirect()->intended(route('corps.marine.dashboard'));
+                case 'armée-air': // Vérifie la casse et le tiret ici
+                    // Si le nom dans la BDD est 'Armée-Air', alors strtolower donne 'armée-air'
+                    // Si la route est nommée 'armee-air.dashboard' (sans accent), il faut être cohérent
+                    return redirect()->intended(route('corps.armee-air.dashboard')); // Assure-toi que la route s'appelle bien comme ça
+                case 'armée-terre':
+                    return redirect()->intended(route('corps.armee-terre.dashboard'));
                 default:
-                    // Redirection générique si le nom ne correspond à aucun cas spécifique
-                    Log::warning("Corps d'armée non reconnu pour la redirection : " . $user->name);
-                    // Peut-être créer une route 'corps.dashboard.generic' ?
-                    // Pour l'instant, on redirige vers une route de base 'corps.dashboard'
-                    // que vous devrez définir.
-                     return redirect()->intended(route('corps.dashboard')); // Assurez-vous que cette route existe
+                    // Que faire si le corps n'est pas reconnu ici ?
+                    // Tu n'as plus de route 'corps.dashboard' générique.
+                    // Peut-être rediriger vers une page d'erreur ou la page de login avec un message.
+                    Log::warning("Corps d'armée non reconnu pour la redirection dans handleLogin : " . $user->name);
+                    return redirect()->route('corps.login')->with('error', 'Tableau de bord non trouvé pour votre corps d\'armée.');
             }
 
         }

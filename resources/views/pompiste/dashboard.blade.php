@@ -1,6 +1,6 @@
 {{-- resources/views/soute/dashboard.blade.php --}}
 
-@extends('soute.layouts.app') {{-- <<--- MODIFIÉ pour utiliser le nouveau layout soute --}}
+@extends('pompiste.layouts.app') {{-- <<--- MODIFIÉ pour utiliser le nouveau layout soute --}}
 
 @section('title', 'Tableau de Bord - Soute ' . ($soute->nom ?? ''))
 

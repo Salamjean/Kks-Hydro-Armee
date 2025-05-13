@@ -21,20 +21,15 @@
     @stack('styles')
 </head>
 <body data-base-url="{{url('/')}}" class="sidebar-lg-only">
-
     <div class="container-scroller" id="app">
-
-        @include('corpsArme.layouts.partials.header')
-
+        @include('gendarmerie.layouts.partials.header')
         <div class="container-fluid page-body-wrapper">
-
-            @include('corpsArme.layouts.partials.sidebar')
-
+            @include('gendarmerie.layouts.partials.sidebar')
             <div class="main-panel">
                 <div class="content-wrapper">
                     @yield('content')
                 </div>
-                @include('corpsArme.layouts.partials.footer')
+                @include('gendarmerie.layouts.partials.footer')
             </div>
         </div>
     </div>

@@ -29,40 +29,92 @@ class SoutePersonnelLoginController extends Controller
      */
     public function showLoginForm()
     {
-        return view('soute.auth.login'); // Vue à créer
+        return view('pompiste.auth.login'); // Vue à créer
     }
+    public function getPersonnelSouteInfo(Request $request)
+    {
+        $request->validate(['email_or_matricule' => 'required|string']);
 
+        $personnel = Personnel::where(function ($query) use ($request) {
+                            $query->where('email', $request->email_or_matricule)
+                                  ->orWhere('matricule', $request->email_or_matricule);
+                        })
+                        // CHARGER LA RELATION 'soutes' (Many-to-Many)
+                        ->with('soutes')
+                        ->first();
+
+        if ($personnel) {
+            // Logique pour la relation Many-to-Many
+            if ($personnel->soutes && $personnel->soutes->count() > 0) {
+                if ($personnel->soutes->count() === 1) {
+                    // Si une seule soute, on la présélectionne
+                    $soute = $personnel->soutes->first();
+                    return response()->json([
+                        'success' => true,
+                        'soutes' => [['id' => $soute->id, 'matricule_soute' => $soute->matricule_soute, 'nom' => $soute->nom]],
+                        'multiple_soutes' => false, // Indique au JS qu'il n'y a pas besoin de select
+                    ]);
+                } else {
+                    // Si plusieurs soutes, on renvoie la liste pour que l'utilisateur choisisse
+                    $soutesData = $personnel->soutes->map(function ($soute) {
+                        return ['id' => $soute->id, 'matricule_soute' => $soute->matricule_soute, 'nom' => $soute->nom];
+                    });
+                    return response()->json([
+                        'success' => true,
+                        'soutes' => $soutesData,
+                        'multiple_soutes' => true, // Indique au JS d'afficher le select
+                    ]);
+                }
+            }
+            // Si aucune soute n'est assignée (même avec la relation Many-to-Many)
+            return response()->json(['success' => false, 'message' => 'Aucune soute n\'est assignée à ce personnel.']);
+        }
+        return response()->json(['success' => false, 'message' => 'Personnel non trouvé.']);
+    }
     /**
      * Gère la tentative de connexion du personnel de soute.
      */
     public function login(Request $request)
     {
         $request->validate([
-            'email_or_matricule' => 'required|string', // Peut être email ou matricule de l'employé
-            'matricule_soute' => 'required|string|exists:soutes,matricule_soute',
-            'password' => 'nullable|string', // Nullable car peut être la première connexion
+          'email_or_matricule' => 'required|string',
+            // S'il y a une sélection de soute, l'ID de la soute sera envoyé.
+            'soute_id_selected' => 'required_if:multiple_soutes_found,true|nullable|integer|exists:soutes,id',
+            // Le matricule_soute est toujours requis pour identifier la soute cible (si pas de sélection)
+            'matricule_soute' => 'required_without:soute_id_selected|nullable|string|exists:soutes,matricule_soute',
+            'password' => 'nullable|string',
         ], [
             'email_or_matricule.required' => 'L\'email ou le matricule de l\'employé est requis.',
-            'matricule_soute.required' => 'Le matricule de la soute est requis.',
+            'matricule_soute.required_without' => 'Le matricule de la soute est requis.',
             'matricule_soute.exists' => 'Le matricule de soute est invalide.',
+            'soute_id_selected.required_if' => 'Veuillez sélectionner une soute.',
+            'soute_id_selected.exists' => 'La soute sélectionnée est invalide.',
         ]);
 
         // 1. Trouver la soute par son matricule
-        $soute = Soute::where('matricule_soute', $request->matricule_soute)->first();
-        if (!$soute) { // Double vérification, même si 'exists' devrait suffire
-            throw ValidationException::withMessages(['matricule_soute' => 'Matricule de soute invalide.']);
+        $soute = null;
+        if ($request->filled('soute_id_selected')) {
+            $soute = Soute::find($request->soute_id_selected);
+        } elseif($request->filled('matricule_soute')) {
+            $soute = Soute::where('matricule_soute', $request->matricule_soute)->first();
         }
 
-        // 2. Trouver le personnel par email ou matricule, ET s'assurer qu'il est lié à CETTE soute
+        if (!$soute) {
+            throw ValidationException::withMessages(['matricule_soute' => 'Soute non identifiée.']);
+        }
+
         $personnel = Personnel::where(function ($query) use ($request) {
-                                $query->where('email', $request->email_or_matricule)
-                                      ->orWhere('matricule', $request->email_or_matricule);
-                            })
-                            ->where('soute_id', $soute->id) // Le personnel doit appartenir à la soute identifiée
-                            ->first();
+            $query->where('email', $request->email_or_matricule)
+                  ->orWhere('matricule', $request->email_or_matricule);
+        })
+        // VÉRIFICATION POUR MANY-TO-MANY
+        ->whereHas('soutes', function($q) use ($soute) {
+           $q->where('soutes.id', $soute->id); // S'assurer que le personnel est lié à la soute sélectionnée/identifiée
+        })
+        ->first();
 
         if (!$personnel) {
-            throw ValidationException::withMessages(['email_or_matricule' => 'Email/Matricule employé invalide ou non assigné à cette soute.']);
+            throw ValidationException::withMessages(['email_or_matricule' => 'Email/Matricule employé invalide ou non assigné à la soute sélectionnée.']);
         }
 
         // 3. Vérifier le mot de passe
@@ -116,7 +168,7 @@ class SoutePersonnelLoginController extends Controller
         if (Auth::guard('personnel_soute')->user()->password !== null) {
             return redirect()->route('soute.dashboard.index'); // Déjà un mot de passe, redirige
         }
-        return view('soute.auth.set_password'); // Vue à créer
+        return view('pompiste.auth.set_password'); // Vue à créer
     }
 
     /**
