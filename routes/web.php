@@ -92,26 +92,35 @@ Route::resource('soutes', SouteController::class)->except(['show']);
 });
 
 Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
-   Route::middleware('guest:personnel_soute')->group(function() {
-    Route::get('/login', [SoutePersonnelLoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [SoutePersonnelLoginController::class, 'login'])->name('handleLogin');
-    
-});
-Route::post('/get-personnel-soute-info', [SoutePersonnelLoginController::class, 'getPersonnelSouteInfo'])
-       ->name('getPersonnelSouteInfo');
-    Route::get('/set-password', [SoutePersonnelLoginController::class, 'showSetPasswordForm'])->name('set.password')->middleware('auth:personnel_soute'); // Doit être connecté avec mdp null
-    Route::post('/set-password', [SoutePersonnelLoginController::class, 'setPassword'])->name('handleSet.password')->middleware('auth:personnel_soute');
-
-   Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
-    Route::get('/', [SouteDashboardController::class, 'index'])->name('index'); 
-    Route::post('/logout', [SoutePersonnelLoginController::class, 'logout'])->name('logout');
-});
-      Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
-        Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
+    // Routes pour les utilisateurs non connectés (ou en cours de première connexion)
+    Route::middleware('guest:personnel_soute')->group(function() {
+        Route::get('/login', [SoutePersonnelLoginController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [SoutePersonnelLoginController::class, 'login'])->name('handleLogin');
     });
-});
+
+    // Route AJAX pour récupérer les informations du personnel et de ses soutes
+    Route::post('/get-personnel-soute-info', [SoutePersonnelLoginController::class, 'getPersonnelSouteInfo'])
+           ->name('getPersonnelSouteInfo');
+
+    // Routes pour définir le mot de passe (l'utilisateur doit être "semi-authentifié" par le login initial)
+    Route::middleware('auth:personnel_soute')->group(function() {
+        Route::get('/set-password', [SoutePersonnelLoginController::class, 'showSetPasswordForm'])->name('set.password');
+        Route::post('/set-password', [SoutePersonnelLoginController::class, 'setPassword'])->name('handleSet.password');
+        // La route de déconnexion pourrait aussi être ici si tu veux permettre de se déconnecter
+        // même avant d'avoir défini un mot de passe, mais la placer dans le groupe principal
+        // du dashboard est plus courant.
+    });
+
+    // Routes du Dashboard Soute (nécessite une authentification complète et un mot de passe défini)
+    Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
+        Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
+        Route::post('/logout', [SoutePersonnelLoginController::class, 'logout'])->name('logout'); // Route de déconnexion
+        // ... Ajoutez ici d'autres routes pour les fonctionnalités internes au dashboard de la soute ...
+    });
 
  Route::middleware('auth:corps')->group(function(){
     Route::get('corps/dashboard',[CorpsArmeController::class,'dashboard'])->name('corps.dashboard');
     Route::get('corps/logout',[CorpsArmeController::class,'logout'])->name('corps.logout');
+});
+
 });

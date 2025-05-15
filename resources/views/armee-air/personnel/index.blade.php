@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template')
+@extends('armee-air.layouts.template')
 
 @section('title', 'Gestion du Personnel')
 
@@ -7,14 +7,15 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Gestion du Personnel</h3>
-                <p class="text-subtitle text-muted">Liste des employés de votre corps d'armée.</p>
+                <h3>Gestion des Pompistes</h3>
+                <p class="text-subtitle text-muted">Liste des Pompistes.</p>
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('corps.dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('corps.armee-air.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Personnel</li>
+                        <li class="breadcrumb-item active" aria-current="page">Pompiste</li>
                     </ol>
                 </nav>
             </div>
@@ -45,7 +46,7 @@
     <div class="card">
         <div class="card-header">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
-                <i class="bi bi-person-plus-fill"></i> Ajouter un Employé
+                <i class="bi bi-person-plus-fill"></i> Ajouter Pompiste
             </button>
         </div>
         <div class="card-body">
@@ -101,44 +102,43 @@
     </div>
 </section>
 
-<div class="modal fade" id="createPersonnelModal" tabindex="-1" aria-labelledby="createPersonnelModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modale de création -->
+<div class="modal fade" id="createPersonnelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createPersonnelModalLabel">Ajouter un Employé</h5>
+                <h5 class="modal-title">Ajouter un Employé</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <form action="{{ route('corps.personnel.store') }}" method="POST">
-                <input type="hidden" name="form_type" value="create">
+            <input type="hidden" name="form_type" value="create"> 
                 @csrf
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="create_prenom" class="form-label">Prénom *</label>
-                            <input type="text" id="create_prenom" name="prenom" class="form-control" value="{{ old('prenom') }}" required>
+                            <label class="form-label">Prénom *</label>
+                            <input type="text" name="prenom" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="create_nom" class="form-label">Nom *</label>
-                            <input type="text" id="create_nom" name="nom" class="form-control" value="{{ old('nom') }}" required>
+                            <label class="form-label">Nom *</label>
+                            <input type="text" name="nom" class="form-control" required>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="create_matricule" class="form-label">Matricule *</label>
-                            <input type="text" id="create_matricule" name="matricule" class="form-control" value="{{ old('matricule') }}" required>
+                            <label class="form-label">Matricule *</label>
+                            <input type="text" name="matricule" class="form-control" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="create_email" class="form-label">Email</label>
-                            <input type="email" id="create_email" name="email" class="form-control" value="{{ old('email') }}">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="create_soutes_ids" class="form-label">Soutes associées</label>
-                        <select id="create_soutes_ids" name="soutes_ids[]" class="form-select soute-select" multiple>
+                        <label class="form-label">Soutes associées</label>
+                        <select name="soutes_ids[]" class="form-select soute-select" multiple>
                             @foreach($soutes as $soute)
-                                <option value="{{ $soute->id }}" {{ (collect(old('soutes_ids'))->contains($soute->id)) ? 'selected' : '' }}>
-                                    {{ $soute->nom }}
-                                </option>
+                                <option value="{{ $soute->id }}">{{ $soute->nom }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -152,18 +152,19 @@
     </div>
 </div>
 
-<div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="editPersonnelModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modale d'édition -->
+<div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editPersonnelModalLabel">Modifier l'Employé</h5>
+                <h5 class="modal-title">Modifier l'Employé</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editForm" method="POST">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="form_type" value="edit">
                 <div class="modal-body">
+                    <!-- Le contenu est rempli par JavaScript -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -174,15 +175,16 @@
     </div>
 </div>
 
-<div class="modal fade" id="deletePersonnelModal" tabindex="-1" aria-labelledby="deletePersonnelModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm"> 
+<!-- Modale de suppression -->
+<div class="modal fade" id="deletePersonnelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deletePersonnelModalLabel">Confirmer la suppression</h5>
+                <h5 class="modal-title">Confirmer la suppression</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer <strong id="personnelName"></strong> ?</p>
+                <p>Êtes-vous sûr de vouloir supprimer <span id="personnelName"></span> ?</p>
             </div>
             <div class="modal-footer">
                 <form id="deleteForm" method="POST">
@@ -199,110 +201,122 @@
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <style>
-
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #ced4da;
+        min-height: 38px;
+    }
+    .badge {
+        margin-right: 5px;
+    }
 </style>
 @endpush
 
 @push('custom-scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script> 
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        @if($errors->any() && old('form_type') === 'create')
-            var createModalEl = document.getElementById('createPersonnelModal');
-            if (createModalEl) {
-                var createModal = new bootstrap.Modal(createModalEl);
-                createModal.show();
-            }
+        $('.soute-select').select2({
+        placeholder: "Sélectionnez des soutes",
+        width: '100%'
+    });
+        @if($errors->hasBag('default') && old('form_type') === 'create_soute')
+            var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
+            createModal.show();
         @endif
+    });
 
-        if ($('#create_soutes_ids').length) {
-            $('#create_soutes_ids').select2({
-                theme: "bootstrap-5",
+    function confirmDeleteSoute(souteId, souteName) {
+        Swal.fire({
+            title: 'Êtes-vous sûr ?',
+            text: "Supprimer la soute '" + souteName + "' ? Cette action est irréversible et pourrait affecter le personnel et les distributeurs liés !",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer !',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log("Suppression confirmée pour la soute ID: " + souteId);
+            }
+        })
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+    // Gestion de l'édition
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const personnel = {
+                id: this.dataset.id,
+                nom: this.dataset.nom,
+                prenom: this.dataset.prenom,
+                matricule: this.dataset.matricule,
+                email: this.dataset.email,
+                soutes: JSON.parse(this.dataset.soutes)
+            };
+
+            // Mise à jour du formulaire
+            const editForm = document.getElementById('editForm');
+            editForm.action = `/corps/personnel/${personnel.id}`;
+
+            // Génération des options
+            let optionsHtml = '';
+            @foreach($soutes as $soute)
+                const selected = personnel.soutes.includes({{ $soute->id }}) ? 'selected' : '';
+                optionsHtml += `<option value="{{ $soute->id }}" ${selected}>{{ $soute->nom }}</option>`;
+            @endforeach
+
+            // Injection HTML
+            document.querySelector('#editPersonnelModal .modal-body').innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Prénom *</label>
+                        <input type="text" name="prenom" class="form-control" value="${personnel.prenom}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nom *</label>
+                        <input type="text" name="nom" class="form-control" value="${personnel.nom}" required>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Matricule *</label>
+                        <input type="text" name="matricule" class="form-control" value="${personnel.matricule}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="${personnel.email}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Soutes associées</label>
+                    <select name="soutes_ids[]" class="form-select soute-select-edit" multiple>
+                        ${optionsHtml}
+                    </select>
+                </div>
+            `;
+
+            // Initialisation Select2
+            $('.soute-select-edit').select2({
                 placeholder: "Sélectionnez des soutes",
-                width: '100%',
-                dropdownParent: $('#createPersonnelModal') 
+                width: '100%'
             });
-        }
 
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const personnel = {
-                    id: this.dataset.id,
-                    nom: this.dataset.nom,
-                    prenom: this.dataset.prenom,
-                    matricule: this.dataset.matricule,
-                    email: this.dataset.email || '',
-                    soutes: JSON.parse(this.dataset.soutes || '[]')
-                };
-
-                const editForm = document.getElementById('editForm');
-                editForm.action = `{{ url('corps/personnel') }}/${personnel.id}`;
-
-                let optionsHtml = '';
-                @foreach($soutes as $soute)
-                    const selected = personnel.soutes.includes({{ $soute->id }}) ? 'selected' : '';
-                    optionsHtml += `<option value="{{ $soute->id }}" ${selected}>{{ $soute->nom }}</option>`;
-                @endforeach
-
-                const modalBody = document.querySelector('#editPersonnelModal .modal-body');
-                modalBody.innerHTML = `
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="edit_prenom" class="form-label">Prénom *</label>
-                            <input type="text" id="edit_prenom" name="prenom" class="form-control" value="${personnel.prenom}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_nom" class="form-label">Nom *</label>
-                            <input type="text" id="edit_nom" name="nom" class="form-control" value="${personnel.nom}" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="edit_matricule" class="form-label">Matricule *</label>
-                            <input type="text" id="edit_matricule" name="matricule" class="form-control" value="${personnel.matricule}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_email" class="form-label">Email</label>
-                            <input type="email" id="edit_email" name="email" class="form-control" value="${personnel.email}">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_soutes_ids" class="form-label">Soutes associées</label>
-                        <select id="edit_soutes_ids" name="soutes_ids[]" class="form-select soute-select-edit" multiple>
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                `;
-
-                if ($('#edit_soutes_ids').data('select2')) {
-                    $('#edit_soutes_ids').select2('destroy'); 
-                }
-                $('#edit_soutes_ids').select2({
-                    theme: "bootstrap-5",
-                    placeholder: "Sélectionnez des soutes",
-                    width: '100%',
-                    dropdownParent: $('#editPersonnelModal') 
-                });
-
-                var editModal = new bootstrap.Modal(document.getElementById('editPersonnelModal'));
-                editModal.show();
-            });
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('personnelName').textContent = this.dataset.name;
-                document.getElementById('deleteForm').action = `{{ url('corps/personnel') }}/${this.dataset.id}`; // URL dynamique
-                var deleteModal = new bootstrap.Modal(document.getElementById('deletePersonnelModal'));
-                deleteModal.show();
-            });
+            // Affichage de la modale
+            new bootstrap.Modal(document.getElementById('editPersonnelModal')).show();
         });
     });
+
+    // Gestion suppression
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('personnelName').textContent = this.dataset.name;
+            document.getElementById('deleteForm').action = `/corps/personnel/${this.dataset.id}`;
+            new bootstrap.Modal(document.getElementById('deletePersonnelModal')).show();
+        });
+    });
+});
 </script>
 @endpush

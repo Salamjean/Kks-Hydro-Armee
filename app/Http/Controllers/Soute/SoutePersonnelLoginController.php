@@ -7,109 +7,106 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Personnel;
-use App\Models\Soute; // Si tu dois vérifier le matricule_soute
-use Illuminate\Validation\ValidationException; // Pour les erreurs de login
+use App\Models\Soute;
+use Illuminate\Support\Facades\Log; // Ajouter en haut avec les autres imports
+use Illuminate\Validation\ValidationException;
 
 class SoutePersonnelLoginController extends Controller
 {
-    /**
-     * Constructeur pour appliquer le middleware guest aux méthodes de login/set_password
-     * sauf pour logout et les méthodes de définition de mot de passe qui nécessitent une "semi-auth".
-     */
     // public function __construct()
     // {
-    //     // Applique le middleware 'guest' au guard 'personnel_soute'
-    //     // pour les méthodes showLoginForm et login,
-    //     // sauf si on est déjà en train de définir le mot de passe.
+    //     // Le middleware guest s'assure que seuls les utilisateurs non connectés
+    //     // peuvent accéder aux formulaires de login et de traitement du login.
     //     $this->middleware('guest:personnel_soute')->except(['logout', 'showSetPasswordForm', 'setPassword']);
     // }
 
-    /**
-     * Affiche le formulaire de connexion pour le personnel de soute.
-     */
     public function showLoginForm()
     {
-        return view('pompiste.auth.login'); // Vue à créer
+        return view('pompiste.auth.login');
     }
+
     public function getPersonnelSouteInfo(Request $request)
     {
         $request->validate(['email_or_matricule' => 'required|string']);
 
         $personnel = Personnel::where(function ($query) use ($request) {
-                            $query->where('email', $request->email_or_matricule)
-                                  ->orWhere('matricule', $request->email_or_matricule);
-                        })
-                        // CHARGER LA RELATION 'soutes' (Many-to-Many)
-                        ->with('soutes')
-                        ->first();
+            $query->where('email', $request->email_or_matricule)
+                  ->orWhere('matricule', $request->email_or_matricule);
+        })
+        ->with(['soutes' => function($query) { // Chargement explicite
+            $query->select('soutes.id', 'nom', 'matricule_soute');
+        }])
+        ->first();
+        // === SECTION DE DÉBOGAGE AVEC LOG (NON BLOQUANT) - OPTIONNEL ===
+        if ($personnel) {
+            Log::info('SouteInfo - Personnel Trouvé:', [
+                'nom' => $personnel->nom,
+                'soutes_count' => $personnel->soutes ? $personnel->soutes->count() : 0,
+                'soutes_data' => $personnel->soutes ? $personnel->soutes->map(function($soute){
+                    return ['id' => $soute->id, 'nom' => $soute->nom, 'matricule_soute' => $soute->matricule_soute];
+                })->toArray() : []
+            ]);
+        } else {
+            Log::info('SouteInfo - Personnel Non Trouvé:', ['input' => $request->email_or_matricule]);
+        }
+        // ==============================================================
 
         if ($personnel) {
-            // Logique pour la relation Many-to-Many
             if ($personnel->soutes && $personnel->soutes->count() > 0) {
                 if ($personnel->soutes->count() === 1) {
-                    // Si une seule soute, on la présélectionne
                     $soute = $personnel->soutes->first();
                     return response()->json([
                         'success' => true,
                         'soutes' => [['id' => $soute->id, 'matricule_soute' => $soute->matricule_soute, 'nom' => $soute->nom]],
-                        'multiple_soutes' => false, // Indique au JS qu'il n'y a pas besoin de select
+                        'multiple_soutes' => false,
                     ]);
-                } else {
-                    // Si plusieurs soutes, on renvoie la liste pour que l'utilisateur choisisse
+                } else { // Plus d'une soute
                     $soutesData = $personnel->soutes->map(function ($soute) {
                         return ['id' => $soute->id, 'matricule_soute' => $soute->matricule_soute, 'nom' => $soute->nom];
                     });
                     return response()->json([
                         'success' => true,
                         'soutes' => $soutesData,
-                        'multiple_soutes' => true, // Indique au JS d'afficher le select
+                        'multiple_soutes' => true,
                     ]);
                 }
             }
-            // Si aucune soute n'est assignée (même avec la relation Many-to-Many)
             return response()->json(['success' => false, 'message' => 'Aucune soute n\'est assignée à ce personnel.']);
         }
         return response()->json(['success' => false, 'message' => 'Personnel non trouvé.']);
     }
-    /**
-     * Gère la tentative de connexion du personnel de soute.
-     */
     public function login(Request $request)
     {
         $request->validate([
-          'email_or_matricule' => 'required|string',
-            // S'il y a une sélection de soute, l'ID de la soute sera envoyé.
+            'email_or_matricule' => 'required|string',
             'soute_id_selected' => 'required_if:multiple_soutes_found,true|nullable|integer|exists:soutes,id',
-            // Le matricule_soute est toujours requis pour identifier la soute cible (si pas de sélection)
             'matricule_soute' => 'required_without:soute_id_selected|nullable|string|exists:soutes,matricule_soute',
             'password' => 'nullable|string',
         ], [
             'email_or_matricule.required' => 'L\'email ou le matricule de l\'employé est requis.',
-            'matricule_soute.required_without' => 'Le matricule de la soute est requis.',
+            'matricule_soute.required_without' => 'Le matricule de la soute est requis si une seule soute est associée.',
             'matricule_soute.exists' => 'Le matricule de soute est invalide.',
             'soute_id_selected.required_if' => 'Veuillez sélectionner une soute.',
             'soute_id_selected.exists' => 'La soute sélectionnée est invalide.',
         ]);
 
-        // 1. Trouver la soute par son matricule
         $soute = null;
         if ($request->filled('soute_id_selected')) {
             $soute = Soute::find($request->soute_id_selected);
-        } elseif($request->filled('matricule_soute')) {
+        } elseif ($request->filled('matricule_soute')) {
             $soute = Soute::where('matricule_soute', $request->matricule_soute)->first();
         }
 
         if (!$soute) {
-            throw ValidationException::withMessages(['matricule_soute' => 'Soute non identifiée.']);
+            throw ValidationException::withMessages(['matricule_soute' => 'Soute non identifiée ou non sélectionnée.']);
         }
 
         $personnel = Personnel::where(function ($query) use ($request) {
             $query->where('email', $request->email_or_matricule)
                   ->orWhere('matricule', $request->email_or_matricule);
         })
-        // VÉRIFICATION POUR MANY-TO-MANY
         ->whereHas('soutes', function($q) use ($soute) {
-           $q->where('soutes.id', $soute->id); // S'assurer que le personnel est lié à la soute sélectionnée/identifiée
+            $q->where('soutes.id', $soute->id); // Utilisation du nom de table complet
         })
         ->first();
 
@@ -117,63 +114,48 @@ class SoutePersonnelLoginController extends Controller
             throw ValidationException::withMessages(['email_or_matricule' => 'Email/Matricule employé invalide ou non assigné à la soute sélectionnée.']);
         }
 
-        // 3. Vérifier le mot de passe
         if ($personnel->password === null) {
-            // Première connexion, pas de mot de passe défini
-            // Authentifier temporairement pour permettre la définition du mot de passe
             Auth::guard('personnel_soute')->login($personnel);
+            $request->session()->regenerate(); // Régénérer la session
+            session(['active_soute_id' => $soute->id]); // Mettre l'ID de la soute en session
             return redirect()->route('soute.dashboard.set.password')
                              ->with('status', 'Bienvenue ! Veuillez définir votre mot de passe.');
         } else {
-            // L'utilisateur a déjà un mot de passe, tenter une connexion normale
             if (empty($request->password)) {
                  throw ValidationException::withMessages(['password' => 'Le mot de passe est requis.']);
             }
 
+            $loginField = filter_var($request->email_or_matricule, FILTER_VALIDATE_EMAIL) ? 'email' : 'matricule';
             $credentials = [
-                // Utilise le champ qui est unique pour la connexion (email ou matricule)
-                // Si tu permets les deux, il faut choisir lequel est prioritaire pour 'attempt'
-                // Ou s'assurer que l'un des deux est l'identifiant principal pour 'attempt'
-                // Ici, on va supposer que 'email' est le champ principal pour 'attempt' si disponible
-                // ou 'matricule' sinon. Mais 'attempt' est plus simple si on utilise un seul champ.
-                // Pour simplifier, si 'email' est le champ d'identification principal pour Auth::attempt
-                // il faudrait que l'utilisateur entre son email.
-                // Pour cet exemple, on va prendre le champ qui a été trouvé :
-                (filter_var($request->email_or_matricule, FILTER_VALIDATE_EMAIL) ? 'email' : 'matricule') => $request->email_or_matricule,
+                $loginField => $request->email_or_matricule,
                 'password' => $request->password,
-                // On peut ajouter une condition pour s'assurer que le personnel est actif si tu as un tel champ
-                // 'is_active' => 1,
+                // Tu pourrais ajouter une condition pour que le personnel soit lié à la soute ici aussi,
+                // mais c'est déjà vérifié plus haut lors de la récupération de $personnel.
+                // 'soute_id' => $soute->id, // Cela ne fonctionnerait pas directement avec attempt()
+                                           // si soute_id n'est pas une colonne directe sur personnels.
             ];
-
 
             if (Auth::guard('personnel_soute')->attempt($credentials, $request->filled('remember'))) {
                 $request->session()->regenerate();
+                session(['active_soute_id' => $soute->id]); // Mettre l'ID de la soute en session
                 return redirect()->intended(route('soute.dashboard.index'));
             }
 
             throw ValidationException::withMessages([
-                // Utilise le nom du champ principal pour l'erreur
-                (filter_var($request->email_or_matricule, FILTER_VALIDATE_EMAIL) ? 'email_or_matricule' : 'email_or_matricule') => __('auth.failed'),
+                $loginField => __('auth.failed'),
             ]);
         }
     }
 
-    /**
-     * Affiche le formulaire pour définir le mot de passe (première connexion).
-     */
     public function showSetPasswordForm()
     {
-        // L'utilisateur doit être authentifié via le guard 'personnel_soute'
-        // et son mot de passe doit être null (géré par le middleware HasSoutePasswordSet aussi)
-        if (Auth::guard('personnel_soute')->user()->password !== null) {
-            return redirect()->route('soute.dashboard.index'); // Déjà un mot de passe, redirige
+        if (!Auth::guard('personnel_soute')->check() || Auth::guard('personnel_soute')->user()->password !== null) {
+            // Si l'utilisateur n'est pas "semi-loggué" ou a déjà un mdp, on le renvoie au login normal
+            return redirect()->route('soute.dashboard.login');
         }
-        return view('pompiste.auth.set_password'); // Vue à créer
+        return view('pompiste.auth.set_password');
     }
 
-    /**
-     * Enregistre le nouveau mot de passe.
-     */
     public function setPassword(Request $request)
     {
         $request->validate([
@@ -185,27 +167,49 @@ class SoutePersonnelLoginController extends Controller
         ]);
 
         $personnel = Auth::guard('personnel_soute')->user();
-        if ($personnel && $personnel->password === null) {
+        $activeSouteId = session('active_soute_id'); // Essayer de récupérer la soute active
+
+        if (!$activeSouteId && $personnel && $personnel->soutes()->count() > 0) {
+            // Si la session a été perdue mais que le personnel est toujours "loggué" (via le middleware auth:personnel_soute)
+            // et qu'il a des soutes, on pourrait tenter de prendre la première.
+            // Cependant, le flux normal est que active_soute_id soit défini par login().
+            // Si elle n'est pas là, c'est un souci.
+            // Pour plus de sécurité, on pourrait forcer une reconnexion.
+             Log::warning('Active_soute_id perdue pour le personnel ID: ' . $personnel->id . ' lors du setPassword.');
+             Auth::guard('personnel_soute')->logout();
+             $request->session()->invalidate();
+             $request->session()->regenerateToken();
+             return redirect()->route('soute.dashboard.login')->withErrors(['error' => 'Session de soute invalide. Veuillez vous reconnecter.']);
+        }
+
+
+        if ($personnel && $personnel->password === null && $activeSouteId) {
             $personnel->password = Hash::make($request->password);
             $personnel->save();
 
-            // Optionnel: re-logger l'utilisateur pour rafraîchir la session avec le mdp
-            // Auth::guard('personnel_soute')->login($personnel, true);
+            // Re-logger l'utilisateur pour s'assurer que la session est fraîche et contient le bon état.
+            Auth::guard('personnel_soute')->login($personnel, $request->filled('remember_me_after_set_password')); // 'remember'
+            $request->session()->regenerate();
+            session(['active_soute_id' => $activeSouteId]); // S'assurer qu'elle est bien remise après régénération
 
             return redirect()->route('soute.dashboard.index')->with('status', 'Mot de passe défini avec succès ! Vous êtes connecté.');
         }
 
-        return redirect()->route('soute.dashboard.login')->withErrors(['email_or_matricule' => 'Impossible de définir le mot de passe.']);
+        return redirect()->route('soute.dashboard.login')->withErrors(['email_or_matricule' => 'Impossible de définir le mot de passe ou session invalide.']);
     }
 
-    /**
-     * Déconnecte le personnel de soute.
-     */
     public function logout(Request $request)
     {
-        Auth::guard('personnel_soute')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('soute.dashboard.login');
+        Auth::guard('personnel_soute')->logout(); // Déconnecte l'utilisateur du guard 'personnel_soute'
+
+        $request->session()->invalidate(); // Invalide la session actuelle
+
+        $request->session()->regenerateToken(); // Régénère le token CSRF
+
+        session()->forget('active_soute_id'); // Nettoyer la session spécifique à la soute
+
+        // REDIRECTION EXPLICITE vers la page de login du Soute Dashboard
+        return redirect()->route('soute.dashboard.login')
+                         ->with('status', 'Vous avez été déconnecté avec succès de l\'espace soute.'); // Message optionnel
     }
 }

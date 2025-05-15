@@ -13,13 +13,7 @@ class Personnel extends Authenticatable
     use HasFactory;
 
     protected $fillable = [
-        'nom',
-        'prenom',
-        'matricule',
-        'email',
-        'corps_arme_id',
-        'service_id',
-        // 'Soute_id'
+      'nom','prenom','matricule','email','corps_arme_id','service_id'
     ];
 
     public function corpsArme(): BelongsTo
@@ -33,11 +27,11 @@ class Personnel extends Authenticatable
     }
 
     
-public function soutes(): BelongsToMany
-    {
-        return $this->belongsToMany(Soute::class, 'personnel_soute')
-                    ->withTimestamps();
-    }
+    public function soutes(): BelongsToMany
+{
+    return $this->belongsToMany(Soute::class, 'personnel_soute')
+                ->withTimestamps();
+}
     // Accessor pour le nom complet
     public function getNomCompletAttribute(): string
     {

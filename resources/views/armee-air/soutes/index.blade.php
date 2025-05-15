@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template')
+@extends('armee-terre.layouts.template')
 
 @section('title', 'Gestion des Soutes')
 
@@ -91,63 +91,63 @@
                     </div>
 
                     <hr>
+                    <h6>Capacités par Type de Carburant</h6>
 
+                    <div class="mb-3">
+                        <label class="form-label">Types de Carburant Stockés <span class="text-danger">*</span></label>
+                        <div class="d-flex flex-wrap gap-3">
+                            @php
+                                $oldCarburants = old('type_carburants', []); // Récupère les anciennes valeurs cochées
+                            @endphp
+                            @foreach(['Diesel', 'Kerozen', 'Essence'] as $type)
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input @error('type_carburants') is-invalid @enderror"
+                                           type="checkbox"
+                                           name="type_carburants[]" {{-- Nom en tableau pour sélection multiple --}}
+                                           id="carburant_{{ strtolower(str_replace(' ', '_', $type)) }}"
+                                           value="{{ $type }}"
+                                           {{ in_array($type, $oldCarburants) ? 'checked' : '' }}
+                                           onchange="toggleCapacityInput('{{ strtolower(str_replace(' ', '_', $type)) }}')">
+                                    <label class="form-check-label" for="carburant_{{ strtolower(str_replace(' ', '_', $type)) }}">
+                                        {{ $type }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        @error('type_carburants') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        @error('type_carburants.*') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                    </div>
+
+                    {{-- Champs de capacité conditionnels --}}
                     <div class="row">
-                        <div class="mb-3">
-                            <label class="form-label">Types de Carburant Stockés <span class="text-danger">*</span></label>
-                            <div class=" d-flex flex-wrap gap-3">
-                                @php
-                                    $oldCarburants = old('type_carburants', []); // Récupère les anciennes valeurs cochées
-                                @endphp
-                                @foreach(['Diesel', 'Kerozen', 'Essence'] as $type)
-                                    <div class=" form-check form-check-inline">
-                                        <input class="form-check-input @error('type_carburants') is-invalid @enderror"
-                                            type="checkbox"
-                                            name="type_carburants[]" {{-- Nom en tableau pour sélection multiple --}}
-                                            id="carburant_{{ strtolower(str_replace(' ', '_', $type)) }}"
-                                            value="{{ $type }}"
-                                            {{ in_array($type, $oldCarburants) ? 'checked' : '' }}
-                                            onchange="toggleCapacityInput('{{ strtolower(str_replace(' ', '_', $type)) }}')">
-                                        <label class="form-check-label" for="carburant_{{ strtolower(str_replace(' ', '_', $type)) }}">
-                                            {{ $type }}
-                                        </label>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @error('type_carburants') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                            @error('type_carburants.*') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        <div class="col-md-4 mb-3" id="capacity_diesel_container" style="{{ in_array('Diesel', $oldCarburants) ? '' : 'display:none;' }}">
+                            <label for="soute_capacite_diesel" class="form-label">Capacité Diesel (L)</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_diesel') is-invalid @enderror"
+                                   id="soute_capacite_diesel" name="capacite_diesel" value="{{ old('capacite_diesel') }}" placeholder="Ex: 5000">
+                            @error('capacite_diesel') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Champs de capacité conditionnels --}}
-                            <div class="col-md-2 mb-3" id="capacity_diesel_container" style="{{ in_array('Diesel', $oldCarburants) ? '' : 'display:none;' }}">
-                                <label for="soute_capacite_diesel" class="form-label">Capacité Diesel (L)</label>
-                                <input type="number" step="0.01" class="form-control @error('capacite_diesel') is-invalid @enderror"
-                                    id="soute_capacite_diesel" name="capacite_diesel" value="{{ old('capacite_diesel') }}" placeholder="Ex: 5000">
-                                @error('capacite_diesel') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
+                        <div class="col-md-4 mb-3" id="capacity_kerozen_container" style="{{ in_array('Kerozen', $oldCarburants) ? '' : 'display:none;' }}">
+                            <label for="soute_capacite_kerozen" class="form-label">Capacité Kérosène (L)</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_kerozen') is-invalid @enderror"
+                                   id="soute_capacite_kerozen" name="capacite_kerozen" value="{{ old('capacite_kerozen') }}" placeholder="Ex: 3000">
+                            @error('capacite_kerozen') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
 
-                            <div class="col-md-2 mb-3" id="capacity_kerozen_container" style="{{ in_array('Kerozen', $oldCarburants) ? '' : 'display:none;' }}">
-                                <label for="soute_capacite_kerozen" class="form-label">Capacité Kérosène (L)</label>
-                                <input type="number" step="0.01" class="form-control @error('capacite_kerozen') is-invalid @enderror"
-                                    id="soute_capacite_kerozen" name="capacite_kerozen" value="{{ old('capacite_kerozen') }}" placeholder="Ex: 3000">
-                                @error('capacite_kerozen') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-
-                            <div class="col-md-2 mb-3" id="capacity_essence_container" style="{{ in_array('Essence', $oldCarburants) ? '' : 'display:none;' }}">
-                                <label for="soute_capacite_essence" class="form-label">Capacité Essence (L)</label>
-                                <input type="number" step="0.01" class="form-control @error('capacite_essence') is-invalid @enderror"
-                                    id="soute_capacite_essence" name="capacite_essence" value="{{ old('capacite_essence') }}" placeholder="Ex: 2000">
-                                @error('capacite_essence') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
+                        <div class="col-md-4 mb-3" id="capacity_essence_container" style="{{ in_array('Essence', $oldCarburants) ? '' : 'display:none;' }}">
+                            <label for="soute_capacite_essence" class="form-label">Capacité Essence (L)</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_essence') is-invalid @enderror"
+                                   id="soute_capacite_essence" name="capacite_essence" value="{{ old('capacite_essence') }}" placeholder="Ex: 2000">
+                            @error('capacite_essence') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-                   
 
                     <!-- <div class="mb-3">
                         <label for="soute_description" class="form-label">Description</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" id="soute_description" name="description" rows="3">{{ old('description') }}</textarea>
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div> -->
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Enregistrer Soute</button>

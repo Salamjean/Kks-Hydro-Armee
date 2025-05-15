@@ -1,4 +1,4 @@
-@extends('pompiste.layouts.app') {{-- Assure-toi que ce layout existe et est correct --}}
+@extends('pompiste.layouts.template')
 
 @section('title', 'Tableau de Bord - Soute ' . ($soute->nom ?? ''))
 

@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template')
+@extends('gendarmerie.layouts.template')
 
 @section('title', 'Gestion du Personnel')
 
@@ -7,14 +7,15 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Gestion du Personnel</h3>
-                <p class="text-subtitle text-muted">Liste des employés de votre corps d'armée.</p>
+                <h3>Gestion des Pompistes</h3>
+                <p class="text-subtitle text-muted">Liste des Pompistes.</p>
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('corps.dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('corps.gendarmerie.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Personnel</li>
+                        <li class="breadcrumb-item active" aria-current="page">Pompiste</li>
                     </ol>
                 </nav>
             </div>
@@ -45,7 +46,7 @@
     <div class="card">
         <div class="card-header">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
-                <i class="bi bi-person-plus-fill"></i> Ajouter un Employé
+                <i class="bi bi-person-plus-fill"></i> Ajouter Pompiste
             </button>
         </div>
         <div class="card-body">
@@ -107,7 +108,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Ajouter un Employé</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <form action="{{ route('corps.personnel.store') }}" method="POST">
             <input type="hidden" name="form_type" value="create"> 
@@ -214,8 +215,13 @@
 @push('custom-scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('.soute-select').select2({
+        placeholder: "Sélectionnez des soutes",
+        width: '100%'
+    });
         @if($errors->hasBag('default') && old('form_type') === 'create_soute')
             var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
             createModal.show();

@@ -13,7 +13,7 @@
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('corps.dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('corps.armee-terre.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Personnel</li>
                         <li class="breadcrumb-item active" aria-current="page">Pompiste</li>
                     </ol>
@@ -215,8 +215,13 @@
 @push('custom-scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('.soute-select').select2({
+        placeholder: "Sélectionnez des soutes",
+        width: '100%'
+    });
         @if($errors->hasBag('default') && old('form_type') === 'create_soute')
             var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
             createModal.show();
