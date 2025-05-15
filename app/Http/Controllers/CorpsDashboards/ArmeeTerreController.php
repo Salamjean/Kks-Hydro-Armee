@@ -16,22 +16,15 @@ class ArmeeTerreController extends Controller
 {
     public function index()
     {
-        $user = Auth::guard('corps')->user(); // L'utilisateur CorpsArme connecté
+        $user = Auth::guard('corps')->user();
         $corpsArmeId = $user->id;
 
-        // Vérifie que l'utilisateur est bien du corps 'Armée-Terre'
-        // Cette vérification est importante si la route est générique,
-        // mais si la route est spécifique, elle est moins critique ici,
-        // car seul un utilisateur 'Armée-Terre' devrait atteindre cette route via le handleLogin.
-        // Cependant, c'est une bonne sécurité.
         if ($user->name !== 'Armée-Terre') {
             abort(403, 'Accès non autorisé à ce tableau de bord.');
         }
 
-        // Récupérer les données spécifiques pour le dashboard Armée-Terre
         $souteCount = Soute::where('corps_arme_id', $corpsArmeId)->count();
         $personnelCount = Personnel::where('corps_arme_id', $corpsArmeId)->count();
-        // ... autres statistiques ...
         $recentTransactions = Carburant::where('corps_arme_id', $corpsArmeId)
                                     ->with(['personnel', 'distributeur.soute'])
                                     ->latest('date_transaction')

@@ -15,17 +15,106 @@ class PersonnelController extends Controller
     protected function getViewPath(string $viewName): string
     {
         $user = Auth::guard('corps')->user();
-        // Normalisation du nom pour correspondre aux noms de dossiers (ex: armée-air -> armee-air)
         $corpsNameNormalized = strtolower(str_replace(['é', 'ê', ' '], ['e', 'e', '-'], $user->name));
 
         $specificView = $corpsNameNormalized . '.personnel.' . $viewName;
-        $defaultView = 'corpsArme.personnel.' . $viewName; // Ta vue de fallback/partagée
+        $defaultView = 'corpsArme.personnel.' . $viewName;
 
         if (view()->exists($specificView)) {
             return $specificView;
         }
         return $defaultView;
     }
+
+    public function chauffeur_armee_terre()
+    {
+        $userCorpsArmeId = Auth::guard('corps')->id();
+        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                                ->with(['service', 'soutes'])
+                                ->orderBy('nom', 'asc')
+                                ->orderBy('prenom', 'asc')
+                                ->paginate(10);
+
+        // Services pour le select (si tu le gardes dans le formulaire)
+        $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                            ->orderBy('nom', 'asc')
+                            ->get();
+
+        // Soutes pour le select multiple dans la modale de création
+        $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
+                        ->orderBy('nom', 'asc')
+                        ->get();
+
+        return view('armee-terre.personnel.chauffeur', compact('personnels', 'services', 'soutes'));
+    }
+
+    public function chauffeur_armee_air()
+    {
+        $userCorpsArmeId = Auth::guard('corps')->id();
+        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                                ->with(['service', 'soutes']) // Charger la relation 'soutes' (pluriel)
+                                ->orderBy('nom', 'asc')
+                                ->orderBy('prenom', 'asc')
+                                ->paginate(10);
+
+        // Services pour le select (si tu le gardes dans le formulaire)
+        $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                            ->orderBy('nom', 'asc')
+                            ->get();
+
+        // Soutes pour le select multiple dans la modale de création
+        $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
+                        ->orderBy('nom', 'asc')
+                        ->get();
+
+        return view('armee-air.personnel.chauffeur', compact('personnels', 'services', 'soutes'));
+    }
+
+
+    public function chauffeur_gendarmerie()
+    {
+        $userCorpsArmeId = Auth::guard('corps')->id();
+        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                                ->with(['service', 'soutes']) // Charger la relation 'soutes' (pluriel)
+                                ->orderBy('nom', 'asc')
+                                ->orderBy('prenom', 'asc')
+                                ->paginate(10);
+
+        // Services pour le select (si tu le gardes dans le formulaire)
+        $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                            ->orderBy('nom', 'asc')
+                            ->get();
+
+        // Soutes pour le select multiple dans la modale de création
+        $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
+                        ->orderBy('nom', 'asc')
+                        ->get();
+
+        return view('gendarmerie.personnel.chauffeur', compact('personnels', 'services', 'soutes'));
+    }
+
+    public function marine()
+    {
+        $userCorpsArmeId = Auth::guard('corps')->id();
+        $personnels = Personnel::where('corps_arme_id', $userCorpsArmeId)
+                                ->with(['service', 'soutes']) // Charger la relation 'soutes' (pluriel)
+                                ->orderBy('nom', 'asc')
+                                ->orderBy('prenom', 'asc')
+                                ->paginate(10);
+
+        // Services pour le select (si tu le gardes dans le formulaire)
+        $services = Service::where('corps_arme_id', $userCorpsArmeId)
+                            ->orderBy('nom', 'asc')
+                            ->get();
+
+        // Soutes pour le select multiple dans la modale de création
+        $soutes = Soute::where('corps_arme_id', $userCorpsArmeId)
+                        ->orderBy('nom', 'asc')
+                        ->get();
+
+        return view('marine.personnel.chauffeur', compact('personnels', 'services', 'soutes'));
+    }
+
 
     public function index()
     {
@@ -51,30 +140,30 @@ class PersonnelController extends Controller
     }
 
     public function store(Request $request)
-{
-    $userCorpsArmeId = Auth::guard('corps')->id();
+    {
+        $userCorpsArmeId = Auth::guard('corps')->id();
 
-    $validatedData = $request->validate([
-        'nom' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'matricule' => 'required|string|max:255', // Supprimer Rule::unique
-        'email' => 'nullable|string|email|max:255', // Supprimer Rule::unique
-        'service_id' => [
-            'nullable','integer',
-            Rule::exists('services', 'id')->where('corps_arme_id', $userCorpsArmeId),
-        ],
-        'soutes_ids' => 'nullable|array',
-        'soutes_ids.*' => [
-            'integer',
-            Rule::exists('soutes', 'id')->where('corps_arme_id', $userCorpsArmeId),
-        ],
-    ], [
-        'nom.required' => 'Le nom est obligatoire.',
-        'prenom.required' => 'Le prénom est obligatoire.',
-        'matricule.required' => 'Le matricule est obligatoire.',
-        // SUPPRIMER LES LIGNES D'ERREUR POUR L'UNICITÉ
-        'soutes_ids.*.exists' => 'Sélection de soute invalide.',
-    ]);
+        $validatedData = $request->validate([
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'matricule' => 'required|string|max:255', // Supprimer Rule::unique
+            'email' => 'nullable|string|email|max:255', // Supprimer Rule::unique
+            'service_id' => [
+                'nullable','integer',
+                Rule::exists('services', 'id')->where('corps_arme_id', $userCorpsArmeId),
+            ],
+            'soutes_ids' => 'nullable|array',
+            'soutes_ids.*' => [
+                'integer',
+                Rule::exists('soutes', 'id')->where('corps_arme_id', $userCorpsArmeId),
+            ],
+        ], [
+            'nom.required' => 'Le nom est obligatoire.',
+            'prenom.required' => 'Le prénom est obligatoire.',
+            'matricule.required' => 'Le matricule est obligatoire.',
+            // SUPPRIMER LES LIGNES D'ERREUR POUR L'UNICITÉ
+            'soutes_ids.*.exists' => 'Sélection de soute invalide.',
+        ]);
 
         try {
             // Préparer les données pour la création du personnel (sans soutes_ids pour l'instant)

@@ -79,14 +79,14 @@
            <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
             <a href="#" class='sidebar-link'>
                 <i class="bi bi-people-fill"></i>
-                <span>Pompiste</span>
+                <span>Personnel</span>
             </a>
             <ul class="submenu">
                 <li class="submenu-item {{ request()->routeIs('corps.personnel.index') || request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
                     <a href="{{ route('corps.personnel.index') }}">Ajouter Pompiste</a>
                 </li>
                 <li class="submenu-item {{ request()->routeIs('corps.personnel.index', 'corps.personnel.list') ? 'active' : '' }}">
-                    <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
+                    <a href="{{ route('corps.armee_terre.personnel.chauffeur') }}">Ajouter chauffeur</a>
                 </li>
             </ul>
         </li>

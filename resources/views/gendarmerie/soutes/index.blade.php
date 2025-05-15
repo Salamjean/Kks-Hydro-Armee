@@ -102,10 +102,22 @@
                             @error('type_carburants') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div> 
 
-                        <div class="col-md-6 mb-3">
-                            <label for="soute_capacite" class="form-label">Capacité Totale (Litres)</label>
-                            <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}">
+                        <div class="col-md-2 mb-3">
+                            <label for="soute_capacite" class="form-label">Capacité Diesel</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}" placeholder="Litre">
                             @error('capacite_totale') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="soute_capacite" class="form-label">Capacité Kerozen </label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}" placeholder="Litre">
+                            @error('capacite_totale') 
+                            <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="soute_capacite" class="form-label">Capacité Essance</label>
+                            <input type="number" step="0.01" class="form-control @error('capacite_totale') is-invalid @enderror" id="soute_capacite" name="capacite_totale" value="{{ old('capacite_totale') }}" placeholder="Litre">
+                            @error('capacite_totale') 
+                            <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
                 </div>

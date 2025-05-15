@@ -77,6 +77,13 @@ Route::prefix('corps')->name('corps.')->group(function () {
         Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
         Route::resource('carburants', CarburantController::class)->except(['create', 'show']);
 
+        Route::get('personnel/chauffeur-armee-terre', [PersonnelController::class, 'chauffeur_armee_terre'])->name('armee_terre.personnel.chauffeur');
+        Route::get('personnel/chauffeur-gendarmerie', [PersonnelController::class, 'chauffeur_gendarmerie'])->name('gendarmerie.personnel.chauffeur');
+        Route::get('personnel/chauffeur-armee-air', [PersonnelController::class, 'chauffeur_armee_air'])->name('armee_air.personnel.chauffeur');
+        Route::get('personnel/chauffeur-marine', [PersonnelController::class, 'chauffeur_marine'])->name('marine.personnel.chauffeur');
+        Route::get('personnel/{id}/edit', [PersonnelController::class, 'edit'])->name('personnel.edit');
+        Route::put('personnel/{id}', [PersonnelController::class, 'update'])->name('personnel.update');
+        Route::delete('personnel/{id}', [PersonnelController::class, 'destroy'])->name('personnel.destroy');
 Route::resource('soutes', SouteController::class)->except(['show']);
         Route::post('/logout', [CorpsArmeController::class, 'logout'])->name('logout');
 

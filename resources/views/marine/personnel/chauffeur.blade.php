@@ -1,4 +1,4 @@
-@extends('armee-terre.layouts.template')
+@extends('marine.layouts.template')
 
 @section('title', 'Gestion du Personnel')
 
@@ -7,15 +7,15 @@
     <div class="page-title">
         <div class="row">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Gestion des Pompistes</h3>
-                <p class="text-subtitle text-muted">Liste des Pompistes.</p>
+                <h3>Gestion des Chauffeurs</h3>
+                <p class="text-subtitle text-muted">Liste des Chauffeurs.</p>
             </div>
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('corps.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Personnel</li>
-                        <li class="breadcrumb-item active" aria-current="page">Pompiste</li>
+                        <li class="breadcrumb-item active" aria-current="page">Chauffeurs</li>
                     </ol>
                 </nav>
             </div>
@@ -46,7 +46,7 @@
     <div class="card">
         <div class="card-header">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
-                <i class="bi bi-person-plus-fill"></i> Ajouter Pompiste
+                <i class="bi bi-person-plus-fill"></i> Ajouter Chauffeurs
             </button>
         </div>
         <div class="card-body">
@@ -91,7 +91,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Aucun personnel trouvé</td>
+                                <td colspan="5" class="text-center">Aucun Chauffeurs trouvé</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -107,7 +107,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Ajouter un Employé</h5>
+                <h5 class="modal-title">Ajouter un Chauffeurs</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <form action="{{ route('corps.personnel.store') }}" method="POST">
@@ -116,12 +116,12 @@
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Prénom *</label>
-                            <input type="text" name="prenom" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label">Nom *</label>
                             <input type="text" name="nom" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Prénom *</label>
+                            <input type="text" name="prenom" class="form-control" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -134,13 +134,9 @@
                             <input type="email" name="email" class="form-control">
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Soutes associées</label>
-                        <select name="soutes_ids[]" class="form-select soute-select" multiple>
-                            @foreach($soutes as $soute)
-                                <option value="{{ $soute->id }}">{{ $soute->nom }}</option>
-                            @endforeach
-                        </select>
+                    <div class="col-md-6">
+                        <label class="form-label">Immatriculation du Véhicule *</label>
+                        <input type="text" name="matricule" class="form-control" required>
                     </div>
                 </div>
                 <div class="modal-footer">
