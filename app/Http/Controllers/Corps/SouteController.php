@@ -40,39 +40,60 @@ class SouteController extends Controller
     {
         $userCorpsArmeId = Auth::guard('corps')->id();
 
-        $validatedData = $request->validate([
-            'nom' => [
-                'required','string','max:255',
-                Rule::unique('soutes')->where(function ($query) use ($userCorpsArmeId) {
-                    return $query->where('corps_arme_id', $userCorpsArmeId);
-                }),
-            ],
-            'localisation' => 'nullable|string|max:255',
-            'type_carburant_principal' => 'required|string|in:Diesel,Kerozen,Essence',
-            'capacite_totale' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
-            'form_type' => 'sometimes|string',
-        ], [
-            'nom.required' => 'Le nom de la soute est obligatoire.',
-            'nom.unique' => 'Une soute avec ce nom existe déjà pour votre corps d\'armée.',
-            'capacite_totale.numeric' => 'La capacité totale doit être un nombre.',
-            'type_carburant_principal.required' => 'Le type de carburant principal est obligatoire.',
-            'type_carburant_principal.in' => 'Le type de carburant sélectionné est invalide.',
-        ]);
+    $validatedData = $request->validate([
+        'nom' => [
+            'required','string','max:255',
+            Rule::unique('soutes')->where(function ($query) use ($userCorpsArmeId) {
+                return $query->where('corps_arme_id', $userCorpsArmeId);
+            }),
+        ],
+        'localisation' => 'nullable|string|max:255',
+        'type_carburants'    => 'required|array|min:1', // Doit être un tableau et avoir au moins un type
+        'type_carburants.*'  => 'required|string|in:Diesel,Kerozen,Essence', // Chaque type doit être valide
+        'capacite_diesel'  => 'nullable|required_if:type_carburants.*,Diesel|numeric|min:0',
+        'capacite_kerozen' => 'nullable|required_if:type_carburants.*,Kerozen|numeric|min:0',
+        'capacite_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0',
+        'description' => 'nullable|string',
+        'form_type' => 'sometimes|string',
+    ], [
+        'nom.required' => 'Le nom de la soute est obligatoire.',
+        'nom.unique' => 'Une soute avec ce nom existe déjà pour votre corps d\'armée.',
+        'type_carburants.required' => 'Veuillez sélectionner au moins un type de carburant.',
+        'type_carburants.min' => 'Veuillez sélectionner au moins un type de carburant.',
+        'type_carburants.*.in' => 'L\'un des types de carburant sélectionnés est invalide.',
+        'capacite_diesel.required_if' => 'La capacité pour le Diesel est requise si ce type est sélectionné.',
+        'capacite_kerozen.required_if' => 'La capacité pour le Kérosène est requise si ce type est sélectionné.',
+        'capacite_essence.required_if' => 'La capacité pour l\'Essence est requise si ce type est sélectionné.',
+        '*.numeric' => 'La capacité doit être un nombre.',
+        '*.min' => 'La capacité doit être positive.',
+    ]);
 
-        try {
-            $soute = new Soute();
-            $soute->fill($validatedData);
-            $soute->corps_arme_id = $userCorpsArmeId;
-            $soute->save();
+    try {
+        $soute = new Soute();
+        $soute->nom = $validatedData['nom'];
+        $soute->localisation = $validatedData['localisation'] ?? null;
+        $soute->description = $validatedData['description'] ?? null;
+        $soute->corps_arme_id = $userCorpsArmeId;
 
-            return redirect()->route('corps.soutes.index') // La route reste la même
-                             ->with('success', 'Soute "' . $soute->nom . '" (Matricule: ' . $soute->matricule_soute . ') ajoutée avec succès !');
-        } catch (\Exception $e) {
-            return redirect()->route('corps.soutes.index')
-                             ->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout de la soute.'])
-                             ->withInput();
-        }
+        // Stocker les types de carburants sélectionnés
+        $soute->types_carburants_stockes = $validatedData['type_carburants'];
+
+        // Stocker les capacités si les types correspondants sont sélectionnés
+        $soute->capacite_diesel = in_array('Diesel', $validatedData['type_carburants']) ? ($validatedData['capacite_diesel'] ?? null) : null;
+        $soute->capacite_kerozen = in_array('Kerozen', $validatedData['type_carburants']) ? ($validatedData['capacite_kerozen'] ?? null) : null;
+        $soute->capacite_essence = in_array('Essence', $validatedData['type_carburants']) ? ($validatedData['capacite_essence'] ?? null) : null;
+
+        // matricule_soute sera généré par l'événement 'creating'
+        $soute->save();
+
+        return redirect()->route('corps.soutes.index')
+                         ->with('success', 'Soute "' . $soute->nom . '" (Matricule: ' . $soute->matricule_soute . ') ajoutée avec succès !');
+    } catch (\Exception $e) {
+        \Log::error("Erreur création soute: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+        return redirect()->route('corps.soutes.index')
+                         ->withErrors(['error' => 'Une erreur est survenue lors de l\'ajout de la soute. ' . $e->getMessage()])
+                         ->withInput();
     }
+}
     // ... autres méthodes edit, update, destroy à adapter de manière similaire pour le return view()
 }

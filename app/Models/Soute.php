@@ -13,19 +13,32 @@ class Soute extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nom',
+       'nom',
         'matricule_soute',
         'localisation',
         'corps_arme_id',
-        'type_carburant_principal',
-        'capacite_totale',
-        'niveau_actuel_global',
+        // 'type_carburant_principal', // Supprimé si plus utilisé
+        // 'capacite_totale',        // Supprimé si plus utilisé
+        'types_carburants_stockes', // Nouveau
+        'capacite_diesel',          // Nouveau
+        'capacite_kerozen',         // Nouveau
+        'capacite_essence',         // Nouveau
+        'niveau_actuel_diesel',     // Nouveau (optionnel)
+        'niveau_actuel_kerozen',    // Nouveau (optionnel)
+        'niveau_actuel_essence',    // Nouveau (optionnel)
         'description',
     ];
 
     protected $casts = [
-        'capacite_totale' => 'decimal:2',
-        'niveau_actuel_global' => 'decimal:2',
+       // 'capacite_totale' => 'decimal:2', // Supprimé
+       'niveau_actuel_global' => 'decimal:2', // Tu peux le garder ou le supprimer
+       'types_carburants_stockes' => 'array', // Important pour le champ JSON
+       'capacite_diesel' => 'decimal:2',
+       'capacite_kerozen' => 'decimal:2',
+       'capacite_essence' => 'decimal:2',
+       'niveau_actuel_diesel' => 'decimal:2',
+       'niveau_actuel_kerozen' => 'decimal:2',
+       'niveau_actuel_essence' => 'decimal:2',
     ];
 
     public function corpsArme(): BelongsTo
