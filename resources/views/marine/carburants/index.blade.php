@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template')
+@extends('marine.layouts.template')
 
 @section('title', 'Historique des Transactions Carburant')
 

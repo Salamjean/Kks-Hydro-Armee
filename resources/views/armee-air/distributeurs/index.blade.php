@@ -1,4 +1,4 @@
-@extends('corpsArme.layouts.template')
+@extends('armee-air.layouts.template')
 
 @section('title', 'Liste des Distributeurs')
 

@@ -22,14 +22,14 @@
 </head>
 <body data-base-url="{{url('/')}}" class="sidebar-lg-only">
     <div class="container-scroller" id="app">
-        @include('gendarmerie.layouts.partials.header')
+        @include('pompiste.layouts.partials.header')
         <div class="container-fluid page-body-wrapper">
-            @include('gendarmerie.layouts.partials.sidebar')
+            @include('pompiste.layouts.partials.sidebar')
             <div class="main-panel">
                 <div class="content-wrapper">
                     @yield('content')
                 </div>
-                @include('gendarmerie.layouts.partials.footer')
+                @include('pompiste.layouts.partials.footer')
             </div>
         </div>
     </div>

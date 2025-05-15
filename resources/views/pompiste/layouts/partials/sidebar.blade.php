@@ -5,64 +5,23 @@
 
     <div class="sidebar-menu">
         <div class="logo">
-            @php
-                $dashboardRouteName = 'corps.gendarmerie.dashboard';
-                $logoImagePath = asset('images/default_logo.png');
-                $logoAltText = 'Logo par défaut';
-                $logoLink = '#';
 
-                $authUser = Auth::guard('corps')->user();
-
-                if ($authUser) {
-                    $userCorpsName = $authUser->name;
-
-                    switch ($userCorpsName) {
-                        case 'Gendarmerie':
-                            $dashboardRouteName = 'corps.gendarmerie.dashboard';
-                            $logoImagePath = asset('images/logo_gendarmerie.png');
-                            $logoAltText = 'Logo Gendarmerie';
-                            break;
-                        case 'Marine':
-                            $dashboardRouteName = 'corps.marine.dashboard';
-                            $logoImagePath = asset('images/logo_marine.jpeg');
-                            $logoAltText = 'Logo Marine';
-                            break;
-                        case 'Armée-Air':
-                        case 'Armée Air':
-                            $dashboardRouteName = 'corps.armee-air.dashboard';
-                            $logoImagePath = asset('images/logo_armee_air.png');
-                            $logoAltText = 'Logo Armée de l\'Air';
-                            break;
-                        case 'Armée-Terre':
-                        case 'Armée Terre':
-                            $dashboardRouteName = 'corps.armee-terre.dashboard';
-                            $logoImagePath = asset('images/logo_armee_terre.jpeg');
-                            $logoAltText = 'Logo Armée de Terre';
-                            break;
-                    }
-
-                    if (Route::has($dashboardRouteName)) {
-                        $logoLink = route($dashboardRouteName);
-                    }
-                }
-            @endphp
-
-            <a href="{{ $logoLink }}">
-                <img src="{{ $logoImagePath }}" alt="{{ $logoAltText }}">
+            <a href="">
+                <img src="" alt="">
             </a>
         </div>
 
         <ul class="menu">
             <li class="sidebar-title">Menu Principal</li>
 
-            <li class="sidebar-item {{ request()->routeIs($dashboardRouteName) ? 'active' : '' }}">
-                <a href="{{ route($dashboardRouteName) }}" class="sidebar-link">
+            <li class="sidebar-item ">
+                <a href="" class="sidebar-link">
                     <i class="bi bi-grid-fill"></i>
                     <span>Tableau de Bord</span>
                 </a>
             </li>
 
-            <li class="sidebar-title">Gestion Infrastructure</li>
+            <li class="sidebar-title">Gestion des Services</li>
 
             <li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
                 <a href="#" class='sidebar-link'>
@@ -71,12 +30,12 @@
                 </a>
                 <ul class="submenu {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
                     <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
-                        <a href="{{ route('corps.soutes.index') }}">Ajouter/Liste Soutes</a>
+                        <a href="{{ route('corps.soutes.index') }}">Servir</a>
                     </li>
                 </ul>
             </li>
 
-           <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+           {{-- <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
             <a href="#" class='sidebar-link'>
                 <i class="bi bi-people-fill"></i>
                 <span>Pompiste</span>
@@ -89,7 +48,7 @@
                     <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
                 </li>
             </ul>
-        </li>
+        </li> --}}
 
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
