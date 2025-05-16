@@ -13,7 +13,7 @@
             <div class="col-12 col-md-6 order-md-2 order-first">
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('corps.armee-air.dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('corps.armee-terre.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Personnel</li>
                         <li class="breadcrumb-item active" aria-current="page">Pompiste</li>
                     </ol>
@@ -82,6 +82,12 @@
                                             data-soutes="{{ $personnel->soutes->pluck('id')->toJson() }}">
                                         <i class="bi bi-pencil"></i>
                                     </button>
+                                     {{-- NOUVEAU BOUTON : Assigner Soutes --}}
+    <a href="{{ route('corps.personnel.assignSoutesForm', $personnel->id) }}" 
+        class="btn btn-sm btn-warning" 
+        title="Assigner/Gérer les soutes">
+         <i class="bi bi-archive-fill"></i> {{-- Ou une autre icône pertinente --}}
+     </a>
                                     <button type="button" class="btn btn-sm btn-danger delete-btn"
                                             data-id="{{ $personnel->id }}"
                                             data-name="{{ $personnel->nom_complet }}">
@@ -213,108 +219,150 @@
 @endpush
 
 @push('custom-scripts')
+{{-- jQuery, Bootstrap JS, Select2 JS, SweetAlert2 --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $('.soute-select').select2({
-        placeholder: "Sélectionnez des soutes",
-        width: '100%'
-    });
-        @if($errors->hasBag('default') && old('form_type') === 'create_soute')
-            var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));
-            createModal.show();
-        @endif
-    });
-
-    function confirmDeleteSoute(souteId, souteName) {
-        Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Supprimer la soute '" + souteName + "' ? Cette action est irréversible et pourrait affecter le personnel et les distributeurs liés !",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Oui, supprimer !',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                console.log("Suppression confirmée pour la soute ID: " + souteId);
-            }
-        })
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.jQuery) {
+        if (document.querySelector('#createPersonnelModal .soute-select')) {
+            $('#createPersonnelModal .soute-select').select2({
+                placeholder: "Sélectionnez des soutes",
+                width: '100%',
+                dropdownParent: $('#createPersonnelModal')
+            });
+        }
+    } else {
+        console.error("jQuery n'est pas chargé. Select2 ne fonctionnera pas.");
     }
-    document.addEventListener('DOMContentLoaded', function() {
-    // Gestion de l'édition
+
+    @if($errors->any() && old('form_type') === 'create')
+        var createModalEl = document.getElementById('createPersonnelModal');
+        if (createModalEl) {
+            var createModalInstance = bootstrap.Modal.getInstance(createModalEl) || new bootstrap.Modal(createModalEl);
+            createModalInstance.show();
+        }
+    @endif
+
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', function() {
-            const personnel = {
-                id: this.dataset.id,
-                nom: this.dataset.nom,
-                prenom: this.dataset.prenom,
-                matricule: this.dataset.matricule,
-                email: this.dataset.email,
-                soutes: JSON.parse(this.dataset.soutes)
-            };
+            const personnelId = this.dataset.id;
+            const nom = this.dataset.nom;
+            const prenom = this.dataset.prenom;
+            const matricule = this.dataset.matricule;
+            const email = this.dataset.email || '';
+            // const serviceId = this.dataset.service_id; // RETIRER
+            const selectedSoutesIds = JSON.parse(this.dataset.soutes || '[]');
 
-            // Mise à jour du formulaire
             const editForm = document.getElementById('editForm');
-            editForm.action = `/corps/personnel/${personnel.id}`;
+            if (!editForm) {
+                console.error("Le formulaire d'édition #editForm n'a pas été trouvé.");
+                return;
+            }
+            editForm.action = `{{ url('corps/personnel') }}/${personnelId}`;
 
-            // Génération des options
-            let optionsHtml = '';
-            @foreach($soutes as $soute)
-                const selected = personnel.soutes.includes({{ $soute->id }}) ? 'selected' : '';
-                optionsHtml += `<option value="{{ $soute->id }}" ${selected}>{{ $soute->nom }}</option>`;
-            @endforeach
+            let souteOptionsHtml = '';
+            const allSoutes = @json($soutes); // $soutes doit toujours être passé par le contrôleur
+            allSoutes.forEach(soute => {
+                const selected = selectedSoutesIds.includes(soute.id) ? 'selected' : '';
+                souteOptionsHtml += `<option value="${soute.id}" ${selected}>${soute.nom}</option>`;
+            });
 
-            // Injection HTML
-            document.querySelector('#editPersonnelModal .modal-body').innerHTML = `
+            // let serviceOptionsHtml = '<option value="">-- Sélectionner un service --</option>'; // RETIRER
+            // const allServices = @json($services); // RETIRER si $services n'est plus passé
+            // allServices.forEach(service => { // RETIRER
+            //     const selected = serviceId == service.id ? 'selected' : ''; // RETIRER
+            //     serviceOptionsHtml += `<option value="${service.id}" ${selected}>${service.nom}</option>`; // RETIRER
+            // }); // RETIRER
+
+            const modalBody = document.querySelector('#editPersonnelModal .modal-body');
+            if (!modalBody) {
+                console.error("Le corps de la modale d'édition n'a pas été trouvé.");
+                return;
+            }
+            modalBody.innerHTML = `
+                <input type="hidden" name="id" value="${personnelId}">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Prénom *</label>
-                        <input type="text" name="prenom" class="form-control" value="${personnel.prenom}" required>
+                        <input type="text" name="prenom" class="form-control" value="${prenom}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Nom *</label>
-                        <input type="text" name="nom" class="form-control" value="${personnel.nom}" required>
+                        <input type="text" name="nom" class="form-control" value="${nom}" required>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Matricule *</label>
-                        <input type="text" name="matricule" class="form-control" value="${personnel.matricule}" required>
+                        <input type="text" name="matricule" class="form-control" value="${matricule}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" value="${personnel.email}">
+                        <input type="email" name="email" class="form-control" value="${email}">
                     </div>
                 </div>
+                {{-- <div class="mb-3"> RETIRER LE BLOC SERVICE
+                    <label class="form-label">Service</label>
+                    <select name="service_id" class="form-select">
+                        ${serviceOptionsHtml}
+                    </select>
+                </div> --}}
                 <div class="mb-3">
                     <label class="form-label">Soutes associées</label>
                     <select name="soutes_ids[]" class="form-select soute-select-edit" multiple>
-                        ${optionsHtml}
+                        ${souteOptionsHtml}
                     </select>
                 </div>
             `;
 
-            // Initialisation Select2
-            $('.soute-select-edit').select2({
-                placeholder: "Sélectionnez des soutes",
-                width: '100%'
-            });
+            if (window.jQuery) {
+                const selectEditElement = $('#editPersonnelModal .soute-select-edit');
+                if (selectEditElement.length) {
+                    if (selectEditElement.data('select2')) {
+                        selectEditElement.select2('destroy');
+                    }
+                    selectEditElement.select2({
+                        placeholder: "Sélectionnez des soutes",
+                        width: '100%',
+                        dropdownParent: $('#editPersonnelModal')
+                    });
+                }
+            } else {
+                console.error("jQuery n'est pas chargé. Select2 dans la modale d'édition ne fonctionnera pas.");
+            }
 
-            // Affichage de la modale
-            new bootstrap.Modal(document.getElementById('editPersonnelModal')).show();
+            var editModalEl = document.getElementById('editPersonnelModal');
+            if (editModalEl) {
+                var editModalInstance = bootstrap.Modal.getInstance(editModalEl) || new bootstrap.Modal(editModalEl);
+                editModalInstance.show();
+            }
         });
     });
-
     // Gestion suppression
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function() {
-            document.getElementById('personnelName').textContent = this.dataset.name;
-            document.getElementById('deleteForm').action = `/corps/personnel/${this.dataset.id}`;
-            new bootstrap.Modal(document.getElementById('deletePersonnelModal')).show();
+            const personnelId = this.dataset.id;
+            const personnelName = this.dataset.name;
+
+            const personnelNameSpan = document.getElementById('personnelName');
+            if (personnelNameSpan) personnelNameSpan.textContent = personnelName;
+
+            const deleteForm = document.getElementById('deleteForm');
+            if (!deleteForm) {
+                console.error("Le formulaire de suppression #deleteForm n'a pas été trouvé.");
+                return;
+            }
+            deleteForm.action = `{{ url('corps/personnel') }}/${personnelId}`;
+
+            var deleteModalEl = document.getElementById('deletePersonnelModal');
+            if (deleteModalEl) {
+                var deleteModalInstance = bootstrap.Modal.getInstance(deleteModalEl) || new bootstrap.Modal(deleteModalEl);
+                deleteModalInstance.show();
+            }
         });
     });
 });
