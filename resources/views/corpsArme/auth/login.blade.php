@@ -17,8 +17,7 @@
 </head>
 <body class="login-page">
   <main class="main-content mt-0">
-    <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/login_5.png') }}');
-                                      background-size: contain; background-repeat: no-repeat; background-position: 20% center;">
+    <div class="auth-wrapper" style="background-image: url('{{ url('assets/images/auth/login_1.jpg') }}');">
       <div class="auth-card">
         {{-- <div class="auth-logo">
           <img src="{{ asset('assets/assets/img/favicon.png') }}" alt="Logo SEA">

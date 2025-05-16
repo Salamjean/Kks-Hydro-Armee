@@ -20,35 +20,21 @@
                     <span>Tableau de Bord</span>
                 </a>
             </li>
-
             <li class="sidebar-title">Gestion des Services</li>
-
             <li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
                 <a href="#" class='sidebar-link'>
                     <i class="bi bi-hdd-stack-fill"></i>
-                    <span>Soutes</span>
+                    <span>Services</span>
                 </a>
                 <ul class="submenu {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
                     <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
-                        <a href="{{ route('corps.soutes.index') }}">Servir</a>
+                        <a href="{{ route('soute.dashboard.services.distribution') }}">distribution</a>
+                    </li>
+                    <li class="submenu-item {{ request()->routeIs('corps.soutes.index') ? 'active' : '' }}">
+                        <a href="{{ route('soute.dashboard.services.depotage') }}">dépotage</a>
                     </li>
                 </ul>
             </li>
-
-           {{-- <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
-            <a href="#" class='sidebar-link'>
-                <i class="bi bi-people-fill"></i>
-                <span>Pompiste</span>
-            </a>
-            <ul class="submenu">
-                <li class="submenu-item {{ request()->routeIs('corps.personnel.index') || request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
-                    <a href="{{ route('corps.personnel.index') }}">Ajouter Pompiste</a>
-                </li>
-                <li class="submenu-item {{ request()->routeIs('corps.personnel.index', 'corps.personnel.list') ? 'active' : '' }}">
-                    <a href="{{ route('corps.personnel.index') }}">Liste Pompiste</a>
-                </li>
-            </ul>
-        </li> --}}
 
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">

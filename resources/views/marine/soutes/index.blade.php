@@ -20,7 +20,7 @@
                             <th>Nom</th>
                             <th>Matricule Soute</th>
                             <th>Localisation</th>
-                            <th>Types Carburant & Capacités (L)</th> {{-- Colonne Modifiée --}}
+                            <th>Types Carburant & Capacités (L)</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
