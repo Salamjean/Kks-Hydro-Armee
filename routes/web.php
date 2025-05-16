@@ -39,9 +39,9 @@ Route::prefix('super-admin')->name('superadmin.')->group(function(){
     });
 });
 
-Route::get('/validate-sea-account/{email}', [AdminController::class, 'defineAccess'])->name('admin.define.access'); 
-Route::post('/validate-sea-account', [AdminController::class, 'submitDefineAccess'])->name('admin.submit.define.access');
-Route::get('/validate-corps-account/{email}', [CorpsArmeController::class, 'defineAccess'])->name('corps.define.access');
+Route::get('/validate-sea-account/{email}', [AdminController::class, 'defineAccess']); 
+Route::post('/validate-sea-account', [AdminController::class, 'submitDefineAccess'])->name('admin.validate');
+Route::get('/validate-corps-account/{email}', [CorpsArmeController::class, 'defineAccess']);
 Route::post('/validate-corps-account', [CorpsArmeController::class, 'submitDefineAccess'])->name('corps.submit.define.access');
 
 Route::prefix('admin')->name('admin.')->group(function() {
@@ -74,6 +74,8 @@ Route::prefix('corps')->name('corps.')->group(function () {
 
         Route::resource('services', ServiceController::class)->except(['create', 'show']);
         Route::resource('personnel', PersonnelController::class)->except(['create','show']);
+        Route::get('/personnel/{personnel}/assigner-soutes', [PersonnelController::class, 'showAssignSoutesForm'])->name('personnel.assignSoutesForm');
+        Route::post('/personnel/{personnel}/assigner-soutes', [PersonnelController::class, 'handleAssignSoutes'])->name('personnel.handleAssignSoutes');
         Route::resource('distributeurs', DistributeurController::class)->except(['create','show']);
         Route::resource('carburants', CarburantController::class)->except(['create', 'show']);
 
