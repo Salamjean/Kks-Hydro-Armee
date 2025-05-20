@@ -34,7 +34,7 @@
     </li>
 
     <li class="sidebar-item">
-        <form method="POST" action="{{ route('superadmin.logout') }}" id="logout-form" style="display: none;">
+        <form method="POST" action="{{ route('soute.dashboard.logout') }}" id="logout-form" style="display: none;">
             @csrf
         </form>
         <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="sidebar-link">
