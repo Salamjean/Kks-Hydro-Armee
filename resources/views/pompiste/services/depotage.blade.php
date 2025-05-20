@@ -108,46 +108,14 @@
                         <fieldset>
                             <legend class="fs-6 fw-semibold border-bottom pb-2 mb-3 text-center">Informations sur la Cuve de Réception</legend>
                             <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label for="num_cuve" class="form-label">Nom ou Numéro de la Cuve *</label>
-                                    <input type="text" class="form-control" id="num_cuve" name="num_cuve" placeholder="Ex: Cuve 1A" required>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label for="temperature_produit" class="form-label">Température du produit (°C) *</label>
-                                    <input type="number" step="any" class="form-control" id="temperature_produit" name="temperature_produit" placeholder="Ex: 15.5" required>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label for="niveau_avant_depotage" class="form-label">Niveau avant dépotage (mm) *</label>
-                                    <input type="number" step="any" class="form-control" id="niveau_avant_depotage" name="niveau_avant_depotage" placeholder="Ex: 1200" required>
+                                    <input type="number" step="any" class="form-control" id="niveau_avant_depotage" name="niveau_avant_depotage" placeholder="Ex: 1200" readonly>   
                                     <div class="invalid-feedback"></div>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="niveau_apres_depotage" class="form-label">Niveau après dépotage (mm) *</label>
-                                    <input type="number" step="any" class="form-control" id="niveau_apres_depotage" name="niveau_apres_depotage" placeholder="Ex: 2800" required>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label for="volume_recu" class="form-label">Volume Reçu (L) *</label>
                                     <input type="number" step="any" class="form-control" id="volume_recu" name="volume_recu" placeholder="Ex: 9950" required>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="densite" class="form-label">Densité (kg/m³) *</label>
-                                    <input type="number" step="any" class="form-control" id="densite" name="densite" placeholder="Ex: 835" required>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="qualite_visuelle" class="form-label">Qualité Visuelle *</label>
-                                    <select class="form-select" id="qualite_visuelle" name="qualite_visuelle" required>
-                                        <option value="" disabled selected>Choisir la qualité</option>
-                                        <option value="claire">Claire et Limpide</option>
-                                        <option value="trouble">Trouble</option>
-                                        <option value="sombre">Sombre</option>
-                                        <option value="avec_eau">Avec présence d'eau</option>
-                                        <option value="avec_sediments">Avec sédiments</option>
-                                    </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
