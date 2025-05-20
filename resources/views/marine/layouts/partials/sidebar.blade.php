@@ -76,28 +76,18 @@
                 </ul>
             </li>
 
-            <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+           <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
                 <a href="#" class='sidebar-link'>
                     <i class="bi bi-people-fill"></i>
-                    <span>Personnel</span> {{-- Ou "Pompistes" si tu préfères ce terme ici --}}
+                    <span>Logistique</span>
                 </a>
-                <ul class="submenu {{ 
-                    request()->routeIs('corps.personnel.index') || 
-                    request()->routeIs('corps.personnel.assignSoutesForm') || /* Ajoutez d'autres routes liées au personnel si besoin */
-                    request()->routeIs('corps.personnel.handleAssignSoutes') 
-                    ? 'active' : '' }}">
-                    <li class="submenu-item {{ request()->routeIs('corps.personnel.index') ? 'active' : '' }}">
-                        <a href="{{ route('corps.personnel.index') }}">Ajouter/Liste Pompistes</a>
+                <ul class="submenu">
+                    <li class="submenu-item {{ request()->routeIs('corps.personnel.index') || request()->routeIs('corps.personnel.create') ? 'active' : '' }}">
+                        <a href="{{ route('corps.personnel.index') }}">Ajouter un personnel</a>
                     </li>
-                    {{-- Exemple si vous vouliez un lien direct qui ne fait pas beaucoup de sens sans contexte de personnel --}}
-                    {{-- <li class="submenu-item {{ request()->routeIs('some.general.assignment.page') ? 'active' : '' }}">
-                        <a href="{{ route('some.general.assignment.page') }}">Gérer Assignations (Vue d'ensemble)</a>
-                    </li> --}}
+                
                 </ul>
             </li>
-             
-           
-
             <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
                     <i class="bi bi-file-earmark-text-fill"></i>

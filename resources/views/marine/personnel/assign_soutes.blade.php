@@ -1,5 +1,3 @@
-{{-- Exemple: resources/views/armee-terre/personnel/assign_soutes.blade.php --}}
-{{-- Adapte le @extends à ton layout spécifique si besoin --}}
 @extends('marine.layouts.template')
 
 @section('title', 'Assigner Soutes à ' . $personnel->nom_complet)
@@ -16,7 +14,6 @@
                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                     <ol class="breadcrumb">
                         @php
-                            // Logique dynamique pour le lien du tableau de bord (copiée de ta vue index)
                             $breadcrumbDashboardRouteName = 'corps.gendarmerie.dashboard';
                             $authUser = Auth::guard('corps')->user();
                             if ($authUser) {
@@ -30,7 +27,7 @@
                             }
                         @endphp
                         <li class="breadcrumb-item"><a href="{{ route($breadcrumbDashboardRouteName) }}">Tableau de Bord</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('corps.personnel.index') }}">Personnel</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('corps.personnel.index') }}">Logistique</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Assigner Soutes</li>
                     </ol>
                 </nav>
@@ -56,7 +53,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
-
+ 
 <section class="section">
     <div class="card">
         <div class="card-header">
@@ -92,29 +89,29 @@
 </section>
 @endsection
 
-@push('styles') {{-- Assure-toi que ton layout a @stack('styles') --}}
+@push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .select2-container--default .select2-selection--multiple {
         border: 1px solid #ced4da;
-        min-height: 38px; /* Ajuste selon la hauteur de tes autres inputs */
+        min-height: 38px;
     }
-    /* Tu peux vouloir un peu plus de hauteur pour le select multiple */
     #soutes_assignment_ids {
         min-height: 150px;
     }
 </style>
 @endpush
 
-@push('scripts') {{-- Assure-toi que ton layout a @stack('scripts') --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> {{-- Select2 a besoin de jQuery --}}
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
         $('#soutes_assignment_ids').select2({
             placeholder: "Sélectionnez les soutes",
             width: '100%',
-            allowClear: true // Permet de désélectionner toutes les options
+            allowClear: true
         });
     });
 </script>
