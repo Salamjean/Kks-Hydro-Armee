@@ -16,13 +16,13 @@
           <a class="dropdown-item" href="#"> 
             <i class="mdi mdi-account-outline text-primary"></i> Mon Profil
           </a>
-          <a class="dropdown-item" href="#">
+          {{-- <a class="dropdown-item" href="#">
             <i class="mdi mdi-settings text-primary"></i> Paramètres
-          </a>
+          </a> --}}
           <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
             <i class="mdi mdi-logout text-primary"></i> Déconnexion
           </a>
-           <form id="logout-form-header" action="{{ route('corps.logout') }}" method="POST" style="display: none;">
+           <form id="logout-form-header" action="{{ route('soute.dashboard.logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
         </div>

@@ -6,8 +6,8 @@
     <div class="sidebar-menu">
         <div class="logo">
 
-            <a href="">
-                <img src="" alt="">
+            <a href="{{ route('soute.dashboard.index') }}" class="sidebar-brand">
+                <img src="{{ asset('images/logo_soute.png') }}" alt="">
             </a>
         </div>
 
@@ -37,7 +37,7 @@
             </li>
 
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
+                <a href="{{ route('soute.dashboard.rapport') }}" class="sidebar-link">
                     <i class="bi bi-file-earmark-text-fill"></i>
                     <span>Rapports</span>
                 </a>

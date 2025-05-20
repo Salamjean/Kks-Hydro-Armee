@@ -6,70 +6,69 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Important
 use Illuminate\Support\Str;
 
 class Soute extends Model
 {
     use HasFactory;
 
+    // personnel_id ne doit PAS être ici
     protected $fillable = [
-       'nom',
+        'nom',
         'matricule_soute',
         'localisation',
         'corps_arme_id',
-        // 'type_carburant_principal', // Supprimé si plus utilisé
-        // 'capacite_totale',        // Supprimé si plus utilisé
-        'types_carburants_stockes', // Nouveau
-        'capacite_diesel',          // Nouveau
-        'capacite_kerozen',         // Nouveau
-        'capacite_essence',         // Nouveau
-        'niveau_actuel_diesel',     // Nouveau (optionnel)
-        'niveau_actuel_kerozen',    // Nouveau (optionnel)
-        'niveau_actuel_essence',    // Nouveau (optionnel)
+        'types_carburants_stockes',
+        'capacite_diesel',
+        'capacite_kerozen',
+        'capacite_essence',
+        'niveau_actuel_diesel',
+        'niveau_actuel_kerozen',
+        'niveau_actuel_essence',
         'description',
     ];
 
     protected $casts = [
-       // 'capacite_totale' => 'decimal:2', // Supprimé
-       'niveau_actuel_global' => 'decimal:2', // Tu peux le garder ou le supprimer
-       'types_carburants_stockes' => 'array', // Important pour le champ JSON
-       'capacite_diesel' => 'decimal:2',
-       'capacite_kerozen' => 'decimal:2',
-       'capacite_essence' => 'decimal:2',
-       'niveau_actuel_diesel' => 'decimal:2',
-       'niveau_actuel_kerozen' => 'decimal:2',
-       'niveau_actuel_essence' => 'decimal:2',
+        'types_carburants_stockes' => 'array',
+        'capacite_diesel' => 'decimal:2',
+        'capacite_kerozen' => 'decimal:2',
+        'capacite_essence' => 'decimal:2',
+        'niveau_actuel_diesel' => 'decimal:2',
+        'niveau_actuel_kerozen' => 'decimal:2',
+        'niveau_actuel_essence' => 'decimal:2',
     ];
+
+    public function distributeurs(): HasMany
+    {
+        return $this->hasMany(Distributeur::class); // Assurez-vous que le modèle Distributeur existe
+    }
 
     public function corpsArme(): BelongsTo
     {
-        return $this->belongsTo(CorpsArme::class);
+        return $this->belongsTo(CorpsArme::class); // Assurez-vous que le modèle CorpsArme existe
     }
 
+    // Relation Many-to-Many (inverse de celle dans Personnel)
     public function personnels(): BelongsToMany
     {
-        return $this->belongsToMany(Personnel::class, 'personnel_soute')
-                    ->withTimestamps();
+        return $this->belongsToMany(Personnel::class, 'personnel_soute') // Nom de la table pivot
+                     ->withTimestamps();
     }
 
-    public function distributeurs(): HasMany // Une soute peut avoir plusieurs pompes/distributeurs
-    {
-        return $this->hasMany(Distributeur::class);
-    }
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($soute) {
             if (empty($soute->matricule_soute)) {
-                // Génère un matricule unique. Tu peux adapter la logique de génération.
-                // Exemple: SOUTE-CORPID-RANDOM
                 $prefix = "SOUTE";
-                $corpsId = $soute->corps_arme_id ?? 'X'; // Prend l'ID du corps si disponible
-                $randomPart = strtoupper(Str::random(6)); // 6 caractères aléatoires
+                // Assurez-vous que $soute->corps_arme_id est disponible au moment de la création
+                // ou que vous avez une logique pour le gérer s'il est null.
+                $corpsId = $soute->corps_arme_id ?? 'X';
+                $randomPart = strtoupper(Str::random(6));
                 $soute->matricule_soute = $prefix . '-' . $corpsId . '-' . $randomPart;
 
-                // Assurer l'unicité (boucle simple, pour des cas rares de collision)
                 while (static::where('matricule_soute', $soute->matricule_soute)->exists()) {
                     $randomPart = strtoupper(Str::random(6));
                     $soute->matricule_soute = $prefix . '-' . $corpsId . '-' . $randomPart;
@@ -77,6 +76,4 @@ class Soute extends Model
             }
         });
     }
-    // RELATION MANY-TO-MANY AVEC PERSONNEL
-  
 }

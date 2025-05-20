@@ -25,4 +25,10 @@ class PompisteController extends Controller
 
         return view('pompiste.services.depotage');
     }
+
+    public function rapport()
+    {
+
+        return view('pompiste.rapport.index');
+    }
 }
