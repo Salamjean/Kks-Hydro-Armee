@@ -52,7 +52,7 @@
                             <select class="form-select" id="produit" name="produit" required>
                                 <option value="" disabled selected>Choisir un type de carburant</option>
                                 <option value="essence">Essence</option>
-                                <option value="gasoil">Gasoil</option>
+                                <option value="gasoil">Kerozen</option>
                                 <option value="diesel">Diesel</option>
                             </select>
                             <div class="invalid-feedback">Veuillez sélectionner un type de carburant.</div>
