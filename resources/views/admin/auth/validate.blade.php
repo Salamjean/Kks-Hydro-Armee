@@ -2,24 +2,21 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/assets/img/apple-icon.png') }}">
-  <link rel="icon" type="image/png" href="{{ asset('assets/assets/img/favicon.png') }}">
-  <title>
+    <title>
     VALIDATE - COMPTE - SEA
   </title>
-  <!--     Fonts and icons     -->
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-  <!-- Nucleo Icons -->
-  <link href="{{ asset('assets/assets/css/nucleo-icons.css') }}" rel="stylesheet" />
-  <link href="{{ asset('assets/assets/css/nucleo-svg.css') }}" rel="stylesheet" />
-  <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <!-- Material Icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  <!-- CSS Files -->
-  <link id="pagestyle" href="{{ asset('assets/assets/css/material-dashboard.css?v=3.2.0') }}" rel="stylesheet" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/iconly/bold.css') }}">
+  {{-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> --}}
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
+  {{-- <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg" type="image/x-icon') }}"> --}}
+  <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 </head>
 
 <body class="">
@@ -49,14 +46,14 @@
                     @csrf
                     @method('POST')
 
-                    <div class="input-group input-group-outline mb-3">
+                    <div class="form-group input-group-outline mb-3">
                         <input type="email" class="form-control"  value="{{ $email }}" name="email" readonly>
                       </div>
                       @error('email')
                       <div class="text-danger" style="color: red; text-align:center">{{ $message }}</div>
                       @enderror
 
-                    <div class="input-group input-group-outline mb-3">
+                    <div class="form-group input-group-outline mb-3">
                       <input type="text" class="form-control" value="{{ old('code') }}" placeholder="veuillez entrer le code de validation"  name="code">
                     </div>
                     @error('code')
@@ -64,15 +61,15 @@
                     @enderror
 
                     
-                    <div class="input-group input-group-outline mb-3">
-                      <label class="form-label">Mot de passe</label>
+                    <div class="form-group input-group-outline mb-3">
+                      <label class="custom-label">Mot de passe</label>
                       <input type="password" class="form-control" value="{{ old('password') }}" name="password">
                     </div>
                     @error('password')
                     <div class="text-danger" style="color: red; text-align:center">{{ $message }}</div>
                     @enderror
-                    <div class="input-group input-group-outline mb-3">
-                      <label class="form-label">Mot de passe</label>
+                    <div class="form-group input-group-outline mb-3">
+                      <label class="custom-label">Mot de passe</label>
                       <input type="password" class="form-control" value="{{ old('confirme_password') }}" name="confirme_password">
                     </div>
                     @error('confirme_password')

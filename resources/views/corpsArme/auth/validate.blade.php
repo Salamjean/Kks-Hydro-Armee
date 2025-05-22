@@ -2,14 +2,18 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Définir votre accès - {{ config('app.name', 'Laravel') }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('assetsSEA/css/pages/auth.css') }}">
+   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/iconly/bold.css') }}">
+  {{-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> --}}
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/perfect-scrollbar/perfect-scrollbar.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/vendors/bootstrap-icons/bootstrap-icons.css') }}">
+  <link rel="stylesheet" href="{{ asset('assetsSEA/css/app.css') }}">
+  {{-- <link rel="shortcut icon" href="{{ asset('assetsSEA/images/favicon.svg" type="image/x-icon') }}"> --}}
+  <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 </head>
 
 <body>
@@ -89,13 +93,6 @@
                                 </span>
                             @enderror
                         </div>
-
-                         {{-- Optionnel: Champ Photo de profil --}}
-                         {{-- <div class="form-group mb-4">
-                             <label for="profile_picture" class="form-label">Photo de profil (Optionnel)</label>
-                             <input class="form-control" type="file" id="profile_picture" name="profile_picture" accept="image/*">
-                         </div> --}}
-
 
                         <button class="btn btn-primary btn-block btn-lg shadow-lg mt-5">Valider et définir le mot de passe</button>
                     </form>
