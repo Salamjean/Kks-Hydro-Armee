@@ -48,12 +48,20 @@ class Soute extends Model
     {
         return $this->belongsTo(CorpsArme::class); // Assurez-vous que le modèle CorpsArme existe
     }
+    public function distributions()
+{
+    return $this->hasMany(Distribution::class);
+}
 
     // Relation Many-to-Many (inverse de celle dans Personnel)
     public function personnels(): BelongsToMany
     {
         return $this->belongsToMany(Personnel::class, 'personnel_soute') // Nom de la table pivot
                      ->withTimestamps();
+    }
+    public function depotages(): HasMany
+    {
+        return $this->hasMany(Depotage::class);
     }
 
     protected static function boot()

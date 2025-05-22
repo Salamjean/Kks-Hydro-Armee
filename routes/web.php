@@ -17,6 +17,8 @@ use App\Http\Controllers\Pompiste\PompisteController;
 use App\Http\Controllers\CorpsDashboards\ArmeeTerreController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
+use App\Http\Controllers\DistributionController;
+use App\Http\Controllers\DepotageController;
 
 Route::get('/', function () {
     return view('auth.choose_login'); 
@@ -103,8 +105,15 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     });
 
     Route::get('services/distribution', [PompisteController::class, 'distribution'])->name('services.distribution');
+    
     Route::get('services/depotage', [PompisteController::class, 'depotage'])->name('services.depotage');
     Route::get('rapport', [PompisteController::class, 'rapport'])->name('rapport');
+
+ // LA ROUTE POUR ENREGISTRER LA DISTRIBUTION DOIT ÊTRE ICI
+ Route::post('/distributions', [DistributionController::class, 'store'])->name('distributions.store');
+  // LA ROUTE POUR ENREGISTRER LE Depotage DOIT ÊTRE ICI
+ Route::post('/depotages', [DepotageController::class, 'store'])->name('depotages.store');
+
     // Route AJAX pour récupérer les informations du personnel et de ses soutes
     Route::post('/get-personnel-soute-info', [SoutePersonnelLoginController::class, 'getPersonnelSouteInfo'])
            ->name('getPersonnelSouteInfo');
@@ -120,6 +129,7 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
         Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
         Route::post('/logout', [SoutePersonnelLoginController::class, 'logout'])->name('logout'); 
+       
     });
 
  Route::middleware('auth:corps')->group(function(){

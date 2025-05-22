@@ -37,4 +37,12 @@ class Personnel extends Authenticatable
     {
         return $this->prenom . ' ' . $this->nom;
     }
+    public function distributions()
+{
+    return $this->hasMany(Distribution::class);
+}
+public function depotages(): HasMany
+{
+    return $this->hasMany(Depotage::class);
+}
 }
