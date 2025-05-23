@@ -37,7 +37,7 @@
 <div class="modal fade" id="distributionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="distributionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="maDistributionForm" action="{{ route('soute.dashboard.distributions.store') }}" method="post">
+            <form id="maDistributionForm" action="{{ route('soute.dashboard.pompiste.store.distribution') }}" method="post">
                 @csrf
                 {{-- ID de la soute active, fourni par le contrôleur --}}
                 <input type="hidden" name="soute_id" id="soute_id_modal" value="{{ $soute->id ?? '' }}">

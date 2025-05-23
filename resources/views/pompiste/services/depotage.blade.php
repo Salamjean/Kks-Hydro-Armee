@@ -41,7 +41,7 @@
 <div class="modal fade" id="depotageModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="depotageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl"> {{-- modal-xl pour plus d'espace --}}
         <div class="modal-content">
-            <form id="depotageForm" action="{{ route('soute.dashboard.depotages.store') }}" method="post"> {{-- Nouvelle route à créer --}}
+            <form id="depotageForm" action="{{ route('soute.dashboard.pompiste.store.depotage') }}" method="post"> {{-- Nouvelle route à créer --}}
                 @csrf
                 <input type="hidden" name="soute_id" id="soute_id_depotage_modal" value="{{ $soute->id ?? '' }}">
 

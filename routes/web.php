@@ -17,8 +17,6 @@ use App\Http\Controllers\Pompiste\PompisteController;
 use App\Http\Controllers\CorpsDashboards\ArmeeTerreController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
-use App\Http\Controllers\DistributionController;
-use App\Http\Controllers\DepotageController;
 
 Route::get('/', function () {
     return view('auth.choose_login'); 
@@ -109,10 +107,10 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     Route::get('services/depotage', [PompisteController::class, 'depotage'])->name('services.depotage');
     Route::get('rapport', [PompisteController::class, 'rapport'])->name('rapport');
 
- // LA ROUTE POUR ENREGISTRER LA DISTRIBUTION DOIT ÊTRE ICI
- Route::post('/distributions', [DistributionController::class, 'store'])->name('distributions.store');
-  // LA ROUTE POUR ENREGISTRER LE Depotage DOIT ÊTRE ICI
- Route::post('/depotages', [DepotageController::class, 'store'])->name('depotages.store');
+  // LA ROUTE POUR ENREGISTRER LA DISTRIBUTION
+  Route::post('/distributions', [PompisteController::class, 'storeDistribution'])->name('pompiste.store.distribution');
+  // LA ROUTE POUR ENREGISTRER LE DEPOTAGE
+  Route::post('/depotages', [PompisteController::class, 'storeDepotage'])->name('pompiste.store.depotage'); // Correction du nom ici
 
     // Route AJAX pour récupérer les informations du personnel et de ses soutes
     Route::post('/get-personnel-soute-info', [SoutePersonnelLoginController::class, 'getPersonnelSouteInfo'])
