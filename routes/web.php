@@ -103,8 +103,16 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     });
 
     Route::get('services/distribution', [PompisteController::class, 'distribution'])->name('services.distribution');
+    
     Route::get('services/depotage', [PompisteController::class, 'depotage'])->name('services.depotage');
     Route::get('rapport', [PompisteController::class, 'rapport'])->name('rapport');
+    Route::get('/rapoport/index', [PompisteController::class, 'dashboard'])->name('reports.dashboard');
+
+  // LA ROUTE POUR ENREGISTRER LA DISTRIBUTION
+  Route::post('/distributions', [PompisteController::class, 'storeDistribution'])->name('pompiste.store.distribution');
+  // LA ROUTE POUR ENREGISTRER LE DEPOTAGE
+  Route::post('/depotages', [PompisteController::class, 'storeDepotage'])->name('pompiste.store.depotage'); // Correction du nom ici
+
     // Route AJAX pour récupérer les informations du personnel et de ses soutes
     Route::post('/get-personnel-soute-info', [SoutePersonnelLoginController::class, 'getPersonnelSouteInfo'])
            ->name('getPersonnelSouteInfo');
@@ -120,6 +128,7 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     Route::middleware(['auth:personnel_soute', 'hasSoutePasswordSet'])->group(function() {
         Route::get('/', [SouteDashboardController::class, 'index'])->name('index');
         Route::post('/logout', [SoutePersonnelLoginController::class, 'logout'])->name('logout'); 
+       
     });
 
  Route::middleware('auth:corps')->group(function(){

@@ -25,75 +25,87 @@
             </div>
             <div class="row">
                 @php
-                $fuels = [];
+                $fuelsData = []; // Renommé pour clarté
                 // Générer dynamiquement les données carburants basées sur la soute
-                if (in_array('Diesel', $soute->types_carburants_stockes ?? [])) {
-                    $fuels[] = (object)[
-                        'type' => 'Diesel',
-                        'capacite' => $soute->capacite_diesel,
-                        'niveau_actuel' => $soute->niveau_actuel_diesel,
-                        'icon_class' => 'bi bi-truck text-primary'
-                    ];
-                }
-                if (in_array('Essence', $soute->types_carburants_stockes ?? [])) {
-                    $fuels[] = (object)[
-                        'type' => 'Essence',
-                        'capacite' => $soute->capacite_essence,
-                        'niveau_actuel' => $soute->niveau_actuel_essence,
-                        'icon_class' => 'bi bi-car-front-fill text-success'
-                    ];
-                }
-                if (in_array('Kerozen', $soute->types_carburants_stockes ?? [])) {
-                    $fuels[] = (object)[
-                        'type' => 'Kerozen',
-                        'capacite' => $soute->capacite_kerozen,
-                        'niveau_actuel' => $soute->niveau_actuel_kerozen,
-                        'icon_class' => 'bi bi-airplane-engines-fill text-info'
-                    ];
+                // et déterminer le niveau actuel pour l'affichage
+                if (isset($soute) && is_array($soute->types_carburants_stockes)) {
+                    if (in_array('Diesel', $soute->types_carburants_stockes)) {
+                        $niveauActuelDiesel = $soute->niveau_actuel_diesel !== null ? $soute->niveau_actuel_diesel : $soute->capacite_diesel;
+                        $fuelsData[] = (object)[
+                            'type' => 'Diesel',
+                            'capacite_totale' => (float)($soute->capacite_diesel ?? 0),
+                            'niveau_pour_affichage' => (float)($niveauActuelDiesel ?? 0), // Ce qui est réellement disponible ou était là
+                            'icon_class' => 'bi bi-truck text-primary'
+                        ];
+                    }
+                    if (in_array('Essence', $soute->types_carburants_stockes)) {
+                        $niveauActuelEssence = $soute->niveau_actuel_essence !== null ? $soute->niveau_actuel_essence : $soute->capacite_essence;
+                        $fuelsData[] = (object)[
+                            'type' => 'Essence',
+                            'capacite_totale' => (float)($soute->capacite_essence ?? 0),
+                            'niveau_pour_affichage' => (float)($niveauActuelEssence ?? 0),
+                            'icon_class' => 'bi bi-car-front-fill text-success'
+                        ];
+                    }
+                    if (in_array('Kerozen', $soute->types_carburants_stockes)) {
+                        $niveauActuelKerozen = $soute->niveau_actuel_kerozen !== null ? $soute->niveau_actuel_kerozen : $soute->capacite_kerozen;
+                        $fuelsData[] = (object)[
+                            'type' => 'Kerozen',
+                            'capacite_totale' => (float)($soute->capacite_kerozen ?? 0),
+                            'niveau_pour_affichage' => (float)($niveauActuelKerozen ?? 0),
+                            'icon_class' => 'bi bi-airplane-engines-fill text-info'
+                        ];
+                    }
                 }
             @endphp
-            
-                {{-- Utiliser $fuelsData au lieu de $fictionalFuels --}}
-                @if(!empty($fuels))
-                @foreach($fuels as $fuel)
+
+                @if(!empty($fuelsData))
+                    @foreach($fuelsData as $fuel)
                         @php
                             $type = $fuel->type;
-                            $capacite = $fuel->capacite;
-                            $niveau = $fuel->niveau_actuel;
-            
-                            $pourcentage = ($capacite > 0) ? (($niveau / $capacite) * 100) : 0;
-                            // S'assurer que le pourcentage est entre 0 et 100 et l'arrondir
-                            $pourcentage = round(min(max($pourcentage, 0), 100)); 
-            
-                            $fuelLevelColorClass = 'bg-primary'; // 100% - Bleu
-    if ($pourcentage < 100) {
-        $fuelLevelColorClass = 'bg-success'; // 75-99% - Vert
-    }
-    if ($pourcentage < 75) {
-        $fuelLevelColorClass = 'bg-warning'; // 50-74% - Jaune
-    }
-    if ($pourcentage < 50) {
-        $fuelLevelColorClass = 'bg-orange'; // 25-49% - Orange
-    }
-    if ($pourcentage < 25) {
-        $fuelLevelColorClass = 'bg-danger'; // <25% - Rouge
-    }
+                            $capaciteMax = $fuel->capacite_totale; // La capacité totale de la soute pour ce carburant
+                            $niveauAffiche = $fuel->niveau_pour_affichage; // Le stock actuel à afficher
+
+                            // Le pourcentage est basé sur le niveau actuel par rapport à la capacité maximale
+                            $pourcentage = ($capaciteMax > 0) ? (($niveauAffiche / $capaciteMax) * 100) : 0;
+                            $pourcentage = round(min(max($pourcentage, 0), 100));
+
+                            $fuelLevelColorClass = ''; // Initialiser la classe de couleur
+
+                            if ($niveauAffiche <= 0) { // Stock vide ou négatif (ne devrait pas être négatif avec la logique actuelle)
+                                $fuelLevelColorClass = 'bg-secondary'; // GRIS pour vide
+                                $pourcentage = 0; // Forcer 0% si le niveau est 0 ou moins
+                            } elseif ($pourcentage < 25) {
+                                $fuelLevelColorClass = 'bg-danger'; // ROUGE pour < 25%
+                            } elseif ($pourcentage < 50) {
+                                $fuelLevelColorClass = 'bg-orange'; // ORANGE pour 25% à 49% (vous n'avez pas de classe CSS bg-orange par défaut dans Bootstrap, utilisez bg-warning ou définissez bg-orange)
+                                // Si vous n'avez pas bg-orange, utilisons bg-warning pour ce seuil
+                                // $fuelLevelColorClass = 'bg-warning';
+                            } elseif ($pourcentage < 75) {
+                                $fuelLevelColorClass = 'bg-warning'; // JAUNE (warning) pour 50% à 74%
+                            } elseif ($pourcentage < 100) {
+                                $fuelLevelColorClass = 'bg-success'; // VERT pour 75% à 99%
+                            } else { // $pourcentage == 100
+                                $fuelLevelColorClass = 'bg-primary'; // BLEU pour 100% (plein)
+                            }
                         @endphp
-            
-                        <div class="col-md-4"> {{-- d-flex et align-items-stretch pour cartes de même hauteur --}}
+
+                        <div class="col-md-4 mb-4"> {{-- Ajout de mb-4 pour espacement vertical --}}
                             <div class="card h-100">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">
-                                        {{-- Utilisation de la classe d'icône définie --}}
                                         <i class="{{ $fuel->icon_class }}"></i>
                                         {{ $type }}
                                     </h5>
                                 </div>
-                                <div class="card-body d-flex flex-column justify-content-center align-items-center"> {{-- Centrer le contenu --}}
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center">
                                     <div class="fuel-tank-container mb-3">
                                         <div class="fuel-tank">
                                             <div class="fuel-level {{ $fuelLevelColorClass }}" style="height: {{ $pourcentage }}%;">
-                                                <span>{{ $pourcentage }}%</span>
+                                                {{-- Afficher le pourcentage seulement si > 0 pour ne pas surcharger le gris --}}
+                                                @if($pourcentage > 0)
+                                                    <span>{{ $pourcentage }}%</span>
+                                                @endif
                                             </div>
                                             <div class="graduations">
                                                 <div class="graduation-mark" style="bottom: 0%;">0%</div>
@@ -104,19 +116,22 @@
                                             </div>
                                         </div>
                                         <div class="tank-info mt-2">
-                                            <p class="mb-0">Niveau: <strong>{{ number_format($niveau, 0, ',', ' ') }} L</strong></p>
-                                            <p class="text-muted">Capacité: {{ number_format($capacite, 0, ',', ' ') }} L</p>
+                                            {{-- Afficher le "Niveau actuel" --}}
+                                            <p class="mb-0">Niveau: <strong>{{ number_format($niveauAffiche, 0, ',', ' ') }} L</strong></p>
+                                            {{-- Afficher la "Capacité totale" --}}
+                                            <p class="text-muted">Capacité totale: {{ number_format($capaciteMax, 0, ',', ' ') }} L</p>
                                         </div>
                                     </div>
-            
-                                    @if($capacite > 0 && $niveau > $capacite)
+
+                                    @if($capaciteMax > 0 && $niveauAffiche > $capaciteMax)
                                         <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Niveau actuel dépasse la capacité !</small>
-                                    @elseif ($niveau > $capacite && $capacite <= 0) {{-- Cas où capacité non définie mais niveau si --}}
-                                        <small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Capacité non définie.</small>
+                                    @elseif ($niveauAffiche > 0 && $capaciteMax <= 0) {{-- Cas où capacité non définie mais niveau si --}}
+                                        <small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Capacité totale non définie.</small>
                                     @endif
                                 </div>
                                 <div class="card-footer bg-light d-flex justify-content-between align-items-center">
                                     <small class="text-muted">Remplissage : {{ $pourcentage }}%</small>
+                                    {{-- Vous pourriez ajouter d'autres infos ici si besoin --}}
                                 </div>
                             </div>
                         </div>
@@ -137,7 +152,7 @@
             </div>
         </section>
 
-        <section class="row">
+        <section class="row mt-4"> {{-- Ajout de mt-4 --}}
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
@@ -152,7 +167,7 @@
                 </div>
             </div>
         </section>
-        
+
         <section class="section mt-4">
             <div class="card">
                 <div class="card-header">
@@ -160,17 +175,16 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2 d-md-block">
-                        {{-- Assurez-vous que $soute->id est disponible --}}
-                        <a href="{{ route('corps.carburants.index', ['soute_id' => $soute->id ?? null]) }}" class="btn btn-primary">
-                            <i class="bi bi-fuel-pump"></i> Enregistrer une Sortie de Carburant
+                        <a href="{{ route('soute.dashboard.services.distribution') }}" class="btn btn-primary">
+                            <i class="bi bi-fuel-pump"></i> Faire une Distribution
                         </a>
+                        {{-- Vous pourriez ajouter un bouton pour "Enregistrer un Dépotage" ici plus tard --}}
                     </div>
                 </div>
             </div>
         </section>
     </div>
 @endsection
-
 @push('scripts') 
 
 @endpush
@@ -246,5 +260,12 @@
     .tank-info p {
         margin-bottom: 2px;
         font-size: 0.9em; /* Taille de police pour les infos */
+    }
+    /* Couleur Orange personnalisée si Bootstrap ne l'a pas par défaut */
+    .bg-orange {
+        background-color: #fd7e14 !important; /* Couleur orange de Bootstrap (si elle existait) ou une de votre choix */
+    }
+    .bg-secondary { /* Assurez-vous que Bootstrap a une couleur bg-secondary ou définissez-la */
+        background-color: #6c757d !important; /* Gris standard de Bootstrap */
     }
 </style>
