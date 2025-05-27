@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StatistiquesExport;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 
 class PompisteController extends Controller
@@ -302,113 +308,95 @@ class PompisteController extends Controller
             return back()->with('error_depotage_modal', 'Une erreur serveur est survenue lors de l\'enregistrement du dépotage: ' . $e->getMessage())->withInput();
         }
     }
-    private array $pompistesDataStatic;
-    private array $cuvesData;
-    private Collection $transactionsDataCollection;
+ 
 
-    public function __construct()
+    public function rapport(Request $request)
     {
-        
-        $this->pompistesDataStatic = [
-            ['id' => 1, 'pompiste_id_unique' => 'P001', 'nom' => 'Alice Martin (Fake)'],
-            ['id' => 2, 'pompiste_id_unique' => 'P002', 'nom' => 'Bruno Petit (Fake)'],
-            ['id' => 3, 'pompiste_id_unique' => 'P003', 'nom' => 'Chloé Dubois (Fake)'],
+        $personnel = Auth::guard('personnel_soute')->user();
+
+        // Données pour les graphiques (vous pouvez aussi les rendre dynamiques)
+        $productsDataStatic = [
+            ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
+            ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
+            ['name' => 'Mars', 'sales' => 1840, 'depotage' => 1600],
+            ['name' => 'Avril', 'sales' => 2040, 'depotage' => 1800],
+            ['name' => 'Mai', 'sales' => 1740, 'depotage' => 1500],
+            ['name' => 'Juin', 'sales' => 1940, 'depotage' => 1700],
+            ['name' => 'Juillet', 'sales' => 2140, 'depotage' => 1900],
+            ['name' => 'Aout', 'sales' => 2340, 'depotage' => 2100],
+            ['name' => 'Septembre', 'sales' => 2540, 'depotage' => 2300],
+            ['name' => 'Octobre', 'sales' => 2740, 'depotage' => 2500],
+            ['name' => 'Novembre', 'sales' => 2940, 'depotage' => 2700],
+            ['name' => 'Décembre', 'sales' => 3140, 'depotage' => 2900],
         ];
 
-        $this->cuvesData = [
-            'Diesel' => ['type_carburant' => 'Diesel', 'capacite_totale_litres' => 10000],
-            'Kérosène' => ['type_carburant' => 'Kérosène', 'capacite_totale_litres' => 5000],
-            'Essence' => ['type_carburant' => 'Essence', 'capacite_totale_litres' => 8000],
-        ];
+        $staticLabels = [];
+        $staticData = [];           // Distribution
+        $staticDataDepotage = [];   // Dépotage
 
-        $this->transactionsDataCollection = $this->generateFakeTransactions();
-    }
-
-    private function generateFakeTransactions(int $numDays = 90): Collection
-    {
-        $transactions = [];
-        $startDate = Carbon::now()->subDays($numDays);
-        $pompisteStaticIds = array_column($this->pompistesDataStatic, 'id');
-        $fuelTypes = array_keys($this->cuvesData);
-
-        for ($i = 0; $i < $numDays; $i++) {
-            $currentDate = $startDate->copy()->addDays($i);
-            $numTransactionsJour = rand(10, 30);
-
-            for ($j = 0; $j < $numTransactionsJour; $j++) {
-                $pompisteIdForTransaction = $pompisteStaticIds[array_rand($pompisteStaticIds)];
-                $fuelType = $fuelTypes[array_rand($fuelTypes)];
-                $cuveInfo = $this->cuvesData[$fuelType];
-                $capaciteCuveConcernee = $cuveInfo['capacite_totale_litres'];
-                $actionType = (rand(1, 10) <= 9) ? 'Distribution' : 'Dépotage';
-
-                if ($actionType == 'Distribution') {
-                    $quantity = round(rand(2000, 10000) / 100, 2);
-                } else {
-                    $quantity = round(rand((int)($capaciteCuveConcernee * 0.2 * 100), (int)($capaciteCuveConcernee * 0.8 * 100)) / 100, 2);
-                }
-                $transactionTimestamp = $currentDate->copy()->addHours(rand(6, 21))->addMinutes(rand(0, 59));
-
-                $transactions[] = [
-                    'pompiste_id' => $pompisteIdForTransaction,
-                    'type_carburant' => $fuelType,
-                    'type_action' => $actionType,
-                    'quantite_litres' => $quantity,
-                    'capacite_cuve_concernee_litres' => $capaciteCuveConcernee,
-                    'timestamp_action' => $transactionTimestamp->copy(),
-                    'date_action_str' => $transactionTimestamp->toDateString(),
-                    'mois_action_str' => $transactionTimestamp->format('Y-m'),
-                    'annee_action' => $transactionTimestamp->year,
-                ];
-            }
+        foreach ($productsDataStatic as $product) {
+            $staticLabels[] = $product['name'];
+            $staticData[] = $product['sales'];
+            $staticDataDepotage[] = $product['depotage'];
         }
-        return new Collection($transactions);
+
+        $pompisteStats = [
+            'pompiste' => ['nom' => $personnel->nom ?? 'Personnel Connecté', 'id' => $personnel->id ?? null],
+        ];
+
+        // Récupérer les statistiques pour le tableau et les exports
+        $statistiques = $this->getStatistiquesData();
+
+        $viewData = [
+            'personnel' => $personnel,
+            'pompisteStats' => $pompisteStats,
+            'labels' => $staticLabels,
+            'data' => $staticData,
+            'dataDepotage' => $staticDataDepotage,
+            'statistiques' => $statistiques,
+        ];
+        return view('pompiste.rapport.index', $viewData);
     }
 
-public function rapport(Request $request)
-{
-    $personnel = Auth::guard('personnel_soute')->user();
+   public function exportPdf()
+    {
+        $statistiques = $this->getStatistiquesData();
+        $data = [
+            'statistiques' => $statistiques,
+            'titre' => 'Rapport des Statistiques Mensuelles',
+            'dateExport' => now()->format('d/m/Y H:i')
+        ];
 
-    $productsDataStatic = [
-        ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
-        ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
-        ['name' => 'Mars', 'sales' => 1840, 'depotage' => 1600],
-        ['name' => 'Avril', 'sales' => 2040, 'depotage' => 1800],
-        ['name' => 'Mai', 'sales' => 1740, 'depotage' => 1500],
-        ['name' => 'Juin', 'sales' => 1940, 'depotage' => 1700],
-        ['name' => 'Juillet', 'sales' => 2140, 'depotage' => 1900],
-        ['name' => 'Aout', 'sales' => 2340, 'depotage' => 2100],
-        ['name' => 'Septembre', 'sales' => 2540, 'depotage' => 2300],
-        ['name' => 'Octobre', 'sales' => 2740, 'depotage' => 2500],
-        ['name' => 'Novembre', 'sales' => 2940, 'depotage' => 2700],
-        ['name' => 'Décembre', 'sales' => 3140, 'depotage' => 2900],
-        // ...
-    ];
+        $pdf = Pdf::loadView('pompiste.rapport.statistiques-pdf', $data);
 
-    $staticLabels = [];
-    $staticData = [];           // Distribution
-    $staticDataDepotage = [];   // Dépotage
-
-    foreach ($productsDataStatic as $product) {
-        $staticLabels[] = $product['name'];
-        $staticData[] = $product['sales'];
-        $staticDataDepotage[] = $product['depotage'];
+        return $pdf->download('statistiques-mensuelles.pdf');
     }
 
-    $pompisteStats = [
-        'pompiste' => ['nom' => $personnel->nom ?? 'Personnel Connecté', 'id' => $personnel->id],
-    ];
+    public function exportExcel()
+    {
+        $statistiques = $this->getStatistiquesData();
 
-    $viewData = [
-        'personnel' => $personnel,
-        'pompisteStats' => $pompisteStats,
-        'labels' => $staticLabels,
-        'data' => $staticData,
-        'dataDepotage' => $staticDataDepotage,
-    ];
-    return view('pompiste.rapport.index', $viewData);
-}
+        // Créez une instance de votre classe d'exportation
+        return Excel::download(new StatistiquesExport($statistiques), 'statistiques-mensuelles.xlsx');
+    }
 
+    private function getStatistiquesData()
+    {
+        return collect([
+            (object) ['mois' => 'Janvier', 'distribution' => 1540, 'depotage' => 1200],
+            (object) ['mois' => 'Février', 'distribution' => 2240, 'depotage' => 2100],
+            (object) ['mois' => 'Mars', 'distribution' => 1840, 'depotage' => 1600],
+            (object) ['mois' => 'Avril', 'distribution' => 2040, 'depotage' => 1800],
+            (object) ['mois' => 'Mai', 'distribution' => 1740, 'depotage' => 1500],
+            (object) ['mois' => 'Juin', 'distribution' => 1940, 'depotage' => 1700],
+            (object) ['mois' => 'Juillet', 'distribution' => 2140, 'depotage' => 1900],
+            (object) ['mois' => 'Août', 'distribution' => 2340, 'depotage' => 2100],
+            (object) ['mois' => 'Septembre', 'distribution' => 2540, 'depotage' => 2300],
+            (object) ['mois' => 'Octobre', 'distribution' => 2740, 'depotage' => 2500],
+            (object) ['mois' => 'Novembre', 'distribution' => 2940, 'depotage' => 2700],
+            (object) ['mois' => 'Décembre', 'distribution' => 3140, 'depotage' => 2900],
+        ]);
+    }
 
 
 

@@ -43,12 +43,39 @@
                 </div>
             </form>
         </div>
-
-
-    {{-- Affichage des statistiques Pompiste --}}
+        <hr>
+        <!-- Tableau des statistiques -->
+        <div class="table-responsive">
+            <h4 class="text-center">Statistiques de Distribution et Dépotage</h4>
+            <table class="table table-striped table-bordered">
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ route('soute.dashboard.export.pdf') }}" class="btn btn-danger me-2">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Télécharger PDF
+                    </a>
+                    <a href="{{ route('soute.dashboard.export.excel') }}" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Télécharger Excel
+                    </a>
+                </div>
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Distribution (L)</th>
+                        <th>Dépotage (L)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($statistiques as $statistique)
+                        <tr>
+                            <td>{{ $statistique->mois }}</td>
+                            <td>{{ $statistique->distribution }} L</td>
+                            <td>{{ $statistique->depotage }} L</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+        </table>
 
 @endsection
-<!-- Inclusion de Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const ctx = document.getElementById('combinedChart');

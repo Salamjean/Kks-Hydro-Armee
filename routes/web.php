@@ -107,6 +107,8 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     Route::get('services/depotage', [PompisteController::class, 'depotage'])->name('services.depotage');
     Route::get('rapport', [PompisteController::class, 'rapport'])->name('rapport');
     Route::get('/rapoport/index', [PompisteController::class, 'dashboard'])->name('reports.dashboard');
+    Route::get('/statistiques/export/pdf', [PompisteController::class, 'exportPdf'])->name('export.pdf');
+    Route::get('/statistiques/export/excel', [PompisteController::class, 'exportExcel'])->name('export.excel');
 
   // LA ROUTE POUR ENREGISTRER LA DISTRIBUTION
   Route::post('/distributions', [PompisteController::class, 'storeDistribution'])->name('pompiste.store.distribution');
