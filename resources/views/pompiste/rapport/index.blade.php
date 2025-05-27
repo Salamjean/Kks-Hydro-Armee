@@ -43,150 +43,38 @@
                 </div>
             </form>
         </div>
-
-
-    {{-- Affichage des statistiques Pompiste --}}
-    @if($pompisteStats)
-        <h4>Statistiques pour {{ $pompisteStats['pompiste']['nom'] }} - Année {{ $pompisteStats['annee'] }}
-            @if($pompisteStats['mois'])
-                - Mois de {{ $pompisteStats['mois'] }}
-            @endif
-        </h4>
-
-        @if($pompisteStats['mois'] && $pompisteStats['stats_mois'])
-            @php $statsMois = $pompisteStats['stats_mois']; @endphp
-            <div class="card mb-3">
-                <div class="card-header">Distributions par jour ({{ $pompisteStats['mois'] }} {{ $pompisteStats['annee'] }})</div>
-                <div class="card-body">
-                    @if($statsMois['distributions']->isNotEmpty())
-                        <table class="table table-sm table-bordered table-striped mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Carburant</th>
-                                    <th>Quantité Distribuée (L)</th>
-                                    <th>Capacité Cuve (L)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {{-- $statsMois['distributions'] est une collection d'objets --}}
-                            @foreach($statsMois['distributions'] as $item)
-                                <tr>
-                                    <td>{{ $item->periode_obj->format('d/m/Y') }}</td>
-                                    <td>{{ $item->type_carburant }}</td>
-                                    <td>{{ number_format($item->total_quantite, 2) }}</td>
-                                    <td>{{ number_format($item->capacite_totale_litres, 0) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <p>Aucune distribution pour ce pompiste ce mois-ci.</p>
-                    @endif
+        <hr>
+        <!-- Tableau des statistiques -->
+        <div class="table-responsive">
+            <h4 class="text-center">Statistiques de Distribution et Dépotage</h4>
+            <table class="table table-striped table-bordered">
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ route('soute.dashboard.export.pdf') }}" class="btn btn-danger me-2">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Télécharger PDF
+                    </a>
+                    <a href="{{ route('soute.dashboard.export.excel') }}" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel-fill"></i> Télécharger Excel
+                    </a>
                 </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header">Dépotages par jour ({{ $pompisteStats['mois'] }} {{ $pompisteStats['annee'] }})</div>
-                <div class="card-body">
-                    @if($statsMois['depotages']->isNotEmpty())
-                        <table class="table table-sm table-bordered table-striped mt-3">
-                             <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Carburant</th>
-                                    <th>Quantité Dépotée (L)</th>
-                                    <th>Capacité Cuve (L)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($statsMois['depotages'] as $item)
-                                <tr>
-                                    <td>{{ $item->periode_obj->format('d/m/Y') }}</td>
-                                    <td>{{ $item->type_carburant }}</td>
-                                    <td>{{ number_format($item->total_quantite, 2) }}</td>
-                                    <td>{{ number_format($item->capacite_totale_litres, 0) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <p>Aucun dépotage pour ce pompiste ce mois-ci.</p>
-                    @endif
-                </div>
-            </div>
-        @endif
-
-        {{-- Statistiques pour l'ANNÉE sélectionnée (agrégées par mois) --}}
-        @if($pompisteStats['stats_annee'])
-            @php $statsAnnee = $pompisteStats['stats_annee']; @endphp
-            <div class="card mb-3">
-                <div class="card-header">Distributions par mois (Année {{ $pompisteStats['annee'] }})</div>
-                <div class="card-body">
-                    @if($statsAnnee['distributions']->isNotEmpty())
-                        <table class="table table-sm table-bordered table-striped mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Mois</th>
-                                    <th>Carburant</th>
-                                    <th>Quantité Distribuée (L)</th>
-                                    <th>Capacité Cuve (L)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($statsAnnee['distributions'] as $item)
-                                <tr>
-                                    <td>{{ $item->periode_obj->translatedFormat('F Y') }}</td>
-                                    <td>{{ $item->type_carburant }}</td>
-                                    <td>{{ number_format($item->total_quantite, 2) }}</td>
-                                    <td>{{ number_format($item->capacite_totale_litres, 0) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <p>Aucune distribution pour ce pompiste cette année.</p>
-                    @endif
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-header">Dépotages par mois (Année {{ $pompisteStats['annee'] }})</div>
-                <div class="card-body">
-                     @if($statsAnnee['depotages']->isNotEmpty())
-                        <table class="table table-sm table-bordered table-striped mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Mois</th>
-                                    <th>Carburant</th>
-                                    <th>Quantité Dépotée (L)</th>
-                                    <th>Capacité Cuve (L)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($statsAnnee['depotages'] as $item)
-                                <tr>
-                                     <td>{{ $item->periode_obj->translatedFormat('F Y') }}</td>
-                                    <td>{{ $item->type_carburant }}</td>
-                                    <td>{{ number_format($item->total_quantite, 2) }}</td>
-                                    <td>{{ number_format($item->capacite_totale_litres, 0) }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <p>Aucun dépotage pour ce pompiste cette année.</p>
-                    @endif
-                </div>
-            </div>
-        @endif
-
-    @elseif(request()->has('pompiste_id'))
-        <p class="alert alert-info">Veuillez sélectionner un pompiste et cliquer sur "Afficher Stats".</p>
-    @endif
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Distribution (L)</th>
+                        <th>Dépotage (L)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($statistiques as $statistique)
+                        <tr>
+                            <td>{{ $statistique->mois }}</td>
+                            <td>{{ $statistique->distribution }} L</td>
+                            <td>{{ $statistique->depotage }} L</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+        </table>
 
 @endsection
-<!-- Inclusion de Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

@@ -39,6 +39,7 @@
 </html>
 <script src="{{ asset('js/app.js') }}"></script>
 @stack('plugin-scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
 <script src="{{ asset('assets/js/hoverable-collapse.js') }}"></script>
 <script src="{{ asset('assets/js/misc.js') }}"></script>
