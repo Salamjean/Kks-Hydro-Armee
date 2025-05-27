@@ -314,7 +314,6 @@ class PompisteController extends Controller
     {
         $personnel = Auth::guard('personnel_soute')->user();
 
-        // Données pour les graphiques (vous pouvez aussi les rendre dynamiques)
         $productsDataStatic = [
             ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
             ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
@@ -331,8 +330,8 @@ class PompisteController extends Controller
         ];
 
         $staticLabels = [];
-        $staticData = [];           // Distribution
-        $staticDataDepotage = [];   // Dépotage
+        $staticData = [];  
+        $staticDataDepotage = [];
 
         foreach ($productsDataStatic as $product) {
             $staticLabels[] = $product['name'];
