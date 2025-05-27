@@ -365,131 +365,213 @@ class PompisteController extends Controller
         return new Collection($transactions);
     }
 
-public function rapport(Request $request)
-{
-    $personnel = Auth::guard('personnel_soute')->user();
-
-    $actionsParJour = $this->transactionsDataCollection
-        ->groupBy('date_action_str')
-        ->map(fn ($txs) => [
-            'date' => $txs->first()['timestamp_action']->toDateString(),
-            'Distribution' => $txs->where('type_action', 'Distribution')->count(),
-            'Dépotage' => $txs->where('type_action', 'Dépotage')->count(),
-        ])->sortBy('date')->values();
-
-    $chartDataGlobal = [
-        'labels' => $actionsParJour->pluck('date')->all(),
-        'datasets' => [
-            [
-                'label' => 'Distributions',
-                'data' => $actionsParJour->pluck('Distribution')->all(),
-                'borderColor' => 'rgb(75, 192, 192)',
-                'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
-                'tension' => 0.1,
-                'fill' => false,
-            ],
-            [
-                'label' => 'Dépotages',
-                'data' => $actionsParJour->pluck('Dépotage')->all(),
-                'borderColor' => 'rgb(255, 99, 132)',
-                'backgroundColor' => 'rgba(255, 99, 132, 0.5)',
-                'tension' => 0.1,
-                'fill' => false,
-            ]
-        ]
-    ];
-
-    $anneesForSelect = $this->transactionsDataCollection->pluck('annee_action')->unique()->sortDesc()->values();
-    if ($anneesForSelect->isEmpty()) {
-        $anneesForSelect->push(Carbon::now()->year);
-    }
-    $moisNoms = collect(range(1, 12))->mapWithKeys(fn ($m) => [$m => Carbon::create()->month($m)->translatedFormat('F')]);
-
-    $selectedAnnee = $request->input('annee', Carbon::now()->year);
-    $selectedMoisNum = $request->input('mois');
-
-    $idPourFiltrerTransactionsDuPersonnel = null;
-    if (isset($this->pompistesDataStatic[0]['id'])) {
-        $idPourFiltrerTransactionsDuPersonnel = $this->pompistesDataStatic[0]['id'];
-    } else {
-
-    }
-
-
-    $transactionsDuPersonnelFictif = collect();
-    if ($idPourFiltrerTransactionsDuPersonnel) {
-        $transactionsDuPersonnelFictif = $this->transactionsDataCollection
-            ->where('pompiste_id', $idPourFiltrerTransactionsDuPersonnel)
-            ->where('annee_action', (int)$selectedAnnee);
-    }
-
-
-    $statsMois = null;
-    if ($selectedMoisNum && !$transactionsDuPersonnelFictif->isEmpty()) {
-        $transactionsMois = $transactionsDuPersonnelFictif->filter(
-            fn ($t) => $t['timestamp_action']->month == (int)$selectedMoisNum
-        );
-
-        $statsMois = $this->calculateStatsForPeriod($transactionsMois, 'jour');
-    }
-
-    $statsAnnee = null;
-    if (!$transactionsDuPersonnelFictif->isEmpty()) {
+    public function rapport(Request $request)
+    {
+        $personnelConnecte = Auth::guard('personnel_soute')->user();
+        if (!$personnelConnecte) {
+            return redirect()->route('soute.dashboard.login')->withErrors(['error' => 'Veuillez vous connecter pour accéder aux rapports.']);
+        }
     
-        $statsAnnee = $this->calculateStatsForPeriod($transactionsDuPersonnelFictif, 'mois');
+        $anneesDisponibles = Distribution::select(DB::raw('YEAR(date_depotage) as annee'))
+            ->union(Depotage::select(DB::raw('YEAR(date_depotage) as annee')))
+            ->distinct()->orderBy('annee', 'desc')->pluck('annee');
+        if ($anneesDisponibles->isEmpty()) $anneesDisponibles = collect([Carbon::now()->year]);
+    
+        $moisNoms = collect(range(1, 12))->mapWithKeys(fn ($m) => [$m => Carbon::create()->month($m)->translatedFormat('F')]);
+    
+        // Récupérer les filtres
+        $selectedAnnee = $request->input('annee', Carbon::now()->year);
+        $selectedMoisNum = $request->input('mois');
+        $dateDebutInput = $request->input('date_debut');
+        $dateFinInput = $request->input('date_fin');
+    
+        $personnelPourStats = $personnelConnecte; // Par défaut
+    
+        // --- Données pour le GRAPHIQUE COMBINÉ (Annuel) ---
+        // (La logique existante pour le graphique annuel basé sur selectedAnnee est bonne pour l'aperçu)
+        $labelsGraphiquePrincipal = [];
+        $donneesDistributionGraphiquePrincipal = [];
+        $donneesDepotageGraphiquePrincipal = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $moisCarbon = Carbon::createFromDate($selectedAnnee, $m, 1);
+            $labelsGraphiquePrincipal[] = $moisCarbon->translatedFormat('F');
+            $totalDistributionMois = Distribution::where('personnel_id', $personnelPourStats->id)
+                                           ->whereYear('date_depotage', $selectedAnnee)
+                                           ->whereMonth('date_depotage', $m)->sum('quantite');
+            $donneesDistributionGraphiquePrincipal[] = $totalDistributionMois ?? 0;
+            $totalDepotageMois = Depotage::where('personnel_id', $personnelPourStats->id)
+                                         ->whereYear('date_depotage', $selectedAnnee)
+                                         ->whereMonth('date_depotage', $m)->sum('volume_recu_l');
+            $donneesDepotageGraphiquePrincipal[] = $totalDepotageMois ?? 0;
+        }
+    
+        // --- Statistiques Détaillées (basées sur les filtres date_debut/date_fin OU annee/mois) ---
+        $statsMois = null;
+        $statsAnnee = null;
+        $anneePourAffichageStats = $selectedAnnee; // Année à afficher dans les titres
+        $moisPourAffichageStats = $selectedMoisNum ? $moisNoms[(int)$selectedMoisNum] : null;
+    
+        // Requêtes de base
+        $queryBaseDistributions = Distribution::where('personnel_id', $personnelPourStats->id)->with('soute');
+        $queryBaseDepotages = Depotage::where('personnel_id', $personnelPourStats->id)->with('soute');
+    
+        if ($dateDebutInput && $dateFinInput) {
+            // Recherche par période spécifique (date_debut, date_fin)
+            $dateDebut = Carbon::parse($dateDebutInput)->startOfDay();
+            $dateFin = Carbon::parse($dateFinInput)->endOfDay();
+    
+            $queryBaseDistributions->whereBetween('date_depotage', [$dateDebut, $dateFin]);
+            $queryBaseDepotages->whereBetween('date_depotage', [$dateDebut, $dateFin]);
+    
+            // Déterminer l'année et le mois pour l'affichage des titres si la période est dans un seul mois
+            $anneePourAffichageStats = $dateDebut->year;
+            if ($dateDebut->year === $dateFin->year && $dateDebut->month === $dateFin->month) {
+                $moisPourAffichageStats = $dateDebut->translatedFormat('F');
+                // Calculer les stats par jour pour cette période
+                $distributionsPeriode = $queryBaseDistributions->get();
+                $depotagesPeriode = $queryBaseDepotages->get();
+                $statsMois = $this->calculateStatsFromEloquent($distributionsPeriode, $depotagesPeriode, 'jour');
+            } else {
+                // Si la période s'étend sur plusieurs mois, on n'affiche pas le titre "Mois de X"
+                // On pourrait afficher "Période du X au Y" ou juste l'année.
+                $moisPourAffichageStats = null; // Pas de mois spécifique si la période est large
+            }
+            // Calculer les stats agrégées par mois pour cette période spécifique
+            $distributionsPeriodeAnnee = $queryBaseDistributions->get(); // Ré-exécuter car on veut toutes les données de la période
+            $depotagesPeriodeAnnee = $queryBaseDepotages->get();
+            $statsAnnee = $this->calculateStatsFromEloquent($distributionsPeriodeAnnee, $depotagesPeriodeAnnee, 'mois');
+    
+    
+        } else {
+            // Recherche par année (et mois optionnel)
+            $queryBaseDistributions->whereYear('date_depotage', $selectedAnnee);
+            $queryBaseDepotages->whereYear('date_depotage', $selectedAnnee);
+    
+            if ($selectedMoisNum) {
+                $queryBaseDistributions->whereMonth('date_depotage', $selectedMoisNum);
+                $queryBaseDepotages->whereMonth('date_depotage', $selectedMoisNum);
+                $distributionsMois = $queryBaseDistributions->get();
+                $depotagesMois = $queryBaseDepotages->get();
+                $statsMois = $this->calculateStatsFromEloquent($distributionsMois, $depotagesMois, 'jour');
+            }
+            // Toujours calculer les stats annuelles pour l'année sélectionnée
+            $distributionsAnneeEntiere = Distribution::where('personnel_id', $personnelPourStats->id)
+                                                ->whereYear('date_depotage', $selectedAnnee)->with('soute')->get();
+            $depotagesAnneeEntiere = Depotage::where('personnel_id', $personnelPourStats->id)
+                                            ->whereYear('date_depotage', $selectedAnnee)->with('soute')->get();
+            $statsAnnee = $this->calculateStatsFromEloquent($distributionsAnneeEntiere, $depotagesAnneeEntiere, 'mois');
+        }
+    
+        $pompisteStatsVue = [
+            'pompiste' => ['nom' => $personnelPourStats->nom_complet ?? 'Personnel Non Identifié', 'id' => $personnelPourStats->id],
+            'annee' => $anneePourAffichageStats, // Utilise l'année déterminée
+            'mois' => $moisPourAffichageStats,   // Utilise le mois déterminé
+            'stats_mois' => $statsMois,
+            'stats_annee' => $statsAnnee,
+        ];
+    
+        $viewData = [
+            'personnel' => $personnelConnecte,
+            'anneesForSelect' => $anneesDisponibles,
+            'moisNoms' => $moisNoms,
+            'selectedAnnee' => $selectedAnnee, // Garde pour le filtre année du graphique principal
+            'selectedMoisNum' => $selectedMoisNum,
+            'selectedDateDebut' => $dateDebutInput, // Pour re-remplir le formulaire
+            'selectedDateFin' => $dateFinInput,     // Pour re-remplir le formulaire
+            'labels' => $labelsGraphiquePrincipal,
+            'data' => $donneesDistributionGraphiquePrincipal,
+            'dataDepotage' => $donneesDepotageGraphiquePrincipal,
+            'pompisteStats' => $pompisteStatsVue,
+            'pompistes' => Personnel::orderBy('nom')->orderBy('prenom')->get()
+        ];
+        return view('pompiste.rapport.index', $viewData);
     }
 
-$productsDataStatic = [
-    ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
-    ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
-    ['name' => 'Mars', 'sales' => 1840, 'depotage' => 1600],
-    ['name' => 'Avril', 'sales' => 2040, 'depotage' => 1800],
-    ['name' => 'Mai', 'sales' => 1740, 'depotage' => 1500],
-    ['name' => 'Juin', 'sales' => 1940, 'depotage' => 1700],
-    ['name' => 'Juillet', 'sales' => 2140, 'depotage' => 1900],
-    ['name' => 'Aout', 'sales' => 2340, 'depotage' => 2100],
-    ['name' => 'Septembre', 'sales' => 2540, 'depotage' => 2300],
-    ['name' => 'Octobre', 'sales' => 2740, 'depotage' => 2500],
-    ['name' => 'Novembre', 'sales' => 2940, 'depotage' => 2700],
-    ['name' => 'Décembre', 'sales' => 3140, 'depotage' => 2900],
-    // ...
-];
+    /**
+     * Calcule les statistiques agrégées à partir de collections Eloquent.
+     */
+    private function calculateStatsFromEloquent(Collection $distributions, Collection $depotages, string $groupByPeriod): array
+    {
+        $formatPeriode = ($groupByPeriod === 'jour') ? 'Y-m-d' : 'Y-m';
 
-$staticLabels = [];
-$staticData = [];           // Distribution
-$staticDataDepotage = [];   // Dépotage
+        $aggregatedDistributions = $distributions
+            ->groupBy(function ($item) use ($formatPeriode) {
+                // La colonne de date dans Distribution est 'date_depotage'
+                return Carbon::parse($item->date_depotage)->format($formatPeriode);
+            })
+            ->map(fn (Collection $group, $periodStr) => $this->aggregateByFuelAndSoute($group, $periodStr, 'distribution'))
+            ->sortBy(fn($items) => $items->first()->periode_obj->timestamp) // Assure-toi que periode_obj est bien créé
+            ->flatMap(fn ($item) => $item) // Aplatir si aggregateByFuelAndSoute retourne une collection d'objets
+            ->values();
 
-foreach ($productsDataStatic as $product) {
-    $staticLabels[] = $product['name'];
-    $staticData[] = $product['sales'];
-    $staticDataDepotage[] = $product['depotage'];
-}
+        $aggregatedDepotages = $depotages
+            ->groupBy(function ($item) use ($formatPeriode) {
+                // La colonne de date dans Depotage est 'date_depotage'
+                return Carbon::parse($item->date_depotage)->format($formatPeriode);
+            })
+            ->map(fn (Collection $group, $periodStr) => $this->aggregateByFuelAndSoute($group, $periodStr, 'depotage'))
+            ->sortBy(fn($items) => $items->first()->periode_obj->timestamp)
+            ->flatMap(fn ($item) => $item)
+            ->values();
+
+        return [
+            'distributions' => $aggregatedDistributions,
+            'depotages' => $aggregatedDepotages,
+            // Tu peux ajouter 'chart_distributions', 'chart_depotages' ici si tu veux des graphiques par carburant
+        ];
+    }
+
+    /**
+     * Agrège les transactions (déjà groupées par période) par type de carburant et soute.
+     * $typeOperation: 'distribution' ou 'depotage'
+     */
+    private function aggregateByFuelAndSoute(Collection $transactionsInPeriod, string $periodStr, string $typeOperation): Collection
+    {
+        // Crée l'objet Carbon pour la période
+        $periodeObj = (strlen($periodStr) > 7)
+            ? Carbon::createFromFormat('Y-m-d', $periodStr)->startOfDay()
+            : Carbon::createFromFormat('Y-m', $periodStr)->startOfMonth();
+
+        return $transactionsInPeriod
+            ->groupBy(function($item) use ($typeOperation) {
+                // Clé de groupement : type_carburant (ou produit) + soute_id
+                $fuelField = ($typeOperation === 'distribution') ? 'type_carburant' : 'produit';
+                return $item->{$fuelField} . '_' . $item->soute_id;
+            })
+            ->map(function (Collection $fuelSouteGroup) use ($periodStr, $periodeObj, $typeOperation) {
+                $firstItem = $fuelSouteGroup->first();
+                $soute = $firstItem->soute; // La relation 'soute' doit être chargée (eager loaded)
+
+                $quantiteField = ($typeOperation === 'distribution') ? 'quantite' : 'volume_recu_l';
+                $fuelField = ($typeOperation === 'distribution') ? 'type_carburant' : 'produit';
+                $currentFuelType = $firstItem->{$fuelField};
+
+                $capacite = 0;
+                if ($soute instanceof Soute) {
+                    // Utilise ta logique pour obtenir la capacité
+                    // (Adapte 'diesel', 'kerozen', 'essence' aux valeurs exactes de $currentFuelType)
+                    if (strtolower($currentFuelType) === 'diesel') $capacite = $soute->capacite_diesel;
+                    elseif (strtolower($currentFuelType) === 'kerozen') $capacite = $soute->capacite_kerozen;
+                    elseif (strtolower($currentFuelType) === 'essence') $capacite = $soute->capacite_essence;
+                }
+
+                return (object)[
+                    'periode_str' => $periodStr,
+                    'periode_obj' => $periodeObj->copy(), // Important de copier pour éviter la modification de l'objet original
+                    'type_carburant' => $currentFuelType, // Nom de champ cohérent pour la vue
+                    'total_quantite' => $fuelSouteGroup->sum($quantiteField),
+                    'capacite_totale_litres' => (float) $capacite, // Utilise la capacité calculée
+                    // 'soute_nom' => $soute ? $soute->nom : 'N/A', // Optionnel si tu veux afficher le nom de la soute
+                ];
+            })->values(); // Retourne une collection d'objets
+    }
 
 
-    $pompisteStats = [
-        'pompiste' => ['nom' => $personnel->nom ?? 'Personnel Connecté', 'id' => $personnel->id],
-        'annee' => $selectedAnnee,
-        'mois' => $selectedMoisNum ? $moisNoms[(int)$selectedMoisNum] : null,
-        'num_mois' => $selectedMoisNum,
-        'stats_mois' => $statsMois,
-        'stats_annee' => $statsAnnee,
-    ];
+    // La méthode `prepareChartDataFromAggregated` de ton code original peut être réutilisée
+    // si tu veux des graphiques par type de carburant dans les sections de statistiques détaillées.
+    // Elle devra être adaptée pour prendre les collections Eloquent agrégées.
 
-    $viewData = [
-        'personnel' => $personnel,
-        'chartDataGlobal' => $chartDataGlobal,
-        'anneesForSelect' => $anneesForSelect,
-        'moisNoms' => $moisNoms,
-        'pompisteStats' => $pompisteStats,
-        'selectedAnnee' => $selectedAnnee,
-        'selectedMoisNum' => $selectedMoisNum,
-        'labels' => $staticLabels,
-        'data' => $staticData,
-        'dataDepotage' => $staticDataDepotage,
-    ];
-
-    return view('pompiste.rapport.index', $viewData);
-}
+    // `show_chart` n'est pas directement lié à la méthode rapport ici.
 
     private function calculateStatsForPeriod(Collection $transactions, string $groupByPeriod): array
     {
