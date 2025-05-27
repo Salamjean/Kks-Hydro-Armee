@@ -369,245 +369,47 @@ public function rapport(Request $request)
 {
     $personnel = Auth::guard('personnel_soute')->user();
 
-    $actionsParJour = $this->transactionsDataCollection
-        ->groupBy('date_action_str')
-        ->map(fn ($txs) => [
-            'date' => $txs->first()['timestamp_action']->toDateString(),
-            'Distribution' => $txs->where('type_action', 'Distribution')->count(),
-            'Dépotage' => $txs->where('type_action', 'Dépotage')->count(),
-        ])->sortBy('date')->values();
-
-    $chartDataGlobal = [
-        'labels' => $actionsParJour->pluck('date')->all(),
-        'datasets' => [
-            [
-                'label' => 'Distributions',
-                'data' => $actionsParJour->pluck('Distribution')->all(),
-                'borderColor' => 'rgb(75, 192, 192)',
-                'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
-                'tension' => 0.1,
-                'fill' => false,
-            ],
-            [
-                'label' => 'Dépotages',
-                'data' => $actionsParJour->pluck('Dépotage')->all(),
-                'borderColor' => 'rgb(255, 99, 132)',
-                'backgroundColor' => 'rgba(255, 99, 132, 0.5)',
-                'tension' => 0.1,
-                'fill' => false,
-            ]
-        ]
+    $productsDataStatic = [
+        ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
+        ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
+        ['name' => 'Mars', 'sales' => 1840, 'depotage' => 1600],
+        ['name' => 'Avril', 'sales' => 2040, 'depotage' => 1800],
+        ['name' => 'Mai', 'sales' => 1740, 'depotage' => 1500],
+        ['name' => 'Juin', 'sales' => 1940, 'depotage' => 1700],
+        ['name' => 'Juillet', 'sales' => 2140, 'depotage' => 1900],
+        ['name' => 'Aout', 'sales' => 2340, 'depotage' => 2100],
+        ['name' => 'Septembre', 'sales' => 2540, 'depotage' => 2300],
+        ['name' => 'Octobre', 'sales' => 2740, 'depotage' => 2500],
+        ['name' => 'Novembre', 'sales' => 2940, 'depotage' => 2700],
+        ['name' => 'Décembre', 'sales' => 3140, 'depotage' => 2900],
+        // ...
     ];
 
-    $anneesForSelect = $this->transactionsDataCollection->pluck('annee_action')->unique()->sortDesc()->values();
-    if ($anneesForSelect->isEmpty()) {
-        $anneesForSelect->push(Carbon::now()->year);
+    $staticLabels = [];
+    $staticData = [];           // Distribution
+    $staticDataDepotage = [];   // Dépotage
+
+    foreach ($productsDataStatic as $product) {
+        $staticLabels[] = $product['name'];
+        $staticData[] = $product['sales'];
+        $staticDataDepotage[] = $product['depotage'];
     }
-    $moisNoms = collect(range(1, 12))->mapWithKeys(fn ($m) => [$m => Carbon::create()->month($m)->translatedFormat('F')]);
-
-    $selectedAnnee = $request->input('annee', Carbon::now()->year);
-    $selectedMoisNum = $request->input('mois');
-
-    $idPourFiltrerTransactionsDuPersonnel = null;
-    if (isset($this->pompistesDataStatic[0]['id'])) {
-        $idPourFiltrerTransactionsDuPersonnel = $this->pompistesDataStatic[0]['id'];
-    } else {
-
-    }
-
-
-    $transactionsDuPersonnelFictif = collect();
-    if ($idPourFiltrerTransactionsDuPersonnel) {
-        $transactionsDuPersonnelFictif = $this->transactionsDataCollection
-            ->where('pompiste_id', $idPourFiltrerTransactionsDuPersonnel)
-            ->where('annee_action', (int)$selectedAnnee);
-    }
-
-
-    $statsMois = null;
-    if ($selectedMoisNum && !$transactionsDuPersonnelFictif->isEmpty()) {
-        $transactionsMois = $transactionsDuPersonnelFictif->filter(
-            fn ($t) => $t['timestamp_action']->month == (int)$selectedMoisNum
-        );
-
-        $statsMois = $this->calculateStatsForPeriod($transactionsMois, 'jour');
-    }
-
-    $statsAnnee = null;
-    if (!$transactionsDuPersonnelFictif->isEmpty()) {
-    
-        $statsAnnee = $this->calculateStatsForPeriod($transactionsDuPersonnelFictif, 'mois');
-    }
-
-$productsDataStatic = [
-    ['name' => 'Janvier', 'sales' => 1540, 'depotage' => 1200],
-    ['name' => 'Fevrier', 'sales' => 2240, 'depotage' => 2100],
-    ['name' => 'Mars', 'sales' => 1840, 'depotage' => 1600],
-    ['name' => 'Avril', 'sales' => 2040, 'depotage' => 1800],
-    ['name' => 'Mai', 'sales' => 1740, 'depotage' => 1500],
-    ['name' => 'Juin', 'sales' => 1940, 'depotage' => 1700],
-    ['name' => 'Juillet', 'sales' => 2140, 'depotage' => 1900],
-    ['name' => 'Aout', 'sales' => 2340, 'depotage' => 2100],
-    ['name' => 'Septembre', 'sales' => 2540, 'depotage' => 2300],
-    ['name' => 'Octobre', 'sales' => 2740, 'depotage' => 2500],
-    ['name' => 'Novembre', 'sales' => 2940, 'depotage' => 2700],
-    ['name' => 'Décembre', 'sales' => 3140, 'depotage' => 2900],
-    // ...
-];
-
-$staticLabels = [];
-$staticData = [];           // Distribution
-$staticDataDepotage = [];   // Dépotage
-
-foreach ($productsDataStatic as $product) {
-    $staticLabels[] = $product['name'];
-    $staticData[] = $product['sales'];
-    $staticDataDepotage[] = $product['depotage'];
-}
-
 
     $pompisteStats = [
         'pompiste' => ['nom' => $personnel->nom ?? 'Personnel Connecté', 'id' => $personnel->id],
-        'annee' => $selectedAnnee,
-        'mois' => $selectedMoisNum ? $moisNoms[(int)$selectedMoisNum] : null,
-        'num_mois' => $selectedMoisNum,
-        'stats_mois' => $statsMois,
-        'stats_annee' => $statsAnnee,
     ];
 
     $viewData = [
         'personnel' => $personnel,
-        'chartDataGlobal' => $chartDataGlobal,
-        'anneesForSelect' => $anneesForSelect,
-        'moisNoms' => $moisNoms,
         'pompisteStats' => $pompisteStats,
-        'selectedAnnee' => $selectedAnnee,
-        'selectedMoisNum' => $selectedMoisNum,
         'labels' => $staticLabels,
         'data' => $staticData,
         'dataDepotage' => $staticDataDepotage,
     ];
-
     return view('pompiste.rapport.index', $viewData);
 }
 
-    private function calculateStatsForPeriod(Collection $transactions, string $groupByPeriod): array
-    {
-        if ($transactions->isEmpty()) {
-            return $this->emptyStats();
-        }
-        $keyForGrouping = ($groupByPeriod === 'jour') ? 'date_action_str' : 'mois_action_str';
 
-        $distributions = $transactions->where('type_action', 'Distribution')
-            ->groupBy($keyForGrouping)
-            ->map(fn ($group, $period) => $this->aggregateByFuel($group, $period))
-            ->sortBy(fn($items) => $items->first()->periode_obj->timestamp)
-            ->flatMap(fn ($item) => $item)
-            ->values();
-
-        $depotages = $transactions->where('type_action', 'Dépotage')
-            ->groupBy($keyForGrouping)
-            ->map(fn ($group, $period) => $this->aggregateByFuel($group, $period))
-            ->sortBy(fn($items) => $items->first()->periode_obj->timestamp)
-            ->flatMap(fn ($item) => $item)
-            ->values();
-
-        return [
-            'distributions' => $distributions,
-            'depotages' => $depotages,
-            'chart_distributions' => $this->prepareChartDataFromAggregated($distributions, $groupByPeriod),
-            'chart_depotages' => $this->prepareChartDataFromAggregated($depotages, $groupByPeriod),
-            'aggregation_level' => $groupByPeriod,
-        ];
-    }
-
-    private function aggregateByFuel(Collection $transactionsInPeriod, string $periodStr): Collection
-    {
-        $periodeObj = (strlen($periodStr) > 7) ? Carbon::createFromFormat('Y-m-d', $periodStr)->startOfDay() : Carbon::createFromFormat('Y-m', $periodStr)->startOfMonth();
-        return $transactionsInPeriod
-            ->groupBy('type_carburant')
-            ->map(fn (Collection $fuelGroup, $fuelType) => (object)[
-                'periode_str' => $periodStr,
-                'periode_obj' => $periodeObj->copy(),
-                'type_carburant' => $fuelType,
-                'total_quantite' => $fuelGroup->sum('quantite_litres'),
-                'capacite_totale_litres' => $fuelGroup->first()['capacite_cuve_concernee_litres'],
-            ])->values();
-    }
-
-    private function prepareChartDataFromAggregated(Collection $aggregatedData, string $periodType): array
-    {
-        if ($aggregatedData->isEmpty()) {
-            return ['labels' => [], 'datasets' => []];
-        }
-
-        $labels = $aggregatedData->map(fn ($item) =>
-            ($periodType === 'jour')
-                ? $item->periode_obj->format('d M')
-                : $item->periode_obj->translatedFormat('F')
-        )->unique()->values();
-
-        $fuelTypes = $aggregatedData->pluck('type_carburant')->unique()->values();
-        $datasets = [];
-        $colors = ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)', 'rgb(75, 192, 192)'];
-
-        foreach ($fuelTypes as $index => $fuel) {
-            $fuelChartData = $labels->map(function ($labelPeriod) use ($aggregatedData, $fuel, $periodType) {
-                $item = $aggregatedData->first(function ($item) use ($labelPeriod, $fuel, $periodType) {
-                    if (!isset($item->periode_obj) || !isset($item->type_carburant)) {
-                        return false;
-                    }
-
-                    $itemPeriodFormatted = ($periodType === 'jour' && $item->periode_obj instanceof \Carbon\Carbon)
-                        ? $item->periode_obj->format('d M')
-                        : ($item->periode_obj instanceof \Carbon\Carbon
-                            ? $item->periode_obj->translatedFormat('F')
-                            : null);
-
-                    return $itemPeriodFormatted === $labelPeriod && $item->type_carburant === $fuel;
-                });
-
-                return $item && isset($item->total_quantite) ? $item->total_quantite : 0;
-            });
-
-            $datasets[] = [
-                'label' => $fuel,
-                'data' => $fuelChartData,
-                'backgroundColor' => $colors[$index % count($colors)]
-            ];
-        }
-
-        return [
-            'labels' => $labels,
-            'datasets' => $datasets
-        ];
-    }
-
-
-
-    public function show_chart()
-    {
-        $productsData = [
-            ['name' => 'Pommes', 'sales' => 150],
-            ['name' => 'Bananes', 'sales' => 220],
-            ['name' => 'Oranges', 'sales' => 180],
-            ['name' => 'Fraises', 'sales' => 300],
-            ['name' => 'Kiwis', 'sales' => 120],
-        ];
-
-        $labels = [];
-        $data = [];
-
-        foreach ($productsData as $product) {
-            $labels[] = $product['name'];
-            $data[] = $product['sales'];
-        }
-
-        return view('charts.product_sales', [
-            'labels' => $labels,
-            'data' => $data,
-        ]);
-    }
 
 
 }
