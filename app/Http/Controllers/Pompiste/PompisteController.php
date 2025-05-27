@@ -338,65 +338,117 @@ class PompisteController extends Controller
             $staticData[] = $product['sales'];
             $staticDataDepotage[] = $product['depotage'];
         }
-
+        
+        // Données pour le tableau (avec filtres)
+        $statistiquesFiltrees = $this->getStatistiquesData($request);
+        
+        // Données pour le graphique (sans filtres)
+        $statistiquesGraphique = $this->getStatistiquesData(new Request(), true);
+    
+        // Préparer les données pour le graphique
+        $labelsGraphique = [];
+        $donneesDistributionGraphique = [];
+        $donneesDepotageGraphique = [];
+    
+        foreach ($statistiquesGraphique as $statMois) {
+            $labelsGraphique[] = $statMois->mois;
+            $donneesDistributionGraphique[] = $statMois->distribution;
+            $donneesDepotageGraphique[] = $statMois->depotage;
+        }
+    
         $pompisteStats = [
-            'pompiste' => ['nom' => $personnel->nom ?? 'Personnel Connecté', 'id' => $personnel->id ?? null],
+            'pompiste' => ['nom' => $personnel->nom_complet ?? 'Personnel Connecté', 'id' => $personnel->id],
+            'date_debut_filtre' => $request->input('date_debut'),
+            'date_fin_filtre' => $request->input('date_fin'),
         ];
-
-        // Récupérer les statistiques pour le tableau et les exports
-        $statistiques = $this->getStatistiquesData();
-
+    
         $viewData = [
             'personnel' => $personnel,
             'pompisteStats' => $pompisteStats,
-            'labels' => $staticLabels,
-            'data' => $staticData,
-            'dataDepotage' => $staticDataDepotage,
-            'statistiques' => $statistiques,
+            'labels' => $labelsGraphique,
+            'data' => $donneesDistributionGraphique,
+            'dataDepotage' => $donneesDepotageGraphique,
+            'statistiques' => $statistiquesFiltrees,
+            'selectedDateDebut' => $request->input('date_debut'),
+            'selectedDateFin' => $request->input('date_fin'),
         ];
         return view('pompiste.rapport.index', $viewData);
     }
 
-   public function exportPdf()
-    {
-        $statistiques = $this->getStatistiquesData();
-        $data = [
-            'statistiques' => $statistiques,
-            'titre' => 'Rapport des Statistiques Mensuelles',
-            'dateExport' => now()->format('d/m/Y H:i')
-        ];
+ // Dans PompisteController.php
 
-        $pdf = Pdf::loadView('pompiste.rapport.statistiques-pdf', $data);
+public function exportPdf(Request $request) // Ajout de Request
+{
+    // Pour un export simple, on pourrait ne pas appliquer les filtres de date de la requête
+    // ou alors il faudrait une logique pour stocker les filtres en session ou les passer en GET
+    // Ici, on va créer une nouvelle requête "vide" pour getStatistiquesData pour obtenir les données de l'année courante.
+    $statistiques = $this->getStatistiquesData(new Request()); // Passe une requête vide pour données non filtrées par date
+    $data = [
+        'statistiques' => $statistiques,
+        'titre' => 'Rapport des Statistiques Mensuelles',
+        'dateExport' => now()->format('d/m/Y H:i')
+    ];
+    $pdf = Pdf::loadView('pompiste.rapport.statistiques-pdf', $data);
+    return $pdf->download('statistiques-mensuelles.pdf');
+}
 
-        return $pdf->download('statistiques-mensuelles.pdf');
+public function exportExcel(Request $request) // Ajout de Request
+{
+    $statistiques = $this->getStatistiquesData(new Request()); // Passe une requête vide
+    return Excel::download(new StatistiquesExport($statistiques), 'statistiques-mensuelles.xlsx');
+}
+private function getStatistiquesData(Request $request, $ignoreFilters = false)
+{
+    $personnel = Auth::guard('personnel_soute')->user();
+    if (!$personnel) {
+        return collect();
     }
 
-    public function exportExcel()
-    {
-        $statistiques = $this->getStatistiquesData();
-
-        // Créez une instance de votre classe d'exportation
-        return Excel::download(new StatistiquesExport($statistiques), 'statistiques-mensuelles.xlsx');
+    // Déterminer l'année de référence
+    $anneeDeReference = Carbon::now()->year;
+    if (!$ignoreFilters && $request->input('date_debut')) {
+        $anneeDeReference = Carbon::parse($request->input('date_debut'))->year;
     }
 
-    private function getStatistiquesData()
-    {
-        return collect([
-            (object) ['mois' => 'Janvier', 'distribution' => 1540, 'depotage' => 1200],
-            (object) ['mois' => 'Février', 'distribution' => 2240, 'depotage' => 2100],
-            (object) ['mois' => 'Mars', 'distribution' => 1840, 'depotage' => 1600],
-            (object) ['mois' => 'Avril', 'distribution' => 2040, 'depotage' => 1800],
-            (object) ['mois' => 'Mai', 'distribution' => 1740, 'depotage' => 1500],
-            (object) ['mois' => 'Juin', 'distribution' => 1940, 'depotage' => 1700],
-            (object) ['mois' => 'Juillet', 'distribution' => 2140, 'depotage' => 1900],
-            (object) ['mois' => 'Août', 'distribution' => 2340, 'depotage' => 2100],
-            (object) ['mois' => 'Septembre', 'distribution' => 2540, 'depotage' => 2300],
-            (object) ['mois' => 'Octobre', 'distribution' => 2740, 'depotage' => 2500],
-            (object) ['mois' => 'Novembre', 'distribution' => 2940, 'depotage' => 2700],
-            (object) ['mois' => 'Décembre', 'distribution' => 3140, 'depotage' => 2900],
+    $resultats = collect();
+
+    for ($m = 1; $m <= 12; $m++) {
+        $moisCarbon = Carbon::createFromDate($anneeDeReference, $m, 1);
+        $nomMois = $moisCarbon->translatedFormat('F');
+
+        // Requêtes de base
+        $queryDistributions = Distribution::where('personnel_id', $personnel->id)
+                                        ->whereYear('date_depotage', $anneeDeReference)
+                                        ->whereMonth('date_depotage', $m);
+
+        $queryDepotages = Depotage::where('personnel_id', $personnel->id)
+                                ->whereYear('date_depotage', $anneeDeReference)
+                                ->whereMonth('date_depotage', $m);
+
+        // Appliquer les filtres seulement si on ne les ignore pas
+        if (!$ignoreFilters && $request->input('date_debut') && $request->input('date_fin')) {
+            $parsedDateDebut = Carbon::parse($request->input('date_debut'))->startOfDay();
+            $parsedDateFin = Carbon::parse($request->input('date_fin'))->endOfDay();
+
+            if ($moisCarbon->betweenIncluded($parsedDateDebut->copy()->startOfMonth(), $parsedDateFin->copy()->endOfMonth())) {
+                $queryDistributions->whereBetween('date_depotage', [$parsedDateDebut, $parsedDateFin]);
+                $queryDepotages->whereBetween('date_depotage', [$parsedDateDebut, $parsedDateFin]);
+            } else {
+                $queryDistributions->whereRaw('1 = 0');
+                $queryDepotages->whereRaw('1 = 0');
+            }
+        }
+
+        $totalDistributionMois = $queryDistributions->sum('quantite');
+        $totalDepotageMois = $queryDepotages->sum('volume_recu_l');
+
+        $resultats->push((object) [
+            'mois' => $nomMois,
+            'distribution' => $totalDistributionMois ?? 0,
+            'depotage' => $totalDepotageMois ?? 0,
         ]);
     }
-
-
+    return $resultats;
+}
 
 }
