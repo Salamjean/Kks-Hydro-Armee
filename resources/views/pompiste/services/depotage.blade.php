@@ -47,7 +47,7 @@
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="depotageModalLabel">Faire un dépotage (Soute: {{ $soute->nom ?? '' }})</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
                 </div>
                 <div class="modal-body">
                     {{-- Affichage des erreurs et succès pour ce modal --}}
@@ -118,7 +118,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="volume_transporte_l" class="form-label">Volume Transporté (L) *</label>
-                            <input type="number" class="form-control @error('volume_transporte_l', 'depotage_modal') is-invalid @enderror" id="volume_transporte_l" name="volume_transporte_l" value="{{ old('volume_transporte_l') }}" step="0.01" required>
+                            <input type="number" class="form-control @error('volume_transporte_l', 'depotage_modal') is-invalid @enderror" id="volume_transporte_l" name="volume_transporte_l" value="{{ old('volume_transporte_l') }}" step="any" required>
                             @error('volume_transporte_l', 'depotage_modal') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-4 mb-3">
@@ -138,7 +138,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="volume_recu_l" class="form-label">Volume Reçu (L) *</label>
-                            <input type="number" class="form-control @error('volume_recu_l', 'depotage_modal') is-invalid @enderror" id="volume_recu_l" name="volume_recu_l" value="{{ old('volume_recu_l') }}" step="0.01" required>
+                            <input type="number" class="form-control @error('volume_recu_l', 'depotage_modal') is-invalid @enderror" id="volume_recu_l" name="volume_recu_l" value="{{ old('volume_recu_l') }}" step="any" required>
                              @error('volume_recu_l', 'depotage_modal') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
