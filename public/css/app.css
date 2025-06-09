@@ -19439,10 +19439,10 @@ small {
 }
 
 .container {
-    display: flex;
-    justify-content: center; /* centre horizontalement */
-    align-items: center; /* centre verticalement */
-    height: 100vh; /* 100% de la hauteur viewport */
+    /* display: flex; */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     background-color: #f9f9f9;
 }
 

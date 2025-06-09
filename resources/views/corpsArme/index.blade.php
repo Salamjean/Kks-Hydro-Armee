@@ -36,13 +36,13 @@
  <!-- Tableau des administrateurs -->
  <div class="row mt-5">
     <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-black">
+        {{-- <div class="card shadow-sm"> --}}
+            {{-- <div class="card-header bg-black"> --}}
                 <h4 class="font-weight-bolder text-black mb-0 text-center">Liste des corps d'armées</h4>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered mb-0">
+                    <table class="table">
                         <thead>
                             <tr class="text-center" style="background-color: black;">
                                 <th class="text-white align-middle">Corps d'armée</th>

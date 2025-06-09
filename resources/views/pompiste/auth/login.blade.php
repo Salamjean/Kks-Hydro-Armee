@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Connexion Soute</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}"> {{-- Important pour AJAX POST --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ asset('assetsSEA/css/pages/auth.css') }}">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">

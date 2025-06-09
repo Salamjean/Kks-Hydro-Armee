@@ -7,17 +7,25 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - @yield('title', "Gestion")</title>
     <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}">
-    <link rel="stylesheet" href="{{ asset('css/sidebar_admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/navbar_admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/perfect-scrollbar/perfect-scrollbar.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/plugins/@mdi/font/css/materialdesignicons.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     @stack('plugin-styles')
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/template.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/footer_admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
+
+     {{-- <link rel="stylesheet" href="{{ asset('assetsSEA/css/bootstrap.css') }}"> --}}
+    {{-- <link rel="stylesheet" href="{{ asset('assetsSEA/css/pages/auth.css') }}"> --}}
+    {{-- <link rel="stylesheet" href="{{ asset('css/login.css') }}"> --}}
     @stack('styles')
 </head>
 <body data-base-url="{{url('/')}}" class="sidebar-lg-only">

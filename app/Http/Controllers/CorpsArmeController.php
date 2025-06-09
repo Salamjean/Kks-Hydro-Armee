@@ -15,9 +15,11 @@ use Illuminate\Support\Facades\Storage;
 
 class CorpsArmeController extends Controller
 {
-    public function dashboard(){
+    public function dashboard()
+    {
         return view('admin.dashboard');
     }
+    
     public function createArmy()
     {
         return view('corpsArme.create');

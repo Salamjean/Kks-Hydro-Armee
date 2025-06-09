@@ -68,7 +68,6 @@
                         </div>
                     @endif
 
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="nom_chauffeur_modal" class="form-label">Nom Complet du chauffeur *</label>
