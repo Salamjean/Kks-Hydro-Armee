@@ -35,6 +35,8 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stack('custom-scripts')
 </body>
 </html>
 <script src="{{ asset('js/app.js') }}"></script>

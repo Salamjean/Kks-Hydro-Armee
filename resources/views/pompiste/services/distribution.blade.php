@@ -47,6 +47,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    @if($soute->estEnAlerte('diesel') || $soute->estEnAlerte('kerozen') || $soute->estEnAlerte('essence'))
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Attention : Seuil d'alerte atteint pour un ou plusieurs carburants
+                    </div>
+                @endif
                     {{-- Affichage des erreurs générales ou de succès qui pourraient venir du redirect back --}}
                     @if (session('success_modal'))
                         <div class="alert alert-success">
@@ -172,6 +178,8 @@
         </div>
     </div>
 </section>
+@include('pompiste.layouts.partials._alert', ['errorBag' => 'distribution_modal'])
+
 @endsection
 
 @push('custom-scripts')
@@ -210,67 +218,90 @@
         };
         const oldProduitModal = "{{ old('produit') }}"; // Pour restaurer la sélection après une erreur de validation
 
-        function getStockDisponiblePourProduit(produitKey) {
-            let stock;
-            // produitKey sera 'essence', 'kerozen', ou 'diesel' (minuscules)
-            switch (produitKey) {
-                case 'essence':
-                    stock = (souteContext.niveauActuelEssence !== null) ? souteContext.niveauActuelEssence : souteContext.capaciteEssence;
-                    break;
-                case 'kerozen':
-                    stock = (souteContext.niveauActuelKerozen !== null) ? souteContext.niveauActuelKerozen : souteContext.capaciteKerozen;
-                    break;
-                case 'diesel':
-                    stock = (souteContext.niveauActuelDiesel !== null) ? souteContext.niveauActuelDiesel : souteContext.capaciteDiesel;
-                    break;
-                default:
-                    stock = 0;
-            }
-            return parseFloat(stock) || 0;
+       // DANS distribution.blade.php, REMPLACEZ CETTE FONCTION
+
+function getStockDisponiblePourProduit(produitKey) {
+    // La logique correcte : le stock disponible EST le niveau actuel.
+    // Si le niveau actuel est null ou indéfini, le stock est 0.
+
+    switch (produitKey.toLowerCase()) { // Utiliser toLowerCase() pour plus de robustesse
+        case 'essence':
+            // parseFloat(null) donne NaN. NaN || 0 donne 0. C'est parfait.
+            return parseFloat(souteContext.niveauActuelEssence) || 0;
+        case 'kerozen':
+            return parseFloat(souteContext.niveauActuelKerozen) || 0;
+        case 'diesel':
+            return parseFloat(souteContext.niveauActuelDiesel) || 0;
+        default:
+            return 0; // Retourne 0 si le type de produit n'est pas reconnu
+    }
+}
+
+       // DANS Distribution.blade.php
+
+function populateProduitsModal() {
+    // ---- DEBUG : Ligne cruciale pour vérifier les données reçues ----
+    // Décommentez cette ligne pour voir dans la console (F12) ce que votre JS reçoit exactement
+    // console.log("Données reçues pour le select :", souteContext.typesDisponibles); 
+    // -----------------------------------------------------------------
+
+    produitModalSelect.empty().append('<option value=""></option>');
+
+    if (!souteContext.id) {
+         produitModalSelect.append('<option value="" disabled selected>Erreur: Soute non définie</option>');
+         produitModalSelect.trigger('change');
+         return;
+    }
+
+    // Si le tableau est vide ou non défini
+    if (!souteContext.typesDisponibles || souteContext.typesDisponibles.length === 0) {
+        produitModalSelect.append('<option value="" disabled selected>Aucun carburant configuré pour cette soute</option>');
+        produitModalSelect.trigger('change');
+        return;
+    }
+
+    // NOUVELLE LOGIQUE SIMPLIFIÉE ET ROBUSTE
+    souteContext.typesDisponibles.forEach(produitKeyValue => { // produitKeyValue est directement 'diesel', 'kerozen', etc.
+        
+        // On s'assure que c'est une chaîne et on la traite
+        if (typeof produitKeyValue !== 'string' || produitKeyValue === '') return;
+
+        // 1. Mettre la première lettre en majuscule pour l'affichage
+        const typeCarburantAffichage = produitKeyValue.charAt(0).toUpperCase() + produitKeyValue.slice(1);
+        
+        // 2. Récupérer les informations de stock
+        const stockDisponible = getStockDisponiblePourProduit(produitKeyValue);
+        const seuil = souteContext[`seuil_alerte_${produitKeyValue}`];
+        const estEnAlerte = seuil !== null && stockDisponible <= seuil;
+        const estEpuise = stockDisponible <= 0;
+
+        // 3. Construire le texte de l'option
+        let displayText = `${typeCarburantAffichage} (Stock: ${stockDisponible.toFixed(2)} L)`;
+        
+        // 4. Créer l'objet <option>
+        const optionElement = new Option(displayText, produitKeyValue);
+
+        // 5. Gérer la désactivation de l'option
+        if (estEpuise) {
+            optionElement.text += " - Épuisé";
+            optionElement.disabled = true;
+        } else if (estEnAlerte) {
+            optionElement.text += " - Alerte Seuil";
+            optionElement.disabled = true;
         }
+        
+        // 6. Ajouter l'option au select
+        produitModalSelect.append(optionElement);
+    });
 
-        function populateProduitsModal() {
-            // console.log("Populating. Soute context:", souteContext);
-            produitModalSelect.empty().append('<option value=""></option>'); // Pour le placeholder de Select2
-
-            if (!souteContext.id) {
-                 produitModalSelect.append('<option value="" disabled selected>Erreur: Soute non définie</option>');
-                 produitModalSelect.trigger('change');
-                 return;
-            }
-
-            let hasConfiguredProducts = false;
-
-            // Les chaînes dans typesDisponibles sont "Essence", "Kerozen", "Diesel" (avec majuscule)
-            // Les clés pour les options doivent être 'essence', 'kerozen', 'diesel' (minuscules) pour le backend
-            souteContext.typesDisponibles.forEach(typeCarburantAffichage => { // ex: "Essence"
-                let produitKeyValue = ''; // ex: 'essence'
-
-                if (typeCarburantAffichage === 'Essence') produitKeyValue = 'essence';
-                else if (typeCarburantAffichage === 'Kerozen') produitKeyValue = 'kerozen';
-                else if (typeCarburantAffichage === 'Diesel') produitKeyValue = 'diesel';
-
-                if (produitKeyValue) { // Si c'est un type de carburant que nous gérons
-                    hasConfiguredProducts = true;
-                    const stockDisponible = getStockDisponiblePourProduit(produitKeyValue);
-                    let displayText = `${typeCarburantAffichage} (Stock: ${stockDisponible.toFixed(2)} L)`;
-                    if (stockDisponible <= 0) {
-                        displayText += " - Épuisé";
-                    }
-                    produitModalSelect.append(new Option(displayText, produitKeyValue));
-                }
-            });
-
-            if (!hasConfiguredProducts && souteContext.id) {
-                 produitModalSelect.append('<option value="" disabled selected>Aucun type de carburant géré configuré pour cette soute</option>');
-            }
-
-            if (oldProduitModal) {
-                produitModalSelect.val(oldProduitModal);
-            }
-            produitModalSelect.trigger('change'); // Important pour Select2 et pour déclencher l'événement on-change
-        }
-
+    // Restaurer l'ancienne valeur si elle existe (après erreur de validation)
+    if (oldProduitModal) {
+        produitModalSelect.val(oldProduitModal);
+    }
+    
+    // Mettre à jour l'affichage de Select2
+    produitModalSelect.trigger('change');
+}
         produitModalSelect.on('change', function() {
             const selectedProduitKey = $(this).val(); // 'essence', 'kerozen', ou 'diesel'
             let stockDisponible = 0;
@@ -296,9 +327,28 @@
                 quantiteModalInput.removeAttr('max').val('');
                 quantiteModalInput.prop('disabled', true);
             }
+            if (selectedProduitKey) {
+        const seuil = souteContext[`seuil_alert_${selectedProduitKey}`];
+        const estEnAlerte = seuil !== null && stockDisponible <= seuil;
+
+        if (estEnAlerte) {
+            stockInfoModalSpan.text('Seuil d\'alerte atteint. Distribution impossible.');
+            quantiteModalInput.prop('disabled', true);
+        } else if (stockDisponible <= 0) {
+            // ... gestion stock épuisé ...
+        } else {
+            // ... gestion stock normal ...
+        }
+    }
         });
 
         $('#distributionModal').on('show.bs.modal', function () {
+              // Initialiser Select2 ici
+    $('#produit_modal').select2({
+        dropdownParent: $(this),
+        placeholder: "Choisir un type de carburant",
+        allowClear: true
+    });
             if (!souteContext.id && "{{ $soute->id ?? null }}") { // Au cas où $soute serait mis à jour par un autre script (peu probable ici)
                 souteContext.id = "{{ $soute->id }}";
                 $('#soute_id_modal').val("{{ $soute->id }}");

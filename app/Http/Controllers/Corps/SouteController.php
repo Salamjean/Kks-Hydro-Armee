@@ -53,6 +53,12 @@ class SouteController extends Controller
             'capacite_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0',
             'description' => 'nullable|string',
             'form_type' => 'sometimes|string',
+            'niveau_actuel_diesel' => 'nullable|required_if:type_carburants.*,Diesel|numeric|min:0|lte:capacite_diesel',
+        'niveau_actuel_kerozen' => 'nullable|required_if:type_carburants.*,Kerozen|numeric|min:0|lte:capacite_kerozen',
+        'niveau_actuel_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0|lte:capacite_essence',
+        'seuil_alert_diesel' => 'nullable|required_if:type_carburants.*,Diesel|numeric|min:0|lte:capacite_diesel',
+        'seuil_alert_kerozen' => 'nullable|required_if:type_carburants.*,Kerozen|numeric|min:0|lte:capacite_kerozen',
+        'seuil_alert_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0|lte:capacite_essence',
         ], [
             'nom.required' => 'Le nom de la soute est obligatoire.',
             'nom.unique' => 'Une soute avec ce nom existe déjà pour votre corps d\'armée.',
@@ -64,6 +70,13 @@ class SouteController extends Controller
             'capacite_essence.required_if' => 'La capacité pour l\'Essence est requise si ce type est sélectionné.',
             '*.numeric' => 'La capacité doit être un nombre.',
             '*.min' => 'La capacité doit être positive.',
+            'niveau_actuel_diesel.required_if' => 'Le niveau actuel pour le Diesel est requis.',
+        'niveau_actuel_kerozen.required_if' => 'Le niveau actuel pour le Kérosène est requis.',
+        'niveau_actuel_essence.required_if' => 'Le niveau actuel pour l\'Essence est requis.',
+        'seuil_alert_diesel.required_if' => 'Le seuil d\'alerte pour le Diesel est requis.',
+        'seuil_alert_kerozen.required_if' => 'Le seuil d\'alerte pour le Kérosène est requis.',
+        'seuil_alert_essence.required_if' => 'Le seuil d\'alerte pour l\'Essence est requis.',
+        '*.lte' => 'La valeur ne peut pas dépasser la capacité totale.',
         ]);
 
             try {
@@ -80,7 +93,31 @@ class SouteController extends Controller
                 $soute->capacite_diesel = in_array('Diesel', $validatedData['type_carburants']) ? ($validatedData['capacite_diesel'] ?? null) : null;
                 $soute->capacite_kerozen = in_array('Kerozen', $validatedData['type_carburants']) ? ($validatedData['capacite_kerozen'] ?? null) : null;
                 $soute->capacite_essence = in_array('Essence', $validatedData['type_carburants']) ? ($validatedData['capacite_essence'] ?? null) : null;
+ // Niveaux actuels
+ $soute->niveau_actuel_diesel = in_array('Diesel', $validatedData['type_carburants']) 
+ ? ($validatedData['niveau_actuel_diesel'] ?? null) 
+ : null;
 
+$soute->niveau_actuel_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
+ ? ($validatedData['niveau_actuel_kerozen'] ?? null) 
+ : null;
+
+$soute->niveau_actuel_essence = in_array('Essence', $validatedData['type_carburants']) 
+ ? ($validatedData['niveau_actuel_essence'] ?? null) 
+ : null;
+
+// Seuils d'alerte
+$soute->seuil_alert_diesel = in_array('Diesel', $validatedData['type_carburants']) 
+ ? ($validatedData['seuil_alert_diesel'] ?? null) 
+ : null;
+
+$soute->seuil_alert_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
+ ? ($validatedData['seuil_alert_kerozen'] ?? null) 
+ : null;
+
+$soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburants']) 
+ ? ($validatedData['seuil_alert_essence'] ?? null) 
+ : null;
                 // matricule_soute sera généré par l'événement 'creating'
                 $soute->save();
 

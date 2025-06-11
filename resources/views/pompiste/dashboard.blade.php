@@ -63,9 +63,10 @@
                     @foreach($fuelsData as $fuel)
                         @php
                             $type = $fuel->type;
+                            $seuil = $soute->{"seuil_alert_$type"};
                             $capaciteMax = $fuel->capacite_totale; // La capacité totale de la soute pour ce carburant
                             $niveauAffiche = $fuel->niveau_pour_affichage; // Le stock actuel à afficher
-
+                            $estEnAlerte = !is_null($seuil) && $niveauAffiche <= $seuil;
                             // Le pourcentage est basé sur le niveau actuel par rapport à la capacité maximale
                             $pourcentage = ($capaciteMax > 0) ? (($niveauAffiche / $capaciteMax) * 100) : 0;
                             $pourcentage = round(min(max($pourcentage, 0), 100));
@@ -91,7 +92,7 @@
                         @endphp
 
                         <div class="col-md-4 mb-4"> {{-- Ajout de mb-4 pour espacement vertical --}}
-                            <div class="card h-100">
+                            <div class="card h-100 @if($estEnAlerte) border-danger @endif">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">
                                         <i class="{{ $fuel->icon_class }}"></i>
@@ -116,10 +117,17 @@
                                             </div>
                                         </div>
                                         <div class="tank-info mt-2">
-                                            {{-- Afficher le "Niveau actuel" --}}
-                                            <p class="mb-0">Niveau: <strong>{{ number_format($niveauAffiche, 0, ',', ' ') }} L</strong></p>
-                                            {{-- Afficher la "Capacité totale" --}}
-                                            <p class="text-muted">Capacité totale: {{ number_format($capaciteMax, 0, ',', ' ') }} L</p>
+                                            <p class="mb-0">Niveau: 
+                                                <strong>{{ number_format($niveauAffiche, 0, ',', ' ') }} L</strong>
+                                            </p>
+                                            
+                                            @if(!is_null($seuil))
+                                                <p class="mb-0 @if($estEnAlerte) text-danger @endif">
+                                                    Seuil alerte: {{ number_format($seuil, 0, ',', ' ') }} L
+                                                </p>
+                                            @endif
+                                            
+                                            <p class="text-muted">Capacité: {{ number_format($capaciteMax, 0, ',', ' ') }} L</p>
                                         </div>
                                     </div>
 
@@ -133,6 +141,12 @@
                                     <small class="text-muted">Remplissage : {{ $pourcentage }}%</small>
                                     {{-- Vous pourriez ajouter d'autres infos ici si besoin --}}
                                 </div>
+                                @if($estEnAlerte)
+                                <div class="card-footer bg-danger text-white">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                                    Alerte seuil atteint ({{ $seuil }} L)
+                                </div>
+                            @endif
                             </div>
                         </div>
                     @endforeach

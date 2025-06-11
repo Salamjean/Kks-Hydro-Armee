@@ -26,6 +26,9 @@ class Soute extends Model
         'niveau_actuel_diesel',
         'niveau_actuel_kerozen',
         'niveau_actuel_essence',
+        'seuil_alert_diesel', // Ajouté
+    'seuil_alert_kerozen', // Ajouté
+    'seuil_alert_essence', // Ajouté
         'description',
     ];
 
@@ -37,6 +40,9 @@ class Soute extends Model
         'niveau_actuel_diesel' => 'decimal:2',
         'niveau_actuel_kerozen' => 'decimal:2',
         'niveau_actuel_essence' => 'decimal:2',
+        'seuil_alert_diesel' => 'decimal:2', // Ajouté
+        'seuil_alert_kerozen' => 'decimal:2', // Ajouté
+        'seuil_alert_essence' => 'decimal:2', // Ajouté
     ];
 
     public function distributeurs(): HasMany
@@ -83,5 +89,22 @@ class Soute extends Model
                 }
             }
         });
+    }
+    public function estEnAlerte($typeCarburant)
+    {
+        $niveauActuel = $this->{"niveau_actuel_$typeCarburant"};
+        $seuil = $this->{"seuil_alert_$typeCarburant"};
+        
+        return !is_null($seuil) && $niveauActuel <= $seuil;
+    }
+
+    public function peutDistribuer($typeCarburant, $quantite)
+    {
+        if ($this->estEnAlerte($typeCarburant)) {
+            return false;
+        }
+        
+        $niveauActuel = $this->{"niveau_actuel_$typeCarburant"};
+        return $niveauActuel >= $quantite;
     }
 }
