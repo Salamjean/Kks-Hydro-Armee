@@ -29,9 +29,7 @@ return new class extends Migration
                    ->constrained('personnels')
                    ->onDelete('cascade'); // Ou restrict/set null selon logique métier
              // Clé étrangère vers le distributeur utilisé
-             $table->foreignId('distributeur_id')
-                   ->constrained('distributeurs')
-                   ->onDelete('cascade'); // Ou restrict/set null
+            //$table->foreignId('distributeur_id')->constrained('distributeurs')->onDelete('cascade'); // Ou restrict/set null
             $table->text('notes')->nullable(); // Pour ajouter des commentaires
             $table->timestamps();
         });

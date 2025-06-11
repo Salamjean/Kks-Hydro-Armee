@@ -19489,7 +19489,7 @@ input[type="date"] {
     border: 1px solid #ccc;
     border-radius: 4px;
     min-width: 180px;
-    margin-left: 50px;
+    margin-left: 0px;
 }
 
 .button-group {
