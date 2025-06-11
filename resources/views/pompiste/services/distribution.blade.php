@@ -393,7 +393,16 @@ function populateProduitsModal() {
                 e.preventDefault();
                 return false;
             }
-        
+        // --- NOUVELLE VÉRIFICATION ---
+    // Récupérer le stock maximum autorisé qui est stocké dans l'attribut 'max' de l'input
+    const stockDisponible = parseFloat(quantiteModalInput.attr('max'));
+
+if (!isNaN(stockDisponible) && quantite > stockDisponible) {
+    // Affiche une alerte claire à l'utilisateur
+    alert(`La quantité demandée (${quantite.toFixed(2)} L) dépasse le stock disponible (${stockDisponible.toFixed(2)} L).`);
+    e.preventDefault(); // Empêche l'envoi du formulaire
+    return false;
+}
         });
     });
     </script>

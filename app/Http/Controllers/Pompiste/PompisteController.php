@@ -184,6 +184,7 @@ class PompisteController extends Controller
             'niveau_avant_depotage_l' => 'required|numeric', // Validé comme venant du JS
             'volume_recu_l' => 'required|numeric|min:0.01', // Doit recevoir au moins un peu
             'observations' => 'nullable|string',
+            
         ];
 
         $messages = [
