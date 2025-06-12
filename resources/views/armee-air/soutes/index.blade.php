@@ -141,6 +141,12 @@
                                     id="soute_capacite_diesel" name="seuil_alert_diesel" value="{{ old('seuil_alert') }}" placeholder="Ex: 5000">
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
+                            <div>
+                                <label for="soute_capacite_diesel" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_diesel" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4 mb-3" id="capacity_kerozen_container" style="{{ in_array('Kerozen', $oldCarburants) ? '' : 'display:none;' }}">
@@ -162,6 +168,12 @@
                                     id="soute_capacite_kerozen" name="seuil_alert_kerozen" value="{{ old('seuil_alert') }}" placeholder="Ex: 3000">
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>  
+                            <div>
+                                <label for="soute_capacite_kerozen" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_kerozen" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4 mb-3" id="capacity_essence_container" style="{{ in_array('Essence', $oldCarburants) ? '' : 'display:none;' }}">
@@ -183,6 +195,12 @@
                                     id="soute_capacite_essence" name="seuil_alert_essence" value="{{ old('capacite_alert') }}" placeholder="Ex: 2000">
                                 @error('capacite_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                            </div>
+                           <div>
+                                <label for="soute_capacite_essence" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_essence" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
                     </div>
 

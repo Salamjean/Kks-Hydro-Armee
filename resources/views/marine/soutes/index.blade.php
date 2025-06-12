@@ -73,22 +73,24 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="createSouteModalLabel">Ajouter une Nouvelle Soute</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <form action="{{ route('corps.soutes.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="form_type" value="create_soute">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="soute_nom" class="form-label">Nom de la Soute <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('nom') is-invalid @enderror" id="soute_nom" name="nom" value="{{ old('nom') }}" required>
-                        @error('nom') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label for="soute_localisation" class="form-label">Localisation</label>
-                        <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="soute_localisation" name="localisation" value="{{ old('localisation') }}">
-                        @error('localisation') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="soute_nom" class="form-label">Nom de la Soute <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nom') is-invalid @enderror" id="soute_nom" name="nom" value="{{ old('nom') }}" required>
+                            @error('nom') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="soute_localisation" class="form-label">Localisation</label>
+                            <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="soute_localisation" name="localisation" value="{{ old('localisation') }}">
+                            @error('localisation') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                   </div>
 
                     <hr>
                     <h6>Capacités par Type de Carburant</h6>
@@ -139,6 +141,12 @@
                                     id="soute_capacite_diesel" name="seuil_alert_diesel" value="{{ old('seuil_alert') }}" placeholder="Ex: 5000">
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
+                            <div>
+                                <label for="soute_capacite_diesel" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_diesel" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4 mb-3" id="capacity_kerozen_container" style="{{ in_array('Kerozen', $oldCarburants) ? '' : 'display:none;' }}">
@@ -160,6 +168,12 @@
                                     id="soute_capacite_kerozen" name="seuil_alert_kerozen" value="{{ old('seuil_alert') }}" placeholder="Ex: 3000">
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>  
+                            <div>
+                                <label for="soute_capacite_kerozen" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_kerozen" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4 mb-3" id="capacity_essence_container" style="{{ in_array('Essence', $oldCarburants) ? '' : 'display:none;' }}">
@@ -181,6 +195,12 @@
                                     id="soute_capacite_essence" name="seuil_alert_essence" value="{{ old('capacite_alert') }}" placeholder="Ex: 2000">
                                 @error('capacite_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                            </div>
+                           <div>
+                                <label for="soute_capacite_essence" class="form-label">Capacité d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
+                                    id="soute_capacite_essence" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
+                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
                         </div>
                     </div>
                     <!-- <div class="mb-3">
