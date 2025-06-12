@@ -25,9 +25,7 @@ return new class extends Migration
             // Clé étrangère vers distributeurs (pompiste assigné à une pompe/véhicule ?)
             // C'est discutable, peut-être pas nécessaire ici si géré par transaction
             // $table->foreignId('distributeur_id')->nullable()->constrained('distributeurs')->onDelete('set null');
-            $table->foreignId('soute_id')
-              ->constrained('soutes')
-              ->onDelete('cascade');
+            //$table->foreignId('soute_id')->constrained('soutes')->onDelete('cascade');
             $table->timestamps();
         });
     }

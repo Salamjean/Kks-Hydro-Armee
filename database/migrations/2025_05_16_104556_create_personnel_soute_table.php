@@ -15,7 +15,7 @@ return new class extends Migration
             $table->timestamps(); // Optionnel, mais souvent utile
 
             // Important pour éviter les doublons d'assignation
-            $table->unique(['personnel_id', 'soute_id']);
+            //$table->unique(['personnel_id', 'soute_id']);
         });
     }
 
