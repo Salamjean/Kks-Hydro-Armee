@@ -144,7 +144,7 @@
 
     {{-- Graphique Distribution / Dépotage --}}
     <div class="chart-container" style="width: 100%; margin: auto;">
-        <h4 style="text-align: center;">Distribution et Dépotage (L)</h4>
+        {{-- <h4 style="text-align: center;">Distribution et Dépotage (L)</h4> --}}
         <canvas id="combinedChart" style="width: 100%; height: 30vh;"></canvas>
     </div>
 
