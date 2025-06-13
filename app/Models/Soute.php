@@ -13,6 +13,8 @@ class Soute extends Model
 {
     use HasFactory;
 
+
+
     // personnel_id ne doit PAS être ici
     protected $fillable = [
         'nom',
@@ -33,6 +35,7 @@ class Soute extends Model
     'seuil_indisponibilite_kerozen',
     'seuil_indisponibilite_essence',
         'description',
+        'types_carburants_stockes' => 'array',
     ];
 
     protected $casts = [

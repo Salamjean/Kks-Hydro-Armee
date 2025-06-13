@@ -221,66 +221,84 @@
     </div>
 </div>
 
+{{-- MODALES DE MODIFICATION (UNE PAR SOUTE) --}}
 @foreach ($soutes as $soute)
-@dd($soute)
-{{-- Modale de Modification de Soute --}}
 <div class="modal fade" id="editSouteModal_{{ $soute->id }}" tabindex="-1" aria-labelledby="editSouteModalLabel_{{ $soute->id }}" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
+            {{-- La route a été corrigée, en supposant que votre nom de route est correct --}}
             <form action="{{ route('soute.dashboard.corps.soutes.update_air', $soute->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editSouteModalLabel_{{ $soute->id }}">Modifier la Soute - {{ $soute->nom }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer">X</button>
+                    <h5 class="modal-title" id="editSouteModalLabel_{{ $soute->id }}">Modifier la Soute : {{ $soute->nom }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body">
+                    {{-- Champs Généraux --}}
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="edit_nom_{{ $soute->id }}" class="form-label">Nom</label>
-                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->nom }}" required>
+                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ old('nom', $soute->nom) }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="edit_nom_{{ $soute->id }}" class="form-label">Matricule de soute</label>
-                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->matricule_soute }}" required>
+                            <label for="edit_matricule_soute_{{ $soute->id }}" class="form-label">Matricule de soute</label>
+                            <input type="text" class="form-control" id="edit_matricule_soute_{{ $soute->id }}" name="matricule_soute" value="{{ old('matricule_soute', $soute->matricule_soute) }}" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 mb-3">
                             <label for="edit_localisation_{{ $soute->id }}" class="form-label">Localisation</label>
-                            <input type="text" class="form-control" id="edit_localisation_{{ $soute->id }}" name="localisation" value="{{ $soute->localisation }}">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité disponible (en litres)</label>
-                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité maximale (en litres)</label>
-                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
+                            <input type="text" class="form-control" id="edit_localisation_{{ $soute->id }}" name="localisation" value="{{ old('localisation', $soute->localisation) }}">
                         </div>
                     </div>
 
                     <hr>
-                    <h6>Carburants disponibles</h6>
-                    {{-- @foreach($carburants as $index => $carburantType)
-                        @php
-                            $carburantExistant = $soute->carburants->firstWhere('type', $carburantType);
-                        @endphp
-                        <div class="row align-items-center mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Type : {{ $carburantType }}</label>
-                                <input type="hidden" name="carburants[{{ $index }}][type]" value="{{ $carburantType }}">
+                    <h6>Modifier les capacités par carburant</h6>
+
+                    {{-- NOUVEAU : Le sélecteur de type de carburant --}}
+                    <div class="mb-3">
+                        <label for="fuel_selector_{{ $soute->id }}" class="form-label">Sélectionner le carburant à modifier :</label>
+                        <select class="form-select fuel-selector" id="fuel_selector_{{ $soute->id }}" data-soute-id="{{ $soute->id }}">
+                             {{-- On ne met qu'une option par défaut. Le JS va gérer le reste --}}
+                            <option value="">-- Choisissez un carburant --</option>
+                            @if($soute->types_carburants_stockes)
+                                @foreach($soute->types_carburants_stockes as $type)
+                                    <option value="{{ strtolower($type) }}">{{ $type }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    {{-- NOUVEAU : Conteneurs pour les champs de chaque carburant --}}
+                    {{-- Ils sont cachés par défaut et affichés par le JavaScript --}}
+                    @if($soute->types_carburants_stockes)
+                        @foreach($soute->types_carburants_stockes as $type)
+                            @php
+                                $type_lower = strtolower($type);
+                                $capaciteKey = 'capacite_' . $type_lower;
+                                $niveauKey = 'niveau_actuel_' . $type_lower;
+                            @endphp
+                            <div class="fuel-inputs-container" id="inputs_{{ $soute->id }}_{{ $type_lower }}" style="display: none;">
+                                <h6 class="mt-4 text-primary">Détails pour : {{ $type }}</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="edit_capacite_{{ $soute->id }}_{{ $type_lower }}" class="form-label">Capacité totale {{ $type }} (L)</label>
+                                        <input type="number" step="0.01" class="form-control" id="edit_capacite_{{ $soute->id }}_{{ $type_lower }}"
+                                               name="{{ $capaciteKey }}" value="{{ old($capaciteKey, $soute->$capaciteKey) }}" placeholder="Ex: 50000">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="edit_niveau_actuel_{{ $soute->id }}_{{ $type_lower }}" class="form-label">Niveau actuel {{ $type }} (L)</label>
+                                        <input type="number" step="0.01" class="form-control" id="edit_niveau_actuel_{{ $soute->id }}_{{ $type_lower }}"
+                                               name="{{ $niveauKey }}" value="{{ old($niveauKey, $soute->$niveauKey) }}" placeholder="Ex: 25000">
+                                    </div>
+                                    {{-- Vous pouvez ajouter d'autres champs ici (seuil d'alerte, etc.) en suivant le même modèle --}}
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="quantite_{{ $soute->id }}_{{ $index }}" class="form-label">Quantité (litres)</label>
-                                <input type="number" class="form-control" id="quantite_{{ $soute->id }}_{{ $index }}" name="carburants[{{ $index }}][quantite]" value="{{ $carburantExistant->quantite ?? 0 }}">
-                            </div>
-                        </div>
-                    @endforeach --}}
+                        @endforeach
+                    @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Enregistrer</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer les Modifications</button>
                 </div>
             </form>
         </div>
@@ -293,6 +311,35 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+    // Sélectionne TOUS les sélecteurs de carburant dans les modales de modification
+    const fuelSelectors = document.querySelectorAll('.fuel-selector');
+
+    fuelSelectors.forEach(selector => {
+        selector.addEventListener('change', function() {
+            // Récupère l'ID de la soute depuis l'attribut data-*
+            const souteId = this.dataset.souteId;
+            // Récupère le type de carburant sélectionné (ex: 'kerozen')
+            const selectedFuel = this.value;
+
+            // Cache tous les conteneurs de champs pour cette soute spécifique
+            const allInputContainers = document.querySelectorAll(`.fuel-inputs-container[id^="inputs_${souteId}_"]`);
+            allInputContainers.forEach(container => {
+                container.style.display = 'none';
+            });
+
+            // Si un carburant est sélectionné, affiche le conteneur correspondant
+            if (selectedFuel) {
+                const targetContainer = document.getElementById(`inputs_${souteId}_${selectedFuel}`);
+                if (targetContainer) {
+                    targetContainer.style.display = 'block';
+                }
+            }
+        });
+    });
+});
+
     document.addEventListener('DOMContentLoaded', function() {
         @if($errors->hasBag('default') && old('form_type') === 'create_soute')
             var createModal = new bootstrap.Modal(document.getElementById('createSouteModal'));

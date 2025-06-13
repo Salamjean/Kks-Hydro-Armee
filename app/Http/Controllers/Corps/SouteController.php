@@ -151,28 +151,51 @@ $soute->seuil_indisponibilite_essence = in_array('Essence', $validatedData['type
     }
 
     public function update_soute_air(Request $request, $id)
-    {
-            $soute = Soute::findOrFail($id);
+{
+    // Validez les données générales en premier
+    $validatedData = $request->validate([
+        'nom' => 'required|string|max:255',
+        'matricule_soute' => 'required|string|max:255', // Ajoutez vos règles de validation ici
+        'localisation' => 'nullable|string|max:255',
+        // Validez dynamiquement les champs de capacité et de niveau s'ils sont présents
+        'capacite_diesel' => 'nullable|numeric|min:0',
+        'niveau_actuel_diesel' => 'nullable|numeric|min:0',
+        'capacite_kerozen' => 'nullable|numeric|min:0',
+        'niveau_actuel_kerozen' => 'nullable|numeric|min:0',
+        'capacite_essence' => 'nullable|numeric|min:0',
+        'niveau_actuel_essence' => 'nullable|numeric|min:0',
+    ]);
 
-            $soute->nom = $request->nom;
-            $soute->matricule_soute = $request->matricule_soute;
-            $soute->localisation = $request->localisation;
-            dd($request->all());
-            // On traite dynamiquement les types carburants stockés
-            $carburants = json_decode($soute->types_carburants_stockes, true) ?? [];
+    $soute = Soute::findOrFail($id);
 
-            foreach ($carburants as $carburant) {
-                $cle_capacite = 'capacite_' . strtolower($carburant);
-                $cle_niveau = 'niveau_actuel_' . strtolower($carburant);
+    // Mise à jour des champs généraux
+    $soute->nom = $validatedData['nom'];
+    $soute->matricule_soute = $validatedData['matricule_soute'];
+    $soute->localisation = $validatedData['localisation'];
 
-                $soute->$cle_capacite = $request->input($cle_capacite);
-                $soute->$cle_niveau = $request->input($cle_niveau);
-            }
+    // On traite dynamiquement les types carburants qui pourraient être mis à jour.
+    // Cette approche est robuste car elle ne met à jour que ce qui est envoyé par le formulaire.
+    $carburantsPossibles = ['diesel', 'kerozen', 'essence'];
 
-            $soute->save();
+    foreach ($carburantsPossibles as $carburant) {
+        $capaciteKey = 'capacite_' . $carburant;
+        $niveauKey = 'niveau_actuel_' . $carburant;
 
-            return redirect()->back()->with('success', 'Soute mise à jour avec succès.');
+        // On vérifie si le champ capacité pour ce carburant a été envoyé
+        if ($request->has($capaciteKey)) {
+            $soute->$capaciteKey = $request->input($capaciteKey);
+        }
+
+        // On vérifie si le champ niveau pour ce carburant a été envoyé
+        if ($request->has($niveauKey)) {
+            $soute->$niveauKey = $request->input($niveauKey);
+        }
     }
+
+    $soute->save();
+
+    return redirect()->back()->with('success', 'Soute mise à jour avec succès.');
+}
 
 
 
