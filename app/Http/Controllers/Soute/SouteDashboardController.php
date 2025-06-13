@@ -40,40 +40,69 @@ class SouteDashboardController extends Controller
 //     return view('pompiste.dashboard', compact('soute','personnel'));
 // }
 public function index(Request $request)
-{
-    $personnel = Auth::guard('personnel_soute')->user();
-    $activeSouteId = session('active_soute_id'); // Récupère l'ID de la soute active depuis la session
+    {
+        $personnel = Auth::guard('personnel_soute')->user();
+        $activeSouteId = session('active_soute_id');
 
-    if (!$activeSouteId) {
-        Auth::guard('personnel_soute')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('soute.dashboard.login')->withErrors(['error' => 'Session de soute invalide ou expirée. Veuillez vous reconnecter.']);
+        if (!$activeSouteId) {
+            Auth::guard('personnel_soute')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('soute.dashboard.login')
+                ->withErrors(['error' => 'Session de soute invalide ou expirée. Veuillez vous reconnecter.']);
+        }
+
+        // Récupérer la soute active et vérifier que le personnel y est lié
+        $soute = $personnel->soutes()->find($activeSouteId);
+        if (!$soute) {
+            Auth::guard('personnel_soute')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            session()->forget('active_soute_id');
+            return redirect()->route('soute.dashboard.login')
+                ->withErrors(['error' => 'Accès à la soute non autorisé ou soute introuvable.']);
+        }
+
+        // Construire fuelsData en tant qu’objets stdClass pour la vue
+        $fuelsData = [];
+        if (is_array($soute->types_carburants_stockes)) {
+            foreach ($soute->types_carburants_stockes as $typeRaw) {
+                // On s'attend à des chaînes 'Diesel', 'Essence', 'Kerozen' (ou variantes).
+                $typeLower = strtolower($typeRaw);
+                // Récupérer niveau actuel ; on suppose des attributs `niveau_actuel_<typeLower>`
+                $champNiveau = 'niveau_actuel_' . $typeLower;
+                $champCapacite = 'capacite_' . $typeLower;
+                $niveauActuel = null;
+                if (isset($soute->{$champNiveau}) && $soute->{$champNiveau} !== null) {
+                    $niveauActuel = (float) $soute->{$champNiveau};
+                } elseif (isset($soute->{$champCapacite})) {
+                    $niveauActuel = (float) $soute->{$champCapacite};
+                } else {
+                    $niveauActuel = 0;
+                }
+                // Récupérer capacité totale si existant
+                $capaciteTotale = isset($soute->{$champCapacite}) ? (float)$soute->{$champCapacite} : 0;
+                // Déterminer icon_class selon typeRaw ; adapte selon tes icônes réelles
+                $iconClass = '';
+                if (strtolower($typeRaw) === 'diesel' || strtolower($typeRaw) === 'gasoil') {
+                    $iconClass = 'bi bi-truck text-primary';
+                } elseif (strtolower($typeRaw) === 'essence') {
+                    $iconClass = 'bi bi-car-front-fill text-success';
+                } elseif (in_array(strtolower($typeRaw), ['kerozen','kerosene','kérozène'])) {
+                    $iconClass = 'bi bi-airplane-engines-fill text-info';
+                } else {
+                    // par défaut
+                    $iconClass = 'bi bi-droplet';
+                }
+                $fuelsData[] = (object)[
+                    'type' => $typeRaw,
+                    'capacite_totale' => $capaciteTotale,
+                    'niveau_pour_affichage' => $niveauActuel,
+                    'icon_class' => $iconClass,
+                ];
+            }
+        }
+        // Passe à la vue
+        return view('pompiste.dashboard', compact('personnel', 'soute', 'fuelsData'));
     }
-
-    // Récupérer la soute active et s'assurer que le personnel y est lié
-    // Si relation Many-to-Many:
-    $soute = $personnel->soutes()->find($activeSouteId);
-    // Si relation One-to-Many (personnel a un soute_id):
-    // $soute = Soute::where('id', $personnel->soute_id)->where('id', $activeSouteId)->first();
-
-
-    if (!$soute) {
-        // La soute active n'existe pas ou le personnel n'y est plus lié
-        Auth::guard('personnel_soute')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        // Effacer l'ID de session
-        session()->forget('active_soute_id');
-        return redirect()->route('soute.dashboard.login')->withErrors(['error' => 'Accès à la soute non autorisé ou soute introuvable.']);
-    }
-    $fuelsData = [
-            ['type' => 'Gasoil', 'niveau_pour_affichage' => 10],
-            ['type' => 'Essance', 'niveau_pour_affichage' => 20],
-            ['type' => 'Kerosene', 'niveau_pour_affichage' => 30],
-            // Ajoute d'autres types si nécessaire
-        ];
-  
-    return view('pompiste.dashboard', compact('personnel', 'soute', 'fuelsData'));
-}
 }

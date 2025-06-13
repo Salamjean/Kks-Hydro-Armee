@@ -137,9 +137,6 @@ $soute->seuil_indisponibilite_kerozen = in_array('Kerozen', $validatedData['type
 $soute->seuil_indisponibilite_essence = in_array('Essence', $validatedData['type_carburants']) 
   ? ($validatedData['seuil_indisponibilite_essence'] ?? null) 
   : null;
-            $soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburants']) 
-            ? ($validatedData['seuil_alert_essence'] ?? null) 
-            : null;
                 // matricule_soute sera généré par l'événement 'creating'
                 $soute->save();
 
