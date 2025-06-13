@@ -93,31 +93,31 @@ class SouteController extends Controller
                 $soute->capacite_diesel = in_array('Diesel', $validatedData['type_carburants']) ? ($validatedData['capacite_diesel'] ?? null) : null;
                 $soute->capacite_kerozen = in_array('Kerozen', $validatedData['type_carburants']) ? ($validatedData['capacite_kerozen'] ?? null) : null;
                 $soute->capacite_essence = in_array('Essence', $validatedData['type_carburants']) ? ($validatedData['capacite_essence'] ?? null) : null;
- // Niveaux actuels
- $soute->niveau_actuel_diesel = in_array('Diesel', $validatedData['type_carburants']) 
- ? ($validatedData['niveau_actuel_diesel'] ?? null) 
- : null;
+            // Niveaux actuels
+            $soute->niveau_actuel_diesel = in_array('Diesel', $validatedData['type_carburants']) 
+            ? ($validatedData['niveau_actuel_diesel'] ?? null) 
+            : null;
 
-$soute->niveau_actuel_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
- ? ($validatedData['niveau_actuel_kerozen'] ?? null) 
- : null;
+            $soute->niveau_actuel_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
+            ? ($validatedData['niveau_actuel_kerozen'] ?? null) 
+            : null;
 
-$soute->niveau_actuel_essence = in_array('Essence', $validatedData['type_carburants']) 
- ? ($validatedData['niveau_actuel_essence'] ?? null) 
- : null;
+            $soute->niveau_actuel_essence = in_array('Essence', $validatedData['type_carburants']) 
+            ? ($validatedData['niveau_actuel_essence'] ?? null) 
+            : null;
 
-// Seuils d'alerte
-$soute->seuil_alert_diesel = in_array('Diesel', $validatedData['type_carburants']) 
- ? ($validatedData['seuil_alert_diesel'] ?? null) 
- : null;
+            // Seuils d'alerte
+            $soute->seuil_alert_diesel = in_array('Diesel', $validatedData['type_carburants']) 
+            ? ($validatedData['seuil_alert_diesel'] ?? null) 
+            : null;
 
-$soute->seuil_alert_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
- ? ($validatedData['seuil_alert_kerozen'] ?? null) 
- : null;
+            $soute->seuil_alert_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
+            ? ($validatedData['seuil_alert_kerozen'] ?? null) 
+            : null;
 
-$soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburants']) 
- ? ($validatedData['seuil_alert_essence'] ?? null) 
- : null;
+            $soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburants']) 
+            ? ($validatedData['seuil_alert_essence'] ?? null) 
+            : null;
                 // matricule_soute sera généré par l'événement 'creating'
                 $soute->save();
 
@@ -130,4 +130,31 @@ $soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburant
                                 ->withInput();
             }
     }
+
+    public function update_soute_air(Request $request, $id)
+    {
+            $soute = Soute::findOrFail($id);
+
+            $soute->nom = $request->nom;
+            $soute->matricule_soute = $request->matricule_soute;
+            $soute->localisation = $request->localisation;
+            dd($request->all());
+            // On traite dynamiquement les types carburants stockés
+            $carburants = json_decode($soute->types_carburants_stockes, true) ?? [];
+
+            foreach ($carburants as $carburant) {
+                $cle_capacite = 'capacite_' . strtolower($carburant);
+                $cle_niveau = 'niveau_actuel_' . strtolower($carburant);
+
+                $soute->$cle_capacite = $request->input($cle_capacite);
+                $soute->$cle_niveau = $request->input($cle_niveau);
+            }
+
+            $soute->save();
+
+            return redirect()->back()->with('success', 'Soute mise à jour avec succès.');
+    }
+
+
+
 }

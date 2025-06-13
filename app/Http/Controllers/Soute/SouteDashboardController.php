@@ -67,11 +67,13 @@ public function index(Request $request)
         session()->forget('active_soute_id');
         return redirect()->route('soute.dashboard.login')->withErrors(['error' => 'Accès à la soute non autorisé ou soute introuvable.']);
     }
-
-    // Les données sont déjà dans l'objet $soute grâce aux casts et fillable du modèle
-    // $soute->types_carburants_stockes (sera un tableau PHP)
-    // $soute->capacite_diesel, $soute->niveau_actuel_diesel, etc.
-
-    return view('pompiste.dashboard', compact('personnel', 'soute'));
+    $fuelsData = [
+            ['type' => 'Gasoil', 'niveau_pour_affichage' => 10],
+            ['type' => 'Essance', 'niveau_pour_affichage' => 20],
+            ['type' => 'Kerosene', 'niveau_pour_affichage' => 30],
+            // Ajoute d'autres types si nécessaire
+        ];
+  
+    return view('pompiste.dashboard', compact('personnel', 'soute', 'fuelsData'));
 }
 }

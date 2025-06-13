@@ -15,6 +15,45 @@
             </div>
         </div>
     </div>
+@isset($fuelsData)
+    @php
+        $alerteActive = false;
+        $messagesAlertes = [];
+
+        foreach ($fuelsData as $fuel) {
+            $type = $fuel['type'];
+            $niveauAffiche = $fuel['niveau_pour_affichage'];
+            $seuil = $soute->{"seuil_alert_$type"} ?? 50; // seuil fictif si manquant
+
+            if (!is_null($seuil) && $seuil > 0 && $niveauAffiche <= $seuil) {
+                $alerteActive = true;
+                $messagesAlertes[] = "⚠️ Le niveau de <strong>{$type}</strong> est en dessous du seuil d'alerte";
+            }
+        }
+    @endphp
+
+    @if($alerteActive)
+        <div class="alert alert-danger shadow-sm mb-4 rounded-3 border border-danger-subtle">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill me-3 fs-3 text-danger"></i>
+                <div>
+                    <h5 class="mb-1 fw-bold">Alerte de seuil critique !</h5>
+                    @foreach($messagesAlertes as $msg)
+                        <p class="mb-0">{!! $msg !!}</p>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+@endisset
+
+
+
+    
+    <div class="chart-container" style="width: 100%; margin: auto;">
+        <h4 style="text-align: center;">Distribution et Dépotage (L)</h4>
+        <canvas id="combinedChart" style="width: 100%; height: 30vh;"></canvas>
+    </div>
 
     <div class="page-content">
         <section class="section">
@@ -199,9 +238,75 @@
         </section>
     </div>
 @endsection
-@push('scripts') 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('combinedChart');
 
-@endpush
+        // Données fictives pour les mois et les valeurs
+        const labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
+        const distributionData = [1200, 1500, 1100, 1800, 1600, 1400]; // en litres
+        const depotageData = [1000, 1300, 900, 1700, 1500, 1200]; // en litres
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Distribution (L)',
+                        data: distributionData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dépotage (L)',
+                        data: depotageData,
+                        backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Capacité (L)"
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Mois"
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) label += context.parsed.y + ' L';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 <style>
     .fuel-tank-container {
@@ -269,15 +374,14 @@
 
     .tank-info {
         text-align: center;
-        margin-top: 8px; /* Espace au-dessus des informations */
+        margin-top: 8px; 
     }
     .tank-info p {
         margin-bottom: 2px;
-        font-size: 0.9em; /* Taille de police pour les infos */
+        font-size: 0.9em;
     }
-    /* Couleur Orange personnalisée si Bootstrap ne l'a pas par défaut */
     .bg-orange {
-        background-color: #fd7e14 !important; /* Couleur orange de Bootstrap (si elle existait) ou une de votre choix */
+        background-color: #fd7e14 !important;
     }
     .bg-secondary { /* Assurez-vous que Bootstrap a une couleur bg-secondary ou définissez-la */
         background-color: #6c757d !important; /* Gris standard de Bootstrap */

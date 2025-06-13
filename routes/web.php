@@ -102,6 +102,13 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
         
     });
 
+
+    Route::put('/soutes/air/{id}', [SouteController::class, 'update_soute_air'])->name('corps.soutes.update_air');
+    Route::put('/soutes/terre/{id}', [SouteController::class, 'update_soute_terre'])->name('corps.soutes.update_terre');
+    Route::put('/soutes/marine/{id}', [SouteController::class, 'update_soute_marine'])->name('corps.soutes.update_marine');
+    Route::put('/soutes/gendarmerie/{id}', [SouteController::class, 'update_soute_gendarmerie'])->name('corps.soutes.update_gendarmerie');
+
+
     Route::get('services/distribution', [PompisteController::class, 'distribution'])->name('services.distribution');
     
     Route::get('services/depotage', [PompisteController::class, 'depotage'])->name('services.depotage');

@@ -22,7 +22,7 @@
     </div>
 </div>
 
-{{-- Affichage des messages de succès ou d'erreur --}}
+{{-- Affichage des messages de succès ou d'erreur --}} 
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
