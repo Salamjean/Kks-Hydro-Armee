@@ -252,13 +252,10 @@
                     </div>
 
                     <hr>
-                    <h6>Modifier les capacités par carburant</h6>
-
                     {{-- NOUVEAU : Le sélecteur de type de carburant --}}
                     <div class="mb-3">
-                        <label for="fuel_selector_{{ $soute->id }}" class="form-label">Sélectionner le carburant à modifier :</label>
+                        <label for="fuel_selector_{{ $soute->id }}" class="form-label">Sélectionner le Type de carburant:</label>
                         <select class="form-select fuel-selector" id="fuel_selector_{{ $soute->id }}" data-soute-id="{{ $soute->id }}">
-                             {{-- On ne met qu'une option par défaut. Le JS va gérer le reste --}}
                             <option value="">-- Choisissez un carburant --</option>
                             @if($soute->types_carburants_stockes)
                                 @foreach($soute->types_carburants_stockes as $type)
@@ -267,9 +264,6 @@
                             @endif
                         </select>
                     </div>
-
-                    {{-- NOUVEAU : Conteneurs pour les champs de chaque carburant --}}
-                    {{-- Ils sont cachés par défaut et affichés par le JavaScript --}}
                     @if($soute->types_carburants_stockes)
                         @foreach($soute->types_carburants_stockes as $type)
                             @php
@@ -282,12 +276,12 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="edit_capacite_{{ $soute->id }}_{{ $type_lower }}" class="form-label">Capacité totale {{ $type }} (L)</label>
-                                        <input type="number" step="0.01" class="form-control" id="edit_capacite_{{ $soute->id }}_{{ $type_lower }}"
+                                        <input type="number" step="any" class="form-control" id="edit_capacite_{{ $soute->id }}_{{ $type_lower }}"
                                                name="{{ $capaciteKey }}" value="{{ old($capaciteKey, $soute->$capaciteKey) }}" placeholder="Ex: 50000">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="edit_niveau_actuel_{{ $soute->id }}_{{ $type_lower }}" class="form-label">Niveau actuel {{ $type }} (L)</label>
-                                        <input type="number" step="0.01" class="form-control" id="edit_niveau_actuel_{{ $soute->id }}_{{ $type_lower }}"
+                                        <input type="number" step="any" class="form-control" id="edit_niveau_actuel_{{ $soute->id }}_{{ $type_lower }}"
                                                name="{{ $niveauKey }}" value="{{ old($niveauKey, $soute->$niveauKey) }}" placeholder="Ex: 25000">
                                     </div>
                                     {{-- Vous pouvez ajouter d'autres champs ici (seuil d'alerte, etc.) en suivant le même modèle --}}
