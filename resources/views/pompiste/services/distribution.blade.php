@@ -25,8 +25,12 @@
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h3>Gestion des Distributions</h3>
-            <p class="text-subtitle text-muted">Soute active : <strong>{{ $soute->nom ?? 'Non définie' }}</strong> (Matricule: {{ $soute->matricule_soute ?? 'N/A' }})</p>
+            <p class="text-subtitle text-muted">
+                Soute active : <strong>{{ $soute->nom ?? 'Non définie' }}</strong>
+                (Matricule: {{ $soute->matricule_soute ?? 'N/A' }})
+            </p>
         </div>
+        <!-- Bouton qui déclenche le modal -->
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#distributionModal">
             <i class="bi bi-fuel-pump"></i> Faire une Distribution
         </button>
@@ -43,17 +47,29 @@
                 <input type="hidden" name="soute_id" id="soute_id_modal" value="{{ $soute->id ?? '' }}">
 
                 <div class="modal-header">
-                    <h5 class="modal-title" id="distributionModalLabel">Nouvelle Distribution de Carburant (Soute: {{ $soute->nom ?? '' }})</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                    <h5 class="modal-title" id="distributionModalLabel">
+                        Nouvelle Distribution de Carburant (Soute: {{ $soute->nom ?? '' }})
+                    </h5>
+                    <!-- Bouton Fermer -->
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @if($soute->estEnAlerte('diesel') || $soute->estEnAlerte('kerozen') || $soute->estEnAlerte('essence'))
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Attention : Seuil d'alerte atteint pour un ou plusieurs carburants
-                    </div>
-                @endif
-                    {{-- Affichage des erreurs générales ou de succès qui pourraient venir du redirect back --}}
+                    {{-- Alerte si seuil atteint (côté back: méthode estEnAlerte) --}}
+                    @if(
+                        method_exists($soute, 'estEnAlerte') &&
+                        (
+                            $soute->estEnAlerte('diesel') ||
+                            $soute->estEnAlerte('kerozen') ||
+                            $soute->estEnAlerte('essence')
+                        )
+                    )
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            Attention : Seuil d'alerte atteint pour un ou plusieurs carburants
+                        </div>
+                    @endif
+
+                    {{-- Affichage des messages de session --}}
                     @if (session('success_modal'))
                         <div class="alert alert-success">
                             {{ session('success_modal') }}
@@ -64,6 +80,8 @@
                             {{ session('error_modal') }}
                         </div>
                     @endif
+
+                    {{-- Erreurs de validation spécifiques au modal (bag 'distribution_modal') --}}
                     @if ($errors->any() && $errors->hasBag('distribution_modal'))
                         <div class="alert alert-danger">
                             <ul class="mb-0">
@@ -77,14 +95,30 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="nom_chauffeur_modal" class="form-label">Nom Complet du chauffeur *</label>
-                            <input type="text" class="form-control @error('nom_chauffeur', 'distribution_modal') is-invalid @enderror" id="nom_chauffeur_modal" name="nom_chauffeur" placeholder="Nom et prénom" value="{{ old('nom_chauffeur') }}" required>
+                            <input
+                                type="text"
+                                class="form-control @error('nom_chauffeur', 'distribution_modal') is-invalid @enderror"
+                                id="nom_chauffeur_modal"
+                                name="nom_chauffeur"
+                                placeholder="Nom et prénom"
+                                value="{{ old('nom_chauffeur') }}"
+                                required
+                            >
                             @error('nom_chauffeur', 'distribution_modal')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="immatriculation_vehicule_modal" class="form-label">Immatriculation du Véhicule *</label>
-                            <input type="text" class="form-control @error('immatriculation_vehicule', 'distribution_modal') is-invalid @enderror" id="immatriculation_vehicule_modal" name="immatriculation_vehicule" placeholder="Ex: 1234AA12" value="{{ old('immatriculation_vehicule') }}" required>
+                            <input
+                                type="text"
+                                class="form-control @error('immatriculation_vehicule', 'distribution_modal') is-invalid @enderror"
+                                id="immatriculation_vehicule_modal"
+                                name="immatriculation_vehicule"
+                                placeholder="Ex: 1234AA12"
+                                value="{{ old('immatriculation_vehicule') }}"
+                                required
+                            >
                             @error('immatriculation_vehicule', 'distribution_modal')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -93,8 +127,13 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="produit_modal" class="form-label">Type de Carburant *</label>
-                            <select class="form-select @error('produit', 'distribution_modal') is-invalid @enderror" id="produit_modal" name="produit" required>
-                                <option value="" disabled {{ old('produit') ? '' : 'selected' }}>Chargement...</option>
+                            <select
+                                class="form-select @error('produit', 'distribution_modal') is-invalid @enderror"
+                                id="produit_modal"
+                                name="produit"
+                                required
+                            >
+                                <option value="" disabled selected>Chargement...</option>
                                 {{-- Options remplies par JavaScript --}}
                             </select>
                             @error('produit', 'distribution_modal')
@@ -104,7 +143,17 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="quantite_modal" class="form-label">Quantité (Litres) *</label>
-                            <input type="number" class="form-control @error('quantite', 'distribution_modal') is-invalid @enderror" id="quantite_modal" name="quantite" placeholder="Quantité en litres" value="{{ old('quantite') }}" required min="0.01" step="0.01">
+                            <input
+                                type="number"
+                                class="form-control @error('quantite', 'distribution_modal') is-invalid @enderror"
+                                id="quantite_modal"
+                                name="quantite"
+                                placeholder="Quantité en litres"
+                                value="{{ old('quantite') }}"
+                                required
+                                min="0.01"
+                                step="0.01"
+                            >
                             @error('quantite', 'distribution_modal')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -113,21 +162,34 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="date_depotage_modal" class="form-label">Date de Distribution *</label>
-                            <input type="date" class="form-control @error('date_depotage', 'distribution_modal') is-invalid @enderror" id="date_depotage_modal" name="date_depotage" value="{{ old('date_depotage', date('Y-m-d')) }}" required>
+                            <input
+                                type="date"
+                                class="form-control @error('date_depotage', 'distribution_modal') is-invalid @enderror"
+                                id="date_depotage_modal"
+                                name="date_depotage"
+                                value="{{ old('date_depotage', date('Y-m-d')) }}"
+                                required
+                            >
                             @error('date_depotage', 'distribution_modal')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="heure_depotage_modal" class="form-label">Heure de Distribution *</label>
-                            <input type="time" class="form-control @error('heure_depotage', 'distribution_modal') is-invalid @enderror" id="heure_depotage_modal" name="heure_depotage" value="{{ old('heure_depotage', date('H:i')) }}" required>
-                             @error('heure_depotage', 'distribution_modal')
+                            <input
+                                type="time"
+                                class="form-control @error('heure_depotage', 'distribution_modal') is-invalid @enderror"
+                                id="heure_depotage_modal"
+                                name="heure_depotage"
+                                value="{{ old('heure_depotage', date('H:i')) }}"
+                                required
+                            >
+                            @error('heure_depotage', 'distribution_modal')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
-
-                </div>
+                </div> {{-- modal-body --}}
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Enregistrer la Distribution</button>
@@ -156,7 +218,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if(isset($soute) && $soute->distributions()->exists()) {{-- Utiliser exists() est plus performant que count() > 0 ici --}}
+                        @if(isset($soute) && $soute->distributions()->exists())
                             @foreach($soute->distributions()->with('personnel')->latest()->take(10)->get() as $distribution)
                                 <tr>
                                     <td>{{ $distribution->personnel->nom_complet ?? 'N/A' }}</td>
@@ -178,14 +240,16 @@
         </div>
     </div>
 </section>
-@include('pompiste.layouts.partials._alert', ['errorBag' => 'distribution_modal'])
 
+@include('pompiste.layouts.partials._alert', ['errorBag' => 'distribution_modal'])
 @endsection
 
 @push('custom-scripts')
+    {{-- jQuery (nécessaire pour Select2) --}}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    {{-- Assurez-vous que Bootstrap JS est inclus, soit ici, soit dans votre layout principal --}}
+    {{-- Bootstrap JS (vérifie que tu n'as pas de doublon) --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- Select2 --}}
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
@@ -194,216 +258,174 @@
         const quantiteModalInput = $('#quantite_modal');
         const stockInfoModalSpan = $('#stock_info_modal');
         const distributionModalElement = document.getElementById('distributionModal');
+        // On instancie le modal Bootstrap pour usage en JS
         const distributionModal = new bootstrap.Modal(distributionModalElement);
 
-        produitModalSelect.select2({
-            // theme: "bootstrap-5",
-            dropdownParent: $(distributionModalElement),
-            placeholder: "Choisir un type de carburant",
-            allowClear: true
-        });
-
+        // Contexte de la soute pour JS
         const souteContext = {
-            id: "{{ $soute->id ?? null }}",
-            typesDisponibles: @json($soute->types_carburants_stockes ?? []), // Ex: ["Diesel", "Kerozen", "Essence"]
-
-            capaciteEssence: {{ (float)($soute->capacite_essence ?? 0) }},
-            capaciteKerozen: {{ (float)($soute->capacite_kerozen ?? 0) }},
-            capaciteDiesel: {{ (float)($soute->capacite_diesel ?? 0) }},
-
-            // Important: Passer null explicitement si la valeur est null en PHP
+            id: "{{ $soute->id ?? '' }}",
+            typesDisponibles: @json($soute->types_carburants_stockes ?? []),
+            // Niveaux actuels
             niveauActuelEssence: {{ $soute->niveau_actuel_essence === null ? 'null' : (float)$soute->niveau_actuel_essence }},
             niveauActuelKerozen: {{ $soute->niveau_actuel_kerozen === null ? 'null' : (float)$soute->niveau_actuel_kerozen }},
-            niveauActuelDiesel: {{ $soute->niveau_actuel_diesel === null ? 'null' : (float)$soute->niveau_actuel_diesel }}
+            niveauActuelDiesel: {{ $soute->niveau_actuel_diesel === null ? 'null' : (float)$soute->niveau_actuel_diesel }},
+            // Seuils d'alerte (optionnel si besoin côté JS)
+            seuil_alert_essence: {{ $soute->seuil_alert_essence === null ? 'null' : (float)$soute->seuil_alert_essence }},
+            seuil_alert_kerozen: {{ $soute->seuil_alert_kerozen === null ? 'null' : (float)$soute->seuil_alert_kerozen }},
+            seuil_alert_diesel: {{ $soute->seuil_alert_diesel === null ? 'null' : (float)$soute->seuil_alert_diesel }},
+            // Seuils d'indisponibilité
+            seuil_indisponibilite_essence: {{ $soute->seuil_indisponibilite_essence === null ? 'null' : (float)$soute->seuil_indisponibilite_essence }},
+            seuil_indisponibilite_kerozen: {{ $soute->seuil_indisponibilite_kerozen === null ? 'null' : (float)$soute->seuil_indisponibilite_kerozen }},
+            seuil_indisponibilite_diesel: {{ $soute->seuil_indisponibilite_diesel === null ? 'null' : (float)$soute->seuil_indisponibilite_diesel }},
         };
-        const oldProduitModal = "{{ old('produit') }}"; // Pour restaurer la sélection après une erreur de validation
+        const oldProduitModal = "{{ old('produit') }}";
 
-       // DANS distribution.blade.php, REMPLACEZ CETTE FONCTION
+        // Initialisation de Select2 sur le <select> (sans dropdownParent pour l'instant, sera ré-initialisé à l'ouverture)
+        produitModalSelect.select2({
+            placeholder: "Choisir un type de carburant",
+            allowClear: true,
+            theme: 'bootstrap-5'
+        });
 
+      // Fonction pour obtenir le stock disponible selon le type
 function getStockDisponiblePourProduit(produitKey) {
-    // La logique correcte : le stock disponible EST le niveau actuel.
-    // Si le niveau actuel est null ou indéfini, le stock est 0.
-
-    switch (produitKey.toLowerCase()) { // Utiliser toLowerCase() pour plus de robustesse
-        case 'essence':
-            // parseFloat(null) donne NaN. NaN || 0 donne 0. C'est parfait.
-            return parseFloat(souteContext.niveauActuelEssence) || 0;
-        case 'kerozen':
-            return parseFloat(souteContext.niveauActuelKerozen) || 0;
-        case 'diesel':
-            return parseFloat(souteContext.niveauActuelDiesel) || 0;
-        default:
-            return 0; // Retourne 0 si le type de produit n'est pas reconnu
+    if (!produitKey) return 0;
+    switch (produitKey.toLowerCase()) {
+        case 'essence': return parseFloat(souteContext.niveauActuelEssence) || 0;
+        case 'kerozen': return parseFloat(souteContext.niveauActuelKerozen) || 0;
+        case 'diesel': return parseFloat(souteContext.niveauActuelDiesel) || 0;
+        default: return 0;
     }
 }
 
-       // DANS Distribution.blade.php
-
+// Peupler les options du select de carburant dans le modal
 function populateProduitsModal() {
-    // ---- DEBUG : Ligne cruciale pour vérifier les données reçues ----
-    // Décommentez cette ligne pour voir dans la console (F12) ce que votre JS reçoit exactement
-    // console.log("Données reçues pour le select :", souteContext.typesDisponibles); 
-    // -----------------------------------------------------------------
-
     produitModalSelect.empty().append('<option value=""></option>');
-
-    if (!souteContext.id) {
-         produitModalSelect.append('<option value="" disabled selected>Erreur: Soute non définie</option>');
-         produitModalSelect.trigger('change');
-         return;
-    }
-
-    // Si le tableau est vide ou non défini
-    if (!souteContext.typesDisponibles || souteContext.typesDisponibles.length === 0) {
-        produitModalSelect.append('<option value="" disabled selected>Aucun carburant configuré pour cette soute</option>');
+    if (!souteContext.id || !Array.isArray(souteContext.typesDisponibles) || souteContext.typesDisponibles.length === 0) {
+        produitModalSelect.append('<option value="" disabled selected>Aucun carburant disponible</option>');
         produitModalSelect.trigger('change');
         return;
     }
 
-    // NOUVELLE LOGIQUE SIMPLIFIÉE ET ROBUSTE
-    souteContext.typesDisponibles.forEach(produitKeyValue => { // produitKeyValue est directement 'diesel', 'kerozen', etc.
-        
-        // On s'assure que c'est une chaîne et on la traite
-        if (typeof produitKeyValue !== 'string' || produitKeyValue === '') return;
-
-        // 1. Mettre la première lettre en majuscule pour l'affichage
+    souteContext.typesDisponibles.forEach(produitKeyValue => {
+        if (typeof produitKeyValue !== 'string' || produitKeyValue.trim() === '') return;
+        const key = produitKeyValue.toLowerCase();
         const typeCarburantAffichage = produitKeyValue.charAt(0).toUpperCase() + produitKeyValue.slice(1);
-        
-        // 2. Récupérer les informations de stock
-        const stockDisponible = getStockDisponiblePourProduit(produitKeyValue);
-        const seuil = souteContext[`seuil_alerte_${produitKeyValue}`];
-        const estEnAlerte = seuil !== null && stockDisponible <= seuil;
-        const estEpuise = stockDisponible <= 0;
+        const stockTotal = getStockDisponiblePourProduit(produitKeyValue);
 
-        // 3. Construire le texte de l'option
-        let displayText = `${typeCarburantAffichage} (Stock: ${stockDisponible.toFixed(2)} L)`;
-        
-        // 4. Créer l'objet <option>
-        const optionElement = new Option(displayText, produitKeyValue);
+        // Récupération du seuil d'indisponibilité
+        const seuilIndispoRaw = souteContext[`seuil_indisponibilite_${key}`];
+        const seuilIndispo = isNaN(parseFloat(seuilIndispoRaw)) ? null : parseFloat(seuilIndispoRaw);
 
-        // 5. Gérer la désactivation de l'option
-        if (estEpuise) {
-            optionElement.text += " - Épuisé";
-            optionElement.disabled = true;
-        } else if (estEnAlerte) {
-            optionElement.text += " - Alerte Seuil";
-            optionElement.disabled = true;
+        // Calcul de la quantité maximale distribuable
+        let maxDistrib = stockTotal;
+        if (seuilIndispo !== null) {
+            maxDistrib = stockTotal - seuilIndispo;
         }
-        
-        // 6. Ajouter l'option au select
+        // Arrondir/prendre au moins 0
+        if (maxDistrib < 0) {
+            maxDistrib = 0;
+        }
+        // On détermine si distribution possible
+        const estIndisponible = (seuilIndispo !== null && stockTotal <= seuilIndispo) || (maxDistrib <= 0);
+
+        // Création de l'élément <option>
+        const optionElement = $('<option>').val(produitKeyValue);
+        let displayText = `${typeCarburantAffichage} (Stock total: ${stockTotal.toFixed(2)} L)`;
+
+        if (estIndisponible) {
+            displayText += " - Indisponible";
+            optionElement.prop('disabled', true);
+        } else {
+            // On affiche la quantité maximale distribuable
+            displayText += ` - Distribuable max: ${maxDistrib.toFixed(2)} L`;
+            // pas de disabled car on peut distribuer
+        }
+        optionElement.text(displayText);
         produitModalSelect.append(optionElement);
     });
 
-    // Restaurer l'ancienne valeur si elle existe (après erreur de validation)
+    // Restaurer l'ancienne valeur si existait
     if (oldProduitModal) {
         produitModalSelect.val(oldProduitModal);
     }
-    
-    // Mettre à jour l'affichage de Select2
     produitModalSelect.trigger('change');
 }
-        produitModalSelect.on('change', function() {
-            const selectedProduitKey = $(this).val(); // 'essence', 'kerozen', ou 'diesel'
-            let stockDisponible = 0;
-            let estEpuise = true;
 
-            if (selectedProduitKey) {
-                stockDisponible = getStockDisponiblePourProduit(selectedProduitKey);
-                estEpuise = (stockDisponible <= 0);
-            }
+// Lorsqu'on change le carburant sélectionné, mise à jour du message et activation/désactivation du champ quantité
+produitModalSelect.on('change', function() {
+    const selectedProduitKey = $(this).val();
+    stockInfoModalSpan.text('');
+    quantiteModalInput.prop('disabled', false);
+    quantiteModalInput.removeAttr('max');
+    if (selectedProduitKey) {
+        const stockTotal = getStockDisponiblePourProduit(selectedProduitKey);
+        const key = selectedProduitKey.toLowerCase();
+        const seuilIndispoRaw = souteContext[`seuil_indisponibilite_${key}`];
+        const seuilIndispo = isNaN(parseFloat(seuilIndispoRaw)) ? null : parseFloat(seuilIndispoRaw);
 
-            if (selectedProduitKey) {
-                if (estEpuise) {
-                    stockInfoModalSpan.text('Stock épuisé. Distribution impossible.');
-                    quantiteModalInput.attr('max', 0).val(''); // Mettre à 0 et vider
-                    quantiteModalInput.prop('disabled', true);
-                } else {
-                    // stockInfoModalSpan.text(`Stock disponible: ${stockDisponible.toFixed(2)} L`);
-                    quantiteModalInput.attr('max', stockDisponible.toFixed(2));
-                    quantiteModalInput.prop('disabled', false);
-                }
-            } else { // Aucun produit sélectionné
-                stockInfoModalSpan.text('');
-                quantiteModalInput.removeAttr('max').val('');
-                quantiteModalInput.prop('disabled', true);
-            }
-            if (selectedProduitKey) {
-        const seuil = souteContext[`seuil_alert_${selectedProduitKey}`];
-        const estEnAlerte = seuil !== null && stockDisponible <= seuil;
+        let maxDistrib = stockTotal;
+        if (seuilIndispo !== null) {
+            maxDistrib = stockTotal - seuilIndispo;
+        }
+        if (maxDistrib < 0) {
+            maxDistrib = 0;
+        }
 
-        if (estEnAlerte) {
-            stockInfoModalSpan.text('Seuil d\'alerte atteint. Distribution impossible.');
+        if (maxDistrib <= 0) {
+            // On ne peut rien distribuer ou stock déjà au seuil/pas au-dessus
+            stockInfoModalSpan.text("Distribution impossible : seuil d'indisponibilité atteint ou stock trop faible.");
             quantiteModalInput.prop('disabled', true);
-        } else if (stockDisponible <= 0) {
-            // ... gestion stock épuisé ...
         } else {
-            // ... gestion stock normal ...
+            // On peut distribuer jusqu'à maxDistrib
+            stockInfoModalSpan.text(`Quantité max distribuable : ${maxDistrib.toFixed(2)} L`);
+            quantiteModalInput.prop('disabled', false);
+            quantiteModalInput.attr('max', maxDistrib.toFixed(2));
         }
     }
-        });
+});
 
-        $('#distributionModal').on('show.bs.modal', function () {
-              // Initialiser Select2 ici
-    $('#produit_modal').select2({
-        dropdownParent: $(this),
+// Lors de l'ouverture du modal
+$('#distributionModal').on('show.bs.modal', function () {
+    produitModalSelect.select2({
+        dropdownParent: $(distributionModalElement),
         placeholder: "Choisir un type de carburant",
-        allowClear: true
+        allowClear: true,
+        theme: 'bootstrap-5'
     });
-            if (!souteContext.id && "{{ $soute->id ?? null }}") { // Au cas où $soute serait mis à jour par un autre script (peu probable ici)
-                souteContext.id = "{{ $soute->id }}";
-                $('#soute_id_modal').val("{{ $soute->id }}");
-                // Potentiellement re-peupler souteContext si les autres valeurs peuvent changer
-            }
-            populateProduitsModal();
-            // L'appel à trigger('change') dans populateProduitsModal s'occupe de la mise à jour initiale
-        });
+    $('#soute_id_modal').val(souteContext.id);
+    populateProduitsModal();
+});
 
-        $('#distributionModal').on('hidden.bs.modal', function () {
-            $('#maDistributionForm')[0].reset();
-            produitModalSelect.val(null).trigger('change'); // Réinitialise Select2 et sa logique
-            // Le on-change videra stockInfoModalSpan et désactivera quantiteModalInput
-            $('#maDistributionForm .is-invalid').removeClass('is-invalid');
-            $('#maDistributionForm .invalid-feedback').text('');
-            $('#distributionModal .alert-danger').remove();
-            $('#distributionModal .alert-success').remove();
-        });
+// Validation avant soumission du formulaire
+$('#maDistributionForm').on('submit', function(e) {
+    const selectedProduit = produitModalSelect.val();
+    const quantiteVal = parseFloat(quantiteModalInput.val());
+    const maxAttr = parseFloat(quantiteModalInput.attr('max'));
 
-        // Force l'ouverture du modal si des erreurs de validation pour ce modal sont présentes
-        @if ($errors->any() && $errors->hasBag('distribution_modal'))
-            distributionModal.show();
-        @endif
+    if (!selectedProduit) {
+        alert('Veuillez sélectionner un type de carburant.');
+        e.preventDefault();
+        return false;
+    }
+    if (quantiteModalInput.prop('disabled')) {
+        alert('Distribution impossible pour le carburant sélectionné.');
+        e.preventDefault();
+        return false;
+    }
+    if (isNaN(quantiteVal) || quantiteVal <= 0) {
+        alert('La quantité doit être supérieure à zéro.');
+        e.preventDefault();
+        return false;
+    }
+    if (!isNaN(maxAttr) && quantiteVal > maxAttr) {
+        alert(`La quantité demandée (${quantiteVal.toFixed(2)} L) dépasse la quantité maximale distribuable (${maxAttr.toFixed(2)} L).`);
+        e.preventDefault();
+        return false;
+    }
+    // sinon, laisse soumettre
+});
 
-        // Validation client basique avant soumission
-        $('#maDistributionForm').on('submit', function(e) {
-            const selectedProduit = produitModalSelect.val();
-            const quantite = parseFloat(quantiteModalInput.val());
-
-            if (!selectedProduit) {
-                alert('Veuillez sélectionner un type de carburant.');
-                e.preventDefault();
-                return false;
-            }
-            if (quantiteModalInput.prop('disabled')) { // Implique stock épuisé
-                alert('Le stock pour le carburant sélectionné est épuisé ou la quantité est invalide.');
-                e.preventDefault();
-                return false;
-            }
-            if (quantite <= 0) {
-                alert('La quantité doit être supérieure à zéro.');
-                e.preventDefault();
-                return false;
-            }
-        // --- NOUVELLE VÉRIFICATION ---
-    // Récupérer le stock maximum autorisé qui est stocké dans l'attribut 'max' de l'input
-    const stockDisponible = parseFloat(quantiteModalInput.attr('max'));
-
-if (!isNaN(stockDisponible) && quantite > stockDisponible) {
-    // Affiche une alerte claire à l'utilisateur
-    alert(`La quantité demandée (${quantite.toFixed(2)} L) dépasse le stock disponible (${stockDisponible.toFixed(2)} L).`);
-    e.preventDefault(); // Empêche l'envoi du formulaire
-    return false;
-}
-        });
     });
     </script>
 @endpush

@@ -59,9 +59,12 @@ class PompisteController extends Controller
     }
     public function storeDistribution(Request $request)
     {
+        // Normalisation du type de produit en minuscules
         $request->merge([
             'produit' => strtolower($request->input('produit', '')),
         ]);
+    
+        // Règles de validation
         $rules = [
             'soute_id' => 'required|exists:soutes,id',
             'nom_chauffeur' => 'required|string|max:255',
@@ -71,14 +74,12 @@ class PompisteController extends Controller
             'date_depotage' => 'required|date_format:Y-m-d',
             'heure_depotage' => 'required|date_format:H:i',
         ];
-    
         $messages = [
             'produit.in' => 'Le type de carburant sélectionné est invalide.',
             'soute_id.exists' => 'La soute spécifiée est invalide.',
         ];
     
         $validator = Validator::make($request->all(), $rules, $messages);
-    
         if ($validator->fails()) {
             return redirect()->back()
                         ->withErrors($validator, 'distribution_modal')
@@ -87,45 +88,65 @@ class PompisteController extends Controller
     
         $validated = $validator->validated();
         $pompiste = Auth::guard('personnel_soute')->user();
-        
         if (!$pompiste) {
             return redirect()->back()
                         ->with('error_modal', 'Session invalide. Veuillez vous reconnecter.')
                         ->withInput();
         }
     
+        // Récupère la soute
         $soute = Soute::findOrFail($validated['soute_id']);
         $typeCarburantDemande = $validated['produit'];
-        
-        // CORRECTION : Définir la quantité ici, AVANT de l'utiliser.
         $quantiteDistribuee = (float)$validated['quantite'];
     
-        // LOGIQUE DE STOCK SIMPLIFIÉE ET CORRECTE
-        $champNiveauActuel = 'niveau_actuel_' . strtolower($typeCarburantDemande);
-        $stockCourant = (float)$soute->{$champNiveauActuel};
-    
-        // Vérification du seuil d'alerte
-        if ($soute->estEnAlerte(strtolower($typeCarburantDemande))) {
-            return back()->withErrors(
-                ['quantite' => 'Le seuil d\'alerte est atteint pour ce carburant. Distribution impossible.'],
-                'distribution_modal'
-            )->withInput();
-        }
-        
-        // Vérification de la quantité disponible
-        if ($stockCourant < $quantiteDistribuee) {
-            return back()->withErrors(
-                ['quantite' => 'Quantité de ' . ucfirst($typeCarburantDemande) . ' insuffisante. Stock disponible : ' . number_format($stockCourant, 2) . ' L.'],
-                'distribution_modal'
-            )->withInput();
-        }
-        
+        // Vérification d'accès : le pompiste doit avoir accès à cette soute
         if (!$pompiste->soutes()->where('soutes.id', $soute->id)->exists()) {
             return redirect()->back()
                         ->with('error_modal', 'Accès non autorisé à cette soute.')
                         ->withInput();
         }
     
+        // Stock actuel pour le type demandé
+        $champNiveauActuel = 'niveau_actuel_' . strtolower($typeCarburantDemande);
+        $stockCourant = (float)$soute->{$champNiveauActuel};
+    
+        // Récupération du seuil d'indisponibilité pour ce type
+        $seuilIndispoField = 'seuil_indisponibilite_' . strtolower($typeCarburantDemande);
+        $seuilIndispo = isset($soute->{$seuilIndispoField}) ? (float)$soute->{$seuilIndispoField} : null;
+    
+        // 1) Si le stock est déjà au ou en-dessous du seuil d'indisponibilité, bloquer
+        if ($seuilIndispo !== null && $stockCourant <= $seuilIndispo) {
+            return back()->withErrors(
+                ['quantite' => 'Le seuil d\'indisponibilité est déjà atteint pour ce carburant. Distribution impossible.'],
+                'distribution_modal'
+            )->withInput();
+        }
+    
+        // 2) Calcul du nouveau stock si on distribue la quantité demandée
+        $nouveauStock = $stockCourant - $quantiteDistribuee;
+    
+        // 3) Si le nouveau stock est ≤ seuil d'indisponibilité, bloquer
+        if ($seuilIndispo !== null && $nouveauStock <= $seuilIndispo) {
+            return back()->withErrors(
+                ['quantite' => 'Distribution impossible : la quantité demandée ferait tomber le stock au ou en-dessous du seuil d\'indisponibilité ('. number_format($seuilIndispo, 2) .' L). Stock actuel : '. number_format($stockCourant, 2) .' L.'],
+                'distribution_modal'
+            )->withInput();
+        }
+    
+        // 4) Vérification classique de la quantité suffisante
+        if ($stockCourant < $quantiteDistribuee) {
+            return back()->withErrors(
+                ['quantite' => 'Quantité insuffisante. Stock disponible : ' . number_format($stockCourant, 2) . ' L.'],
+                'distribution_modal'
+            )->withInput();
+        }
+    
+        // 5) Vérification du seuil d'alerte : juste avertissement, ne bloque pas
+        if (method_exists($soute, 'estEnAlerte') && $soute->estEnAlerte(strtolower($typeCarburantDemande))) {
+            $request->session()->flash('warning_modal', 'Attention: Seuil d\'alerte atteint pour ce carburant');
+        }
+    
+        // Création de la distribution et mise à jour du stock
         DB::beginTransaction();
         try {
             Distribution::create([
@@ -139,19 +160,21 @@ class PompisteController extends Controller
                 'heure_depotage' => $validated['heure_depotage'],
             ]);
     
-            $nouveauNiveau = $stockCourant - $quantiteDistribuee;
-            $soute->{$champNiveauActuel} = $nouveauNiveau;
+            // Mise à jour du stock
+            $soute->{$champNiveauActuel} = $nouveauStock;
             $soute->save();
     
             DB::commit();
     
             return redirect()->route('soute.dashboard.services.distribution')
-                             ->with('success_modal', 'Distribution enregistrée! Nouveau stock ' . ucfirst($typeCarburantDemande) . ': ' . number_format($nouveauNiveau, 2) . 'L.');
-    
+                             ->with('success_modal', 'Distribution enregistrée ! Nouveau stock ' 
+                                 . ucfirst($typeCarburantDemande) . ': ' 
+                                 . number_format($nouveauStock, 2) . ' L.');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error("Erreur store distribution: " . $e->getMessage());
-            return back()->with('error_modal', 'Une erreur serveur est survenue lors de l\'enregistrement : ' . $e->getMessage())->withInput();
+            return back()->with('error_modal', 'Une erreur serveur est survenue lors de l\'enregistrement : ' . $e->getMessage())
+                         ->withInput();
         }
     }
     public function depotage(Request $request)
@@ -257,9 +280,9 @@ class PompisteController extends Controller
                 // Si c'est la première fois qu'on met à jour niveau_actuel_... pour ce produit,
                 // et qu'il était NULL, cela signifie que le "stock avant distribution" était la capacité.
                 // Mais pour un dépotage, si niveau_actuel est NULL, on considère que le niveau était 0 avant ce remplissage.
-                // Ou, si la logique est que `niveau_actuel` n'est mis à jour qu'après une *distribution*,
-                // alors on pourrait prendre `capacite_` comme point de départ si `niveau_actuel` est NULL.
-                // Pour simplifier et être cohérent : si `niveau_actuel_XXX` est NULL, on le considère comme 0 avant d'ajouter le volume reçu.
+                // Ou, si la logique est que niveau_actuel n'est mis à jour qu'après une distribution,
+                // alors on pourrait prendre capacite_ comme point de départ si niveau_actuel est NULL.
+                // Pour simplifier et être cohérent : si niveau_actuel_XXX est NULL, on le considère comme 0 avant d'ajouter le volume reçu.
                  $niveauAvantCeDepotage = 0; // Ou (float)$soute->{$champCapacite} si vous voulez que le dépotage "remplisse" par rapport à la capacité totale quand niveau_actuel est null.
                                             // Cependant, ajouter à 0 est plus direct pour un dépotage.
             }
