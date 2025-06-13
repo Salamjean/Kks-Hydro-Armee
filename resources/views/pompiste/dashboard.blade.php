@@ -64,9 +64,8 @@
             </div>
             <div class="row">
                 @php
-                $fuelsData = []; // Renommé pour clarté
-                // Générer dynamiquement les données carburants basées sur la soute
-                // et déterminer le niveau actuel pour l'affichage
+                $fuelsData = [];
+                
                 if (isset($soute) && is_array($soute->types_carburants_stockes)) {
                     if (in_array('Diesel', $soute->types_carburants_stockes)) {
                         $niveauActuelDiesel = $soute->niveau_actuel_diesel !== null ? $soute->niveau_actuel_diesel : $soute->capacite_diesel;
