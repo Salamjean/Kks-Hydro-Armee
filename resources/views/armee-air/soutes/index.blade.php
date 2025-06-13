@@ -51,9 +51,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editSouteModal_{{ $soute->id }}">
-                                        <i class="bi bi-pencil-square"></i> Modifier
-                                    </button>
+                                    {{-- ... boutons actions ... --}}
                                 </td>
                             </tr>
                         @empty
@@ -81,17 +79,17 @@
                 @csrf
                 <input type="hidden" name="form_type" value="create_soute">
                 <div class="modal-body">
-                   <div class="row">
-                     <div class="col-md-6 mb-3">
-                        <label for="soute_nom" class="form-label">Nom de la Soute <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('nom') is-invalid @enderror" id="soute_nom" name="nom" value="{{ old('nom') }}" required>
-                        @error('nom') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="soute_localisation" class="form-label">Localisation</label>
-                        <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="soute_localisation" name="localisation" value="{{ old('localisation') }}">
-                        @error('localisation') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="soute_nom" class="form-label">Nom de la Soute <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nom') is-invalid @enderror" id="soute_nom" name="nom" value="{{ old('nom') }}" required>
+                            @error('nom') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="soute_localisation" class="form-label">Localisation</label>
+                            <input type="text" class="form-control @error('localisation') is-invalid @enderror" id="soute_localisation" name="localisation" value="{{ old('localisation') }}">
+                            @error('localisation') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                    </div>
 
                     <hr>
@@ -144,10 +142,10 @@
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div>
-                                <label for="soute_capacite_diesel" class="form-label">Capacité d'insdisponibilité (L)</label>
-                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
-                                    id="soute_capacite_diesel" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
-                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label for="soute_capacite_diesel" class="form-label">Seuil d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('seuil_indisponibilite_diesel') is-invalid @enderror"
+                                    id="soute_capacite_diesel" name="seuil_indisponibilite_diesel" value="{{ old('seuil_indisponibilite_diesel') }}" placeholder="Ex: 5000">
+                                @error('seuil_indisponibilite_diesel') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
@@ -171,10 +169,10 @@
                                 @error('seuil_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>  
                             <div>
-                                <label for="soute_capacite_kerozen" class="form-label">Capacité d'insdisponibilité (L)</label>
-                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
-                                    id="soute_capacite_kerozen" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
-                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label for="soute_capacite_kerozen" class="form-label">Seuil d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('seuil_indisponibilite_kerozen') is-invalid @enderror"
+                                    id="soute_capacite_kerozen" name="seuil_indisponibilite_kerozen" value="{{ old('seuil_indisponibilite_kerozen') }}" placeholder="Ex: 5000">
+                                @error('seuil_indisponibilite_kerozen') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
@@ -198,10 +196,10 @@
                                 @error('capacite_alert') <div class="invalid-feedback">{{ $message }}</div> @enderror
                            </div>
                            <div>
-                                <label for="soute_capacite_essence" class="form-label">Capacité d'insdisponibilité (L)</label>
-                                <input type="number" step="any" class="form-control @error('capacite_indisponibilite') is-invalid @enderror"
-                                    id="soute_capacite_essence" name="capacite_indisponibilite_diesel" value="{{ old('capacite_indisponibilite') }}" placeholder="Ex: 5000">
-                                @error('capacite_indisponibilite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label for="soute_capacite_essence" class="form-label">Seuil d'insdisponibilité (L)</label>
+                                <input type="number" step="any" class="form-control @error('seuil_indisponibilite_essence') is-invalid @enderror"
+                                    id="soute_capacite_essence" name="seuil_indisponibilite_essence" value="{{ old('seuil_indisponibilite_essence') }}" placeholder="Ex: 5000">
+                                @error('seuil_indisponibilite_essence') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
                     </div>
@@ -220,74 +218,6 @@
         </div>
     </div>
 </div>
-
-@foreach ($soutes as $soute)
-@dd($soute)
-{{-- Modale de Modification de Soute --}}
-<div class="modal fade" id="editSouteModal_{{ $soute->id }}" tabindex="-1" aria-labelledby="editSouteModalLabel_{{ $soute->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form action="{{ route('soute.dashboard.corps.soutes.update_air', $soute->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editSouteModalLabel_{{ $soute->id }}">Modifier la Soute - {{ $soute->nom }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer">X</button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_nom_{{ $soute->id }}" class="form-label">Nom</label>
-                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->nom }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_nom_{{ $soute->id }}" class="form-label">Matricule de soute</label>
-                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->matricule_soute }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_localisation_{{ $soute->id }}" class="form-label">Localisation</label>
-                            <input type="text" class="form-control" id="edit_localisation_{{ $soute->id }}" name="localisation" value="{{ $soute->localisation }}">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité disponible (en litres)</label>
-                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité maximale (en litres)</label>
-                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
-                        </div>
-                    </div>
-
-                    <hr>
-                    <h6>Carburants disponibles</h6>
-                    {{-- @foreach($carburants as $index => $carburantType)
-                        @php
-                            $carburantExistant = $soute->carburants->firstWhere('type', $carburantType);
-                        @endphp
-                        <div class="row align-items-center mb-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Type : {{ $carburantType }}</label>
-                                <input type="hidden" name="carburants[{{ $index }}][type]" value="{{ $carburantType }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="quantite_{{ $soute->id }}_{{ $index }}" class="form-label">Quantité (litres)</label>
-                                <input type="number" class="form-control" id="quantite_{{ $soute->id }}_{{ $index }}" name="carburants[{{ $index }}][quantite]" value="{{ $carburantExistant->quantite ?? 0 }}">
-                            </div>
-                        </div>
-                    @endforeach --}}
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Enregistrer</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
-
 @endsection
 @push('custom-scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
