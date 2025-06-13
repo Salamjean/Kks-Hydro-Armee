@@ -51,7 +51,9 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    {{-- ... boutons actions ... --}}
+                                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editSouteModal_{{ $soute->id }}">
+                                        <i class="bi bi-pencil-square"></i> Modifier
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -218,6 +220,74 @@
         </div>
     </div>
 </div>
+
+@foreach ($soutes as $soute)
+@dd($soute)
+{{-- Modale de Modification de Soute --}}
+<div class="modal fade" id="editSouteModal_{{ $soute->id }}" tabindex="-1" aria-labelledby="editSouteModalLabel_{{ $soute->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('soute.dashboard.corps.soutes.update_air', $soute->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSouteModalLabel_{{ $soute->id }}">Modifier la Soute - {{ $soute->nom }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer">X</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_nom_{{ $soute->id }}" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->nom }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_nom_{{ $soute->id }}" class="form-label">Matricule de soute</label>
+                            <input type="text" class="form-control" id="edit_nom_{{ $soute->id }}" name="nom" value="{{ $soute->matricule_soute }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_localisation_{{ $soute->id }}" class="form-label">Localisation</label>
+                            <input type="text" class="form-control" id="edit_localisation_{{ $soute->id }}" name="localisation" value="{{ $soute->localisation }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité disponible (en litres)</label>
+                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_capacite_maximale_{{ $soute->id }}" class="form-label">Capacité maximale (en litres)</label>
+                            <input type="number" class="form-control" id="edit_capacite_maximale_{{ $soute->id }}" name="capacite_maximale" value="{{ $soute->capacite_maximale }}">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6>Carburants disponibles</h6>
+                    {{-- @foreach($carburants as $index => $carburantType)
+                        @php
+                            $carburantExistant = $soute->carburants->firstWhere('type', $carburantType);
+                        @endphp
+                        <div class="row align-items-center mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Type : {{ $carburantType }}</label>
+                                <input type="hidden" name="carburants[{{ $index }}][type]" value="{{ $carburantType }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="quantite_{{ $soute->id }}_{{ $index }}" class="form-label">Quantité (litres)</label>
+                                <input type="number" class="form-control" id="quantite_{{ $soute->id }}_{{ $index }}" name="carburants[{{ $index }}][quantite]" value="{{ $carburantExistant->quantite ?? 0 }}">
+                            </div>
+                        </div>
+                    @endforeach --}}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
 @endsection
 @push('custom-scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
