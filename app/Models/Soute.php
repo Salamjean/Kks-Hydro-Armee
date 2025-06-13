@@ -29,6 +29,9 @@ class Soute extends Model
         'seuil_alert_diesel', // Ajouté
     'seuil_alert_kerozen', // Ajouté
     'seuil_alert_essence', // Ajouté
+    'seuil_indisponibilite_diesel',
+    'seuil_indisponibilite_kerozen',
+    'seuil_indisponibilite_essence',
         'description',
     ];
 
@@ -43,6 +46,9 @@ class Soute extends Model
         'seuil_alert_diesel' => 'decimal:2', // Ajouté
         'seuil_alert_kerozen' => 'decimal:2', // Ajouté
         'seuil_alert_essence' => 'decimal:2', // Ajouté
+        'seuil_indisponibilite_diesel' => 'decimal:2',
+        'seuil_indisponibilite_kerozen' => 'decimal:2',
+        'seuil_indisponibilite_essence' => 'decimal:2',
     ];
 
     public function distributeurs(): HasMany
@@ -90,20 +96,37 @@ class Soute extends Model
             }
         });
     }
+    // Vérifie si le niveau d'un carburant a atteint son seuil d'alerte.
+    // CECI EST JUSTE UNE INFORMATION, ÇA NE BLOQUE RIEN.
+    
+    public function estIndisponible($typeCarburant)
+    {
+        $typeCarburant = strtolower($typeCarburant);
+        $niveauActuel = $this->{"niveau_actuel_$typeCarburant"};
+        $seuilIndisponibilite = $this->{"seuil_indisponibilite_$typeCarburant"};
+        
+        return !is_null($seuilIndisponibilite) && $niveauActuel <= $seuilIndisponibilite;
+    }
+    
     public function estEnAlerte($typeCarburant)
     {
+        $typeCarburant = strtolower($typeCarburant);
         $niveauActuel = $this->{"niveau_actuel_$typeCarburant"};
-        $seuil = $this->{"seuil_alert_$typeCarburant"};
+        $seuilAlerte = $this->{"seuil_alert_$typeCarburant"};
         
-        return !is_null($seuil) && $niveauActuel <= $seuil;
+        return !is_null($seuilAlerte) && $niveauActuel <= $seuilAlerte;
     }
-
+    
     public function peutDistribuer($typeCarburant, $quantite)
     {
-        if ($this->estEnAlerte($typeCarburant)) {
+        $typeCarburant = strtolower($typeCarburant);
+        
+        // Vérification d'indisponibilité (bloque la distribution)
+        if ($this->estIndisponible($typeCarburant)) {
             return false;
         }
         
+        // Vérification du stock disponible
         $niveauActuel = $this->{"niveau_actuel_$typeCarburant"};
         return $niveauActuel >= $quantite;
     }

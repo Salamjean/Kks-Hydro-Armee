@@ -59,6 +59,9 @@ class SouteController extends Controller
         'seuil_alert_diesel' => 'nullable|required_if:type_carburants.*,Diesel|numeric|min:0|lte:capacite_diesel',
         'seuil_alert_kerozen' => 'nullable|required_if:type_carburants.*,Kerozen|numeric|min:0|lte:capacite_kerozen',
         'seuil_alert_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0|lte:capacite_essence',
+        'seuil_indisponibilite_diesel' => 'nullable|required_if:type_carburants.*,Diesel|numeric|min:0|lte:capacite_diesel',
+        'seuil_indisponibilite_kerozen' => 'nullable|required_if:type_carburants.*,Kerozen|numeric|min:0|lte:capacite_kerozen',
+        'seuil_indisponibilite_essence' => 'nullable|required_if:type_carburants.*,Essence|numeric|min:0|lte:capacite_essence',
         ], [
             'nom.required' => 'Le nom de la soute est obligatoire.',
             'nom.unique' => 'Une soute avec ce nom existe déjà pour votre corps d\'armée.',
@@ -76,6 +79,10 @@ class SouteController extends Controller
         'seuil_alert_diesel.required_if' => 'Le seuil d\'alerte pour le Diesel est requis.',
         'seuil_alert_kerozen.required_if' => 'Le seuil d\'alerte pour le Kérosène est requis.',
         'seuil_alert_essence.required_if' => 'Le seuil d\'alerte pour l\'Essence est requis.',
+        'seuil_indisponibilite_diesel.required_if' => 'Le seuil d\'indisponibilité pour le Diesel est requis.',
+        'seuil_indisponibilite_kerozen.required_if' => 'Le seuil d\'indisponibilité pour le Kérosène est requis.',
+        'seuil_indisponibilite_essence.required_if' => 'Le seuil d\'indisponibilité pour l\'Essence est requis.',
+        '*.lte' => 'La valeur ne peut pas dépasser la capacité totale.',
         '*.lte' => 'La valeur ne peut pas dépasser la capacité totale.',
         ]);
 
@@ -118,6 +125,18 @@ $soute->seuil_alert_kerozen = in_array('Kerozen', $validatedData['type_carburant
 $soute->seuil_alert_essence = in_array('Essence', $validatedData['type_carburants']) 
  ? ($validatedData['seuil_alert_essence'] ?? null) 
  : null;
+  // Seuils d'indisponibilité
+  $soute->seuil_indisponibilite_diesel = in_array('Diesel', $validatedData['type_carburants']) 
+  ? ($validatedData['seuil_indisponibilite_diesel'] ?? null) 
+  : null;
+
+$soute->seuil_indisponibilite_kerozen = in_array('Kerozen', $validatedData['type_carburants']) 
+  ? ($validatedData['seuil_indisponibilite_kerozen'] ?? null) 
+  : null;
+
+$soute->seuil_indisponibilite_essence = in_array('Essence', $validatedData['type_carburants']) 
+  ? ($validatedData['seuil_indisponibilite_essence'] ?? null) 
+  : null;
                 // matricule_soute sera généré par l'événement 'creating'
                 $soute->save();
 

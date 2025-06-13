@@ -16,6 +16,51 @@
         </div>
     </div>
 
+    {{-- Alerte générale si un carburant en-dessous du seuil d'alerte (optionnel, on garde l’ancienne logique ou adapte) --}}
+    @isset($fuelsData)
+        @php
+            $alerteActive = false;
+            $messagesAlertes = [];
+
+            foreach ($fuelsData as $fuel) {
+                $typeRaw = $fuel->type;
+                // On suppose que les champs dans $soute sont nommés en minuscules, par ex. seuil_alert_diesel
+                $typeLower = strtolower($typeRaw);
+                $niveauAffiche = $fuel->niveau_pour_affichage;
+                $seuilAlerte = $soute->{"seuil_alert_$typeLower"} ?? null;
+                $seuilIndispo = $soute->{"seuil_indisponibilite_$typeLower"} ?? null;
+
+                if (!is_null($seuilIndispo) && $niveauAffiche <= $seuilIndispo) {
+                    $alerteActive = true;
+                    $messagesAlertes[] = "⚠ Le niveau de <strong>{$typeRaw}</strong> a atteint le seuil d'indisponibilité";
+                }
+                elseif (!is_null($seuilAlerte) && $niveauAffiche <= $seuilAlerte) {
+                    $alerteActive = true;
+                    $messagesAlertes[] = "⚠ Le niveau de <strong>{$typeRaw}</strong> est en dessous du seuil d'alerte";
+                }
+            }
+        @endphp
+
+        @if($alerteActive)
+            <div class="alert alert-danger shadow-sm mb-4 rounded-3 border border-danger-subtle">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-octagon-fill me-3 fs-3 text-danger"></i>
+                    <div>
+                        <h5 class="mb-1 fw-bold">Alerte de seuil critique !</h5>
+                        @foreach($messagesAlertes as $msg)
+                            <p class="mb-0">{!! $msg !!}</p>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endisset
+
+    <div class="chart-container" style="width: 100%; margin: auto;">
+        <h4 style="text-align: center;">Distribution et Dépotage (L)</h4>
+        <canvas id="combinedChart" style="width: 100%; height: 30vh;"></canvas>
+    </div>
+
     <div class="page-content">
         <section class="section">
             <div class="row">
@@ -25,85 +70,105 @@
             </div>
             <div class="row">
                 @php
-                $fuelsData = []; // Renommé pour clarté
-                // Générer dynamiquement les données carburants basées sur la soute
-                // et déterminer le niveau actuel pour l'affichage
-                if (isset($soute) && is_array($soute->types_carburants_stockes)) {
-                    if (in_array('Diesel', $soute->types_carburants_stockes)) {
-                        $niveauActuelDiesel = $soute->niveau_actuel_diesel !== null ? $soute->niveau_actuel_diesel : $soute->capacite_diesel;
-                        $fuelsData[] = (object)[
-                            'type' => 'Diesel',
-                            'capacite_totale' => (float)($soute->capacite_diesel ?? 0),
-                            'niveau_pour_affichage' => (float)($niveauActuelDiesel ?? 0), // Ce qui est réellement disponible ou était là
-                            'icon_class' => 'bi bi-truck text-primary'
-                        ];
+                    // Générer dynamiquement les données carburants basées sur la soute
+                    $fuelsData = []; // On peut renommer si nécessaire, veille à ne pas écraser une variable précédente
+                    if (isset($soute) && is_array($soute->types_carburants_stockes)) {
+                        if (in_array('Diesel', $soute->types_carburants_stockes)) {
+                            $niveauActuelDiesel = $soute->niveau_actuel_diesel !== null ? $soute->niveau_actuel_diesel : $soute->capacite_diesel;
+                            $fuelsData[] = (object)[
+                                'type' => 'Diesel',
+                                'capacite_totale' => (float)($soute->capacite_diesel ?? 0),
+                                'niveau_pour_affichage' => (float)($niveauActuelDiesel ?? 0),
+                                'icon_class' => 'bi bi-truck text-primary'
+                            ];
+                        }
+                        if (in_array('Essence', $soute->types_carburants_stockes)) {
+                            $niveauActuelEssence = $soute->niveau_actuel_essence !== null ? $soute->niveau_actuel_essence : $soute->capacite_essence;
+                            $fuelsData[] = (object)[
+                                'type' => 'Essence',
+                                'capacite_totale' => (float)($soute->capacite_essence ?? 0),
+                                'niveau_pour_affichage' => (float)($niveauActuelEssence ?? 0),
+                                'icon_class' => 'bi bi-car-front-fill text-success'
+                            ];
+                        }
+                        if (in_array('Kerozen', $soute->types_carburants_stockes)) {
+                            $niveauActuelKerozen = $soute->niveau_actuel_kerozen !== null ? $soute->niveau_actuel_kerozen : $soute->capacite_kerozen;
+                            $fuelsData[] = (object)[
+                                'type' => 'Kerozen',
+                                'capacite_totale' => (float)($soute->capacite_kerozen ?? 0),
+                                'niveau_pour_affichage' => (float)($niveauActuelKerozen ?? 0),
+                                'icon_class' => 'bi bi-airplane-engines-fill text-info'
+                            ];
+                        }
                     }
-                    if (in_array('Essence', $soute->types_carburants_stockes)) {
-                        $niveauActuelEssence = $soute->niveau_actuel_essence !== null ? $soute->niveau_actuel_essence : $soute->capacite_essence;
-                        $fuelsData[] = (object)[
-                            'type' => 'Essence',
-                            'capacite_totale' => (float)($soute->capacite_essence ?? 0),
-                            'niveau_pour_affichage' => (float)($niveauActuelEssence ?? 0),
-                            'icon_class' => 'bi bi-car-front-fill text-success'
-                        ];
-                    }
-                    if (in_array('Kerozen', $soute->types_carburants_stockes)) {
-                        $niveauActuelKerozen = $soute->niveau_actuel_kerozen !== null ? $soute->niveau_actuel_kerozen : $soute->capacite_kerozen;
-                        $fuelsData[] = (object)[
-                            'type' => 'Kerozen',
-                            'capacite_totale' => (float)($soute->capacite_kerozen ?? 0),
-                            'niveau_pour_affichage' => (float)($niveauActuelKerozen ?? 0),
-                            'icon_class' => 'bi bi-airplane-engines-fill text-info'
-                        ];
-                    }
-                }
-            @endphp
+                @endphp
 
                 @if(!empty($fuelsData))
                     @foreach($fuelsData as $fuel)
                         @php
-                            $type = $fuel->type;
-                            $seuil = $soute->{"seuil_alert_$type"};
-                            $capaciteMax = $fuel->capacite_totale; // La capacité totale de la soute pour ce carburant
-                            $niveauAffiche = $fuel->niveau_pour_affichage; // Le stock actuel à afficher
-                            $estEnAlerte = !is_null($seuil) && $niveauAffiche <= $seuil;
-                            // Le pourcentage est basé sur le niveau actuel par rapport à la capacité maximale
-                            $pourcentage = ($capaciteMax > 0) ? (($niveauAffiche / $capaciteMax) * 100) : 0;
+                            $typeRaw = $fuel->type; // ex. 'Diesel'
+                            $typeLower = strtolower($typeRaw); // ex. 'diesel', pour accéder aux champs : seuil_alert_diesel, etc.
+                            $capaciteMax = $fuel->capacite_totale;
+                            // Évite division par zéro :
+                            if ($capaciteMax <= 0) {
+                                $capaciteMax = 1;
+                            }
+                            $niveauAffiche = $fuel->niveau_pour_affichage;
+                            // Pourcentage arrondi 0-100
+                            $pourcentage = ($niveauAffiche / $capaciteMax) * 100;
                             $pourcentage = round(min(max($pourcentage, 0), 100));
 
-                            $fuelLevelColorClass = ''; // Initialiser la classe de couleur
+                            // Récupère les seuils depuis l'objet $soute (ou null si non défini)
+                            $seuilAlerte = $soute->{"seuil_alert_$typeLower"} ?? null;
+                            $seuilIndisponibilite = $soute->{"seuil_indisponibilite_$typeLower"} ?? null;
 
-                            if ($niveauAffiche <= 0) { // Stock vide ou négatif (ne devrait pas être négatif avec la logique actuelle)
-                                $fuelLevelColorClass = 'bg-secondary'; // GRIS pour vide
-                                $pourcentage = 0; // Forcer 0% si le niveau est 0 ou moins
-                            } elseif ($pourcentage < 25) {
-                                $fuelLevelColorClass = 'bg-danger'; // ROUGE pour < 25%
-                            } elseif ($pourcentage < 50) {
-                                $fuelLevelColorClass = 'bg-orange'; // ORANGE pour 25% à 49% (vous n'avez pas de classe CSS bg-orange par défaut dans Bootstrap, utilisez bg-warning ou définissez bg-orange)
-                                // Si vous n'avez pas bg-orange, utilisons bg-warning pour ce seuil
-                                // $fuelLevelColorClass = 'bg-warning';
-                            } elseif ($pourcentage < 75) {
-                                $fuelLevelColorClass = 'bg-warning'; // JAUNE (warning) pour 50% à 74%
-                            } elseif ($pourcentage < 100) {
-                                $fuelLevelColorClass = 'bg-success'; // VERT pour 75% à 99%
-                            } else { // $pourcentage == 100
-                                $fuelLevelColorClass = 'bg-primary'; // BLEU pour 100% (plein)
+                            $estIndisponible = !is_null($seuilIndisponibilite) && $niveauAffiche <= $seuilIndisponibilite;
+                            $estEnAlerte = !is_null($seuilAlerte) && $niveauAffiche <= $seuilAlerte && !$estIndisponible;
+
+                            // Détermination de la couleur de la jauge
+                            if ($niveauAffiche <= 0) {
+                                $fuelLevelColorClass = 'bg-secondary';
+                                $pourcentage = 0;
+                            }
+                            elseif ($estIndisponible) {
+                                $fuelLevelColorClass = 'bg-danger';
+                            }
+                            elseif ($estEnAlerte) {
+                                $fuelLevelColorClass = 'bg-warning';
+                            }
+                            elseif ($pourcentage < 25) {
+                                $fuelLevelColorClass = 'bg-danger';
+                            }
+                            elseif ($pourcentage < 50) {
+                                $fuelLevelColorClass = 'bg-orange';
+                            }
+                            elseif ($pourcentage < 75) {
+                                $fuelLevelColorClass = 'bg-warning';
+                            }
+                            elseif ($pourcentage < 100) {
+                                $fuelLevelColorClass = 'bg-success';
+                            }
+                            else {
+                                $fuelLevelColorClass = 'bg-primary';
                             }
                         @endphp
 
-                        <div class="col-md-4 mb-4"> {{-- Ajout de mb-4 pour espacement vertical --}}
-                            <div class="card h-100 @if($estEnAlerte) border-danger @endif">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 
+                                @if($estIndisponible) border-danger 
+                                @elseif($estEnAlerte) border-warning 
+                                @endif
+                            ">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">
                                         <i class="{{ $fuel->icon_class }}"></i>
-                                        {{ $type }}
+                                        {{ $typeRaw }}
                                     </h5>
                                 </div>
                                 <div class="card-body d-flex flex-column justify-content-center align-items-center">
                                     <div class="fuel-tank-container mb-3">
                                         <div class="fuel-tank">
                                             <div class="fuel-level {{ $fuelLevelColorClass }}" style="height: {{ $pourcentage }}%;">
-                                                {{-- Afficher le pourcentage seulement si > 0 pour ne pas surcharger le gris --}}
                                                 @if($pourcentage > 0)
                                                     <span>{{ $pourcentage }}%</span>
                                                 @endif
@@ -120,33 +185,44 @@
                                             <p class="mb-0">Niveau: 
                                                 <strong>{{ number_format($niveauAffiche, 0, ',', ' ') }} L</strong>
                                             </p>
-                                            
-                                            @if(!is_null($seuil))
-                                                <p class="mb-0 @if($estEnAlerte) text-danger @endif">
-                                                    Seuil alerte: {{ number_format($seuil, 0, ',', ' ') }} L
+                                            @if(!is_null($seuilAlerte))
+                                                <p class="mb-0 @if($estEnAlerte) text-warning @endif">
+                                                    Seuil alerte: {{ number_format($seuilAlerte, 0, ',', ' ') }} L
                                                 </p>
                                             @endif
-                                            
-                                            <p class="text-muted">Capacité: {{ number_format($capaciteMax, 0, ',', ' ') }} L</p>
+                                            @if(!is_null($seuilIndisponibilite))
+                                                <p class="mb-0 @if($estIndisponible) text-danger @endif">
+                                                    Seuil indisponibilité: {{ number_format($seuilIndisponibilite, 0, ',', ' ') }} L
+                                                </p>
+                                            @endif
+                                            <p class="text-muted">Capacité: {{ number_format($fuel->capacite_totale, 0, ',', ' ') }} L</p>
                                         </div>
                                     </div>
 
-                                    @if($capaciteMax > 0 && $niveauAffiche > $capaciteMax)
-                                        <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Niveau actuel dépasse la capacité !</small>
-                                    @elseif ($niveauAffiche > 0 && $capaciteMax <= 0) {{-- Cas où capacité non définie mais niveau si --}}
-                                        <small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle-fill"></i> Capacité totale non définie.</small>
+                                    @if($fuel->capacite_totale > 0 && $niveauAffiche > $fuel->capacite_totale)
+                                        <small class="text-danger d-block mt-1">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> Niveau actuel dépasse la capacité !
+                                        </small>
+                                    @elseif ($niveauAffiche > 0 && $fuel->capacite_totale <= 0)
+                                        <small class="text-warning d-block mt-1">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> Capacité totale non définie.
+                                        </small>
                                     @endif
                                 </div>
                                 <div class="card-footer bg-light d-flex justify-content-between align-items-center">
                                     <small class="text-muted">Remplissage : {{ $pourcentage }}%</small>
-                                    {{-- Vous pourriez ajouter d'autres infos ici si besoin --}}
                                 </div>
-                                @if($estEnAlerte)
-                                <div class="card-footer bg-danger text-white">
-                                    <i class="bi bi-exclamation-triangle-fill"></i> 
-                                    Alerte seuil atteint ({{ $seuil }} L)
-                                </div>
-                            @endif
+                                @if($estIndisponible)
+                                    <div class="card-footer bg-danger text-white">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                                        Seuil d'indisponibilité atteint
+                                    </div>
+                                @elseif($estEnAlerte)
+                                    <div class="card-footer bg-warning text-dark">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                                        Seuil d'alerte atteint
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -166,7 +242,7 @@
             </div>
         </section>
 
-        <section class="row mt-4"> {{-- Ajout de mt-4 --}}
+        <section class="row mt-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
@@ -192,16 +268,83 @@
                         <a href="{{ route('soute.dashboard.services.distribution') }}" class="btn btn-primary">
                             <i class="bi bi-fuel-pump"></i> Faire une Distribution
                         </a>
-                        {{-- Vous pourriez ajouter un bouton pour "Enregistrer un Dépotage" ici plus tard --}}
+                        {{-- Tu peux ajouter un bouton pour "Enregistrer un Dépotage" ici --}}
                     </div>
                 </div>
             </div>
         </section>
     </div>
 @endsection
-@push('scripts') 
 
-@endpush
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('combinedChart');
+
+        // Données fictives pour les mois et les valeurs (à remplacer par de vraies données si dispo)
+        const labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
+        const distributionData = [1200, 1500, 1100, 1800, 1600, 1400];
+        const depotageData = [1000, 1300, 900, 1700, 1500, 1200];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Distribution (L)',
+                        data: distributionData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dépotage (L)',
+                        data: depotageData,
+                        backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Capacité (L)"
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Mois"
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) label += context.parsed.y + ' L';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 <style>
     .fuel-tank-container {
@@ -212,14 +355,14 @@
     }
 
     .fuel-tank {
-        width: 180px; /* Maintenu pour correspondre à l'image */
-        height: 300px; /* Maintenu pour correspondre à l'image */
+        width: 180px;
+        height: 300px;
         border: 3px solid #555;
-        background-color: #e0e0e0; /* Gris clair pour le fond du tank vide */
+        background-color: #e0e0e0;
         position: relative;
-        border-radius: 10px 10px 5px 5px; /* Bords arrondis comme sur l'image */
-        margin: 0 auto; /* Centrer le tank */
-        overflow: hidden; /* Pour que le fuel-level ne dépasse pas avec border-radius */
+        border-radius: 10px 10px 5px 5px;
+        margin: 0 auto;
+        overflow: hidden;
     }
 
     .fuel-level {
@@ -227,23 +370,22 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        /* La couleur de fond est gérée par $fuelLevelColorClass (bg-success, bg-warning, bg-danger) */
         transition: height 0.5s ease-in-out, background-color 0.5s ease-in-out;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: 0.9em; /* Ajusté pour une meilleure lisibilité */
+        font-size: 0.9em;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
     }
 
     .graduations {
         position: absolute;
         top: 0;
-        left: -35px; /* Positionner à gauche du tank */
+        left: -35px;
         height: 100%;
-        width: 30px; /* Largeur pour les graduations */
+        width: 30px;
         font-size: 0.7em;
         color: #333;
     }
@@ -251,35 +393,32 @@
     .graduation-mark {
         position: absolute;
         width: 100%;
-        text-align: right; /* Aligner le texte à droite, près du tank */
-        padding-right: 5px; /* Petit espace avant le tiret */
+        text-align: right;
+        padding-right: 5px;
     }
-    .graduation-mark::after { 
-        content: "—"; /* Tiret de graduation */
+    .graduation-mark::after {
+        content: "—";
         position: absolute;
-        right: -5px; /* Positionner le tiret pour qu'il touche/dépasse légèrement vers le tank */
+        right: -5px;
         top: 50%;
         transform: translateY(-50%);
     }
 
-    /* Assurer la priorité des couleurs de fond pour le niveau de carburant */
-    .fuel-level.bg-success { background-color: #28a745 !important; } /* Vert */
-    .fuel-level.bg-warning { background-color: #ffc107 !important; } /* Jaune/Orange */
-    .fuel-level.bg-danger  { background-color: #dc3545 !important; } /* Rouge */
+    /* Couleurs pour le niveau */
+    .fuel-level.bg-success { background-color: #28a745 !important; }
+    .fuel-level.bg-warning { background-color: #ffc107 !important; }
+    .fuel-level.bg-danger  { background-color: #dc3545 !important; }
+    .fuel-level.bg-secondary { background-color: #6c757d !important; }
 
     .tank-info {
         text-align: center;
-        margin-top: 8px; /* Espace au-dessus des informations */
+        margin-top: 8px;
     }
     .tank-info p {
         margin-bottom: 2px;
-        font-size: 0.9em; /* Taille de police pour les infos */
+        font-size: 0.9em;
     }
-    /* Couleur Orange personnalisée si Bootstrap ne l'a pas par défaut */
     .bg-orange {
-        background-color: #fd7e14 !important; /* Couleur orange de Bootstrap (si elle existait) ou une de votre choix */
-    }
-    .bg-secondary { /* Assurez-vous que Bootstrap a une couleur bg-secondary ou définissez-la */
-        background-color: #6c757d !important; /* Gris standard de Bootstrap */
+        background-color: #fd7e14 !important;
     }
 </style>
