@@ -16,9 +16,6 @@
           <a class="dropdown-item" href="{{ route('soute.dashboard.profile') }}"> 
             <i class="mdi mdi-account-outline text-primary"></i> Mon Profil
           </a>
-          {{-- <a class="dropdown-item" href="#">
-            <i class="mdi mdi-settings text-primary"></i> Paramètres
-          </a> --}}
           <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
             <i class="mdi mdi-logout text-primary"></i> Déconnexion
           </a>
