@@ -19,11 +19,6 @@ class ArmeeAirController extends Controller
         $user = Auth::guard('corps')->user(); // L'utilisateur CorpsArme connecté
         $corpsArmeId = $user->id;
 
-        // Vérifie que l'utilisateur est bien du corps 'Armée-Air'
-        // Cette vérification est importante si la route est générique,
-        // mais si la route est spécifique, elle est moins critique ici,
-        // car seul un utilisateur 'Armée-Air' devrait atteindre cette route via le handleLogin.
-        // Cependant, c'est une bonne sécurité.
         if ($user->name !== 'Armée-Air') {
             abort(403, 'Accès non autorisé à ce tableau de bord.');
         }
@@ -49,5 +44,9 @@ class ArmeeAirController extends Controller
         // IMPORTANT: Renvoie vers une vue spécifique à la Armée-air
         // qui utilisera son propre layout/sidebar si nécessaire.
         return view('armee-air.dashboard', $viewData);
+    }
+    public function profile()
+    {
+        return view('armee-air.profil.index');
     }
 }

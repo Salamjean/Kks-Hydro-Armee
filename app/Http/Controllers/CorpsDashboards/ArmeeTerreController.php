@@ -43,4 +43,9 @@ class ArmeeTerreController extends Controller
         // qui utilisera son propre layout/sidebar si nécessaire.
         return view('armee-terre.dashboard', $viewData); 
     }
+
+    public function profile()
+    {
+        return view('armee-terre.profil.index');
+    }
 }

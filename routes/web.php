@@ -73,6 +73,11 @@ Route::prefix('corps')->name('corps.')->group(function () {
         Route::get('/armee-air/dashboard', [ArmeeAirController::class, 'index'])->name('armee-air.dashboard');
         Route::get('/armee-terre/dashboard', [ArmeeTerreController::class, 'index'])->name('armee-terre.dashboard');
 
+        Route::get('/gendarmerie/profile', [GendarmerieController::class, 'profile'])->name('gendarmerie.profile');
+        Route::get('/marine/profile', [MarineController::class, 'profile'])->name('marine.profile');
+        Route::get('/armee-air/profile', [ArmeeAirController::class, 'profile'])->name('armee-air.profile');
+        Route::get('/armee-terre/profile', [ArmeeTerreController::class, 'profile'])->name('armee-terre.profile');
+
         Route::resource('services', ServiceController::class)->except(['create', 'show']);
         Route::resource('personnel', PersonnelController::class)->except(['create','show']);
         Route::get('/personnel/{personnel}/assigner-soutes', [PersonnelController::class, 'showAssignSoutesForm'])->name('personnel.assignSoutesForm');
@@ -108,6 +113,7 @@ Route::prefix('soute-dashboard')->name('soute.dashboard.')->group(function() {
     Route::put('/soutes/marine/{id}', [SouteController::class, 'update_soute_marine'])->name('corps.soutes.update_marine');
     Route::put('/soutes/gendarmerie/{id}', [SouteController::class, 'update_soute_gendarmerie'])->name('corps.soutes.update_gendarmerie');
 
+    Route::get('/soutes/profile', [PompisteController::class, 'profile'])->name('profile');
 
     Route::get('services/distribution', [PompisteController::class, 'distribution'])->name('services.distribution');
     

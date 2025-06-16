@@ -50,4 +50,9 @@ class GendarmerieController extends Controller
         // qui utilisera son propre layout/sidebar si nécessaire.
         return view('gendarmerie.dashboard', $viewData);
     }
+
+    public function profile()
+    {
+        return view('gendarmerie.profil.index');
+    }
 }

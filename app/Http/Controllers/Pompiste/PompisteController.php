@@ -459,4 +459,9 @@ class PompisteController extends Controller
         return $resultats;
     }
 
+        public function profile()
+    {
+        return view('pompiste.profil.index');
+    }
+
 }

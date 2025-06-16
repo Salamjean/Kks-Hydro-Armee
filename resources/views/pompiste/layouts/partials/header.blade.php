@@ -13,7 +13,7 @@
             <p class="mb-1 mt-3 font-weight-semibold">{{ Auth::guard('corps')->user()->name ?? 'Utilisateur' }}</p>
             <p class="font-weight-light text-muted mb-0">{{ Auth::guard('corps')->user()->email ?? 'email@example.com' }}</p>
           </div>
-          <a class="dropdown-item" href="#"> 
+          <a class="dropdown-item" href="{{ route('soute.dashboard.profile') }}"> 
             <i class="mdi mdi-account-outline text-primary"></i> Mon Profil
           </a>
           {{-- <a class="dropdown-item" href="#">

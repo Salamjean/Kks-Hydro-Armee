@@ -13,12 +13,10 @@
             <p class="mb-1 mt-3 font-weight-semibold">{{ Auth::guard('corps')->user()->name ?? 'Utilisateur' }}</p>
             <p class="font-weight-light text-muted mb-0">{{ Auth::guard('corps')->user()->email ?? 'email@example.com' }}</p>
           </div>
-          <a class="dropdown-item" href="#"> 
+          <a class="dropdown-item" href="{{ route('corps.armee-air.profile') }}"> 
             <i class="mdi mdi-account-outline text-primary"></i> Mon Profil
           </a>
-          <a class="dropdown-item" href="#">
-            <i class="mdi mdi-settings text-primary"></i> Paramètres
-          </a>
+          
           <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
             <i class="mdi mdi-logout text-primary"></i> Déconnexion
           </a>

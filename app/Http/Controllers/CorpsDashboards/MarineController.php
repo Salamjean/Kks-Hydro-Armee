@@ -50,4 +50,9 @@ class MarineController extends Controller
         // qui utilisera son propre layout/sidebar si nécessaire.
         return view('marine.dashboard', $viewData);
     }
+
+    public function profile()
+    {
+        return view('marine.profil.index');
+    }
 }

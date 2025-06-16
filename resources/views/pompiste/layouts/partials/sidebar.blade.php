@@ -43,13 +43,16 @@
                 </a>
             </li>
 
-            <li class="sidebar-title">Compte</li>
-
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-person-fill"></i>
-                    <span>Mon Profil</span>
+            <li class="sidebar-item has-sub {{ request()->routeIs('corps.soutes.*') ? 'active' : '' }}">
+                <a href="#" class='sidebar-link'>
+                    <i class="bi bi-people-fill"></i>
+                    <span>Compte</span>
                 </a>
+                <ul class="submenu">
+                    <li class="submenu-item {{ request()->routeIs('soute.dashboard.profile') || request()->routeIs('soute.dashboard.profile') ? 'active' : '' }}">
+                        <a href="{{ route('soute.dashboard.profile') }}">Mon Profil</a>
+                    </li>
+                </ul>
             </li>
 
             <li class="sidebar-item">

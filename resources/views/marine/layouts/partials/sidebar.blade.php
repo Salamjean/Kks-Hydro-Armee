@@ -95,13 +95,16 @@
                 </a>
             </li>
 
-            <li class="sidebar-title">Compte</li>
-
-            <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-person-fill"></i>
-                    <span>Mon Profil</span>
+            <li class="sidebar-item has-sub {{ request()->routeIs('corps.personnel.*') ? 'active' : '' }}">
+                <a href="#" class='sidebar-link'>
+                    <i class="bi bi-people-fill"></i>
+                    <span>Compte</span>
                 </a>
+                <ul class="submenu">
+                    <li class="submenu-item {{ request()->routeIs('corps.marine.profile') || request()->routeIs('corps.marine.profile') ? 'active' : '' }}">
+                        <a href="{{ route('corps.marine.profile') }}">Mon Profil</a>
+                    </li>
+                </ul>
             </li>
 
             <li class="sidebar-item">
